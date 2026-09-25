@@ -212,6 +212,16 @@ export class RapierCharacterWorld {
     };
   }
 
+  setCharacterPosition(position: Vec3): void {
+    const character = this.character;
+    if (!character) throw new Error("Create the character before setting its position.");
+    character.setTranslation({
+      x: position.x,
+      y: position.y,
+      z: this.config.gameplayLaneZ,
+    });
+  }
+
   getCharacterPosition(): Vec3 {
     const character = this.character;
     if (!character) throw new Error("Create the character before reading its position.");
