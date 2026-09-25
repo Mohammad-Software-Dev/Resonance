@@ -17,3 +17,5 @@ export const asTargetId = (value: number): TargetId => value as TargetId;
 export const asRevision = (value: number): Revision => value as Revision;
 
 export * from "./movement";
+
+export * from "./target";
