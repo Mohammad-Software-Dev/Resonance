@@ -48,10 +48,16 @@ import {
   type TargetCandidateDebug,
 } from "@resonance/targeting";
 import {
+  GRAPHICS_PRESETS,
   initialGraphicsPreset,
   nextGraphicsPreset,
 } from "./graphics/presets";
 import { createRepresentativeGraphicsRoom } from "./graphics/representative-room";
+import {
+  BrowserPerformanceMonitor,
+  warmCriticalShaders,
+} from "./performance/browser-performance";
+import { DynamicResolutionGovernor } from "./performance/dynamic-resolution";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
@@ -221,6 +227,26 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
 );
 applyCameraMode();
 
+const warmedShaderBindings = await warmCriticalShaders(scene);
+const performanceMonitor = new BrowserPerformanceMonitor(scene, engine);
+const dynamicResolution = new DynamicResolutionGovernor(graphicsRoom.getRenderScale());
+let recoveryStatus: "ready" | "lost" | "restored" = "ready";
+
+engine.onContextLostObservable.add(() => {
+  recoveryStatus = "lost";
+  clock.clearAccumulator();
+});
+
+engine.onContextRestoredObservable.add(() => {
+  recoveryStatus = "restored";
+  previousMs = performance.now();
+  const preset = graphicsRoom.getPreset();
+  graphicsRoom.applyPreset(preset);
+  graphicsRoom.applyRenderScale(
+    dynamicResolution.setBaseScale(GRAPHICS_PRESETS[preset].renderScale),
+  );
+});
+
 const movingTargetId = targetRegistry.getByGuid(asAuthoredTargetGuid("m0-anchor-moving"))?.id;
 const PLAYER_ID = asEntityId(1);
 const START = { x: -5, y: 2.2, z: 0 };
@@ -253,7 +279,15 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "Digit2") arrivalMode = "softCapture";
   if (event.code === "Digit3") arrivalMode = "radiusBlend";
   if (event.code === "KeyG" && !event.repeat) {
-    graphicsRoom.applyPreset(nextGraphicsPreset(graphicsRoom.getPreset()));
+    const nextPreset = nextGraphicsPreset(graphicsRoom.getPreset());
+    graphicsRoom.applyPreset(nextPreset);
+    graphicsRoom.applyRenderScale(
+      dynamicResolution.setBaseScale(GRAPHICS_PRESETS[nextPreset].renderScale),
+    );
+  }
+  if (event.code === "KeyR" && !event.repeat) {
+    const resetScale = dynamicResolution.setEnabled(!dynamicResolution.isEnabled());
+    if (resetScale !== null) graphicsRoom.applyRenderScale(resetScale);
   }
   if (event.code === "KeyC" && !event.repeat) {
     cameraMode = cameraMode === "perspective" ? "orthographic" : "perspective";
@@ -351,6 +385,7 @@ const repelRuntime = createRepelRuntimeState();
 let lastRepelEvent: RepelSemanticEvent | null = null;
 let repelRequested = false;
 let gamepadRepelWasHeld = false;
+let nextDiagnosticsUpdateMs = 0;
 
 engine.runRenderLoop(() => {
   const now = performance.now();
@@ -573,7 +608,18 @@ engine.runRenderLoop(() => {
   graphicsRoom.update(now / 1000);
   scene.render();
 
+  const adaptiveScale = dynamicResolution.sample(frameSeconds * 1000);
+  if (adaptiveScale !== null) {
+    graphicsRoom.applyRenderScale(adaptiveScale);
+    applyCameraMode();
+  }
+
+  if (now < nextDiagnosticsUpdateMs) return;
+  nextDiagnosticsUpdateMs = now + 250;
+
   const graphicsStats = graphicsRoom.stats();
+  const performanceStats = performanceMonitor.snapshot();
+  const dynamicStats = dynamicResolution.snapshot();
   const candidateLines = targetDebug.map((candidate) => {
     const score = candidate.score === null ? candidate.rejectedReason : candidate.score.toFixed(3);
     return `T${Number(candidate.id)} ${candidate.retained ? "*" : " "} d=${candidate.distance.toFixed(2)} a=${candidate.alignment.toFixed(2)} s=${score}`;
@@ -581,16 +627,21 @@ engine.runRenderLoop(() => {
 
   const fps = engine.getFps();
   diagnostics.textContent = [
-    "RESONANCE M0.8 — REPRESENTATIVE GRAPHICS ROOM",
+    "RESONANCE M0.9 — PERFORMANCE PASS",
     "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift",
     "Attract: hold E / gamepad RT | Repel: Q / gamepad LT",
-    "Graphics: G cycles Low/Medium/High/Ultra | Camera: C toggles perspective/ortho",
+    "Graphics: G cycles presets | R toggles dynamic resolution | C toggles camera",
     "Aim: mouse or gamepad right stick; facing is keyboard fallback",
     "Arrival experiment: 1 pass-through | 2 soft-capture | 3 radius-blend",
     `backend: ${backend} | fps: ${fps.toFixed(1)} | camera: ${cameraMode}`,
-    `graphics: ${graphicsStats.preset} | render scale: ${graphicsStats.renderScale.toFixed(2)}`,
+    `graphics: ${graphicsStats.preset} | render scale: ${graphicsStats.renderScale.toFixed(2)} | dynamic: ${dynamicStats.enabled ? "on" : "off"}`,
+    `frame: cpu ${performanceStats.cpuFrameMs.toFixed(2)} ms | render ${performanceStats.renderMs.toFixed(2)} ms | gpu ${performanceStats.gpuFrameMs === null ? "n/a" : performanceStats.gpuFrameMs.toFixed(2) + " ms"}`,
+    `draw calls: ${performanceStats.drawCalls} | active-mesh eval: ${performanceStats.activeMeshesEvaluationMs.toFixed(2)} ms | particles: ${performanceStats.particlesRenderMs.toFixed(2)} ms`,
+    `adaptive: avg ${dynamicStats.averageFrameMs.toFixed(2)} ms | cooldown ${dynamicStats.cooldownRemaining} | changes ${dynamicStats.changes}`,
+    `heap: ${performanceStats.usedHeapMb === null ? "n/a" : performanceStats.usedHeapMb.toFixed(1) + " MB"} / ${performanceStats.totalHeapMb === null ? "n/a" : performanceStats.totalHeapMb.toFixed(1) + " MB"}`,
     `render: meshes ${graphicsStats.activeMeshes}/${graphicsStats.meshes} | vertices ${graphicsStats.vertices} | particles ${graphicsStats.activeParticles}`,
-    `resources: materials ${graphicsStats.materials} | textures ${graphicsStats.textures}`,
+    `resources: materials ${graphicsStats.materials} | textures ${graphicsStats.textures} | warmed bindings ${warmedShaderBindings}`,
+    `graphics recovery: ${recoveryStatus}`,
     `sim tick: ${Number(simulation.tick)} | steps/frame: ${stepsThisFrame} | alpha: ${clock.alpha.toFixed(3)}`,
     `position: ${state ? `${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)}, ${state.position.z.toFixed(2)}` : "-"}`,
     `grounded: ${state?.grounded ?? false} | ground entity: ${Number(state?.groundEntityId ?? 0)}`,
