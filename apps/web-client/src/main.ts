@@ -1,7 +1,7 @@
 import { Camera } from "@babylonjs/core/Cameras/camera";
 import { FreeCamera } from "@babylonjs/core/Cameras/freeCamera";
+import type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
 import { Engine } from "@babylonjs/core/Engines/engine";
-import { WebGPUEngine } from "@babylonjs/core/Engines/webgpuEngine";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
@@ -70,9 +70,10 @@ function requireElement<T extends Element>(selector: string): T {
 const canvas = requireElement<HTMLCanvasElement>("#game");
 const diagnostics = requireElement<HTMLDivElement>("#diagnostics");
 
-async function createEngine(): Promise<{ engine: Engine | WebGPUEngine; backend: Backend }> {
+async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
   if ("gpu" in navigator) {
     try {
+      const { WebGPUEngine } = await import("@babylonjs/core/Engines/webgpuEngine");
       const engine = new WebGPUEngine(canvas, { antialias: true });
       await engine.initAsync();
       return { engine, backend: "webgpu" };
