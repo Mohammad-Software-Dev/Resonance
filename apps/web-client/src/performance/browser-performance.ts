@@ -1,9 +1,7 @@
-import {
-  EngineInstrumentation,
-  Scene,
-  SceneInstrumentation,
-  type AbstractEngine,
-} from "@babylonjs/core";
+import type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
+import { EngineInstrumentation } from "@babylonjs/core/Instrumentation/engineInstrumentation";
+import { SceneInstrumentation } from "@babylonjs/core/Instrumentation/sceneInstrumentation";
+import { Scene } from "@babylonjs/core/scene";
 
 interface ChromiumPerformanceMemory {
   readonly usedJSHeapSize: number;
