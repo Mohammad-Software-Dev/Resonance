@@ -1,17 +1,15 @@
-import RAPIER from "@dimforge/rapier3d-deterministic";
+import RAPIER from "@dimforge/rapier3d-deterministic-compat";
 
-let initialized = false;
+let initialization: Promise<void> | undefined;
 
 export async function initializePhysics(): Promise<typeof RAPIER> {
-  // Rapier 0.20's non-compat ESM build is initialized by its module loader and
-  // no longer exposes the legacy init() function. Keep this async facade so
-  // callers remain unchanged if we later need the deterministic-compat build.
-  initialized = true;
+  initialization ??= RAPIER.init();
+  await initialization;
   return RAPIER;
 }
 
 export function isPhysicsInitialized(): boolean {
-  return initialized;
+  return initialization !== undefined;
 }
 
 export async function createPhysicsWorld(
