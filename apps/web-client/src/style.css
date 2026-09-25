@@ -1,1 +1,47 @@
-html,body,#game{width:100%;height:100%;margin:0;overflow:hidden}body{background:#05070b}#game{display:block;touch-action:none}#diagnostics{position:fixed;top:12px;left:12px;padding:8px 10px;background:#000a;color:#d9f7ff;font:12px/1.45 ui-monospace,monospace;white-space:pre;pointer-events:none}
+html,
+body,
+#game {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background:
+    radial-gradient(circle at 70% 30%, #122331 0%, #070d16 34%, #03060b 75%);
+}
+
+#game {
+  display: block;
+  touch-action: none;
+}
+
+#diagnostics {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  max-width: min(720px, calc(100vw - 48px));
+  padding: 11px 13px;
+  border: 1px solid #7eeeff33;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #02070ee8, #06111be0);
+  box-shadow: 0 10px 34px #0008, inset 0 0 22px #39d8ff0b;
+  color: #d9f7ff;
+  font: 11px/1.42 ui-monospace, "SFMono-Regular", Consolas, monospace;
+  letter-spacing: 0.01em;
+  white-space: pre;
+  pointer-events: none;
+  text-shadow: 0 1px 5px #000;
+  backdrop-filter: blur(8px);
+}
+
+@media (max-width: 760px) {
+  #diagnostics {
+    top: 8px;
+    left: 8px;
+    max-width: calc(100vw - 32px);
+    padding: 8px 9px;
+    font-size: 9px;
+  }
+}
