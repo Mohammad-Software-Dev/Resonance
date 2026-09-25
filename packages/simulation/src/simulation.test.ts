@@ -71,6 +71,29 @@ describe("Simulation state contract", () => {
     expect(Number(state.stateRevision)).toBe(before + 1);
   });
 
+  it("preserves Repel recovery through snapshots and records semantic revision", () => {
+    const sim = new Simulation();
+    const state = sim.addWayfarer(PLAYER);
+    state.movementMode = "repelRecovery";
+    state.repelRecoveryTicksRemaining = 7;
+    state.velocity = { x: 4, y: 9, z: 0 };
+
+    const before = Number(state.stateRevision);
+    sim.recordRepel(PLAYER);
+    const snapshot = sim.createSnapshot();
+    const expectedHash = sim.stateHash();
+
+    state.repelRecoveryTicksRemaining = 0;
+    state.velocity = { x: 0, y: 0, z: 0 };
+    sim.restoreSnapshot(snapshot);
+
+    const restored = sim.getWayfarer(PLAYER);
+    expect(sim.stateHash()).toBe(expectedHash);
+    expect(restored?.repelRecoveryTicksRemaining).toBe(7);
+    expect(restored?.movementMode).toBe("repelRecovery");
+    expect(Number(restored?.stateRevision)).toBe(before + 1);
+  });
+
   it("latches edge-triggered input for exactly one fixed tick", () => {
     const input = new InputLatch();
     input.setJumpHeld(true);
