@@ -113,6 +113,25 @@ CI validates:
 
 Production art will replace this fixture through the normal content pipeline without changing the runtime contract.
 
+## JavaScript startup payload
+
+The first M0.9 production build exposed an avoidable package-boundary problem: the browser entry was approximately **8.03 MB minified / 2.27 MB gzip**.
+
+M0.9 replaced Babylon package-barrel imports with feature-level imports, lazy-loads the WebGPU engine behind the capability check, and loads the representative premium room as its own stage.
+
+The resulting measured build entry is approximately **3.03 MB minified / 1.14 MB gzip**, with the representative-room chunk approximately **668 KB / 165 KB gzip** and the WebGPU-engine chunk approximately **249 KB / 62 KB gzip**.
+
+This is a substantial M0 improvement, not the final shipping payload target.
+
+CI now blocks regressions above:
+
+- 3.5 MB raw entry;
+- 1.3 MB gzip entry;
+- 4.5 MB raw for any one JavaScript chunk;
+- 1.6 MB gzip for any one JavaScript chunk.
+
+Later content streaming and shell/menu work should continue reducing first-play transfer rather than treating these M0 ceilings as desirable targets.
+
 ## Provisional Tier M M0 budgets
 
 These are **gates to measure**, not claims already achieved.
