@@ -23,6 +23,7 @@ export interface MovementState {
   coyoteTicksRemaining: number;
   jumpBufferTicksRemaining: number;
   evadeTicksRemaining: number;
+  repelRecoveryTicksRemaining: number;
 }
 
 export interface MovementInput {
@@ -55,6 +56,7 @@ export function createInitialMovementState(): MovementState {
     coyoteTicksRemaining: 0,
     jumpBufferTicksRemaining: 0,
     evadeTicksRemaining: 0,
+    repelRecoveryTicksRemaining: 0,
   };
 }
 
@@ -181,8 +183,17 @@ export function applyMovementCollision(
   if (feedback.hitCeiling && state.velocity.y > 0) state.velocity.y = 0;
   if (feedback.grounded && state.velocity.y < 0) state.velocity.y = 0;
 
-  if (state.evadeTicksRemaining === 0 && state.movementMode !== "attract") {
+  if (
+    state.evadeTicksRemaining === 0
+    && state.movementMode !== "attract"
+    && state.movementMode !== "repelRecovery"
+  ) {
     state.movementMode = feedback.grounded ? "grounded" : "airborne";
+  }
+
+  if (state.movementMode === "repelRecovery" && feedback.grounded) {
+    state.repelRecoveryTicksRemaining = 0;
+    state.movementMode = "grounded";
   }
 }
 
@@ -194,5 +205,6 @@ export function recoverMovementState(state: MovementState, safePosition: Vec3): 
   state.coyoteTicksRemaining = 0;
   state.jumpBufferTicksRemaining = 0;
   state.evadeTicksRemaining = 0;
+  state.repelRecoveryTicksRemaining = 0;
   state.movementMode = "airborne";
 }
