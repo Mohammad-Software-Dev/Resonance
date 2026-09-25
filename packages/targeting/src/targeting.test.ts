@@ -32,6 +32,18 @@ describe("TargetRegistry", () => {
     expect(first.getByGuid(c.guid)?.id).toBe(second.getByGuid(c.guid)?.id);
   });
 
+  it("returns deterministic nearby candidates only", () => {
+    const registry = new TargetRegistry();
+    registry.activate([
+      definition("near-b", 2, 3),
+      definition("far", 3, 20),
+      definition("near-a", 1, 2),
+    ]);
+
+    const nearby = registry.queryNearby({ x: 0, y: 0, z: 0 }, 5);
+    expect(nearby.map((target) => String(target.guid))).toEqual(["near-a", "near-b"]);
+  });
+
   it("rejects duplicate authored GUIDs", () => {
     const registry = new TargetRegistry();
     const a = definition("same-guid", 1, 3);
