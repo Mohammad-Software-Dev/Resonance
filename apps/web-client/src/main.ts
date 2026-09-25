@@ -372,21 +372,23 @@ engine.runRenderLoop(() => {
     const attractConfig = { ...M0_ATTRACT_CONFIG, arrivalMode };
     let desiredTranslation: Vec3;
 
-    if (simInput.repelPressed && simInput.targetId !== 0) {
-      if (attractRuntime.targetId !== 0) {
-        const comboCancel = cancelAttract(state, attractRuntime, "repel");
-        if (comboCancel) lastAttractEvent = comboCancel;
-        simulation.cancelAttract(PLAYER_ID);
-      }
-
+    if (simInput.repelPressed) {
+      const repelTarget = simInput.targetId === 0
+        ? undefined
+        : targetRegistry.get(simInput.targetId);
       const repel = stepRepel(
         state,
         repelRuntime,
-        targetRegistry.get(simInput.targetId),
+        repelTarget,
         M0_REPEL_CONFIG,
       );
       lastRepelEvent = repel.event;
       if (repel.applied) {
+        if (attractRuntime.targetId !== 0) {
+          const comboCancel = cancelAttract(state, attractRuntime, "repel");
+          if (comboCancel) lastAttractEvent = comboCancel;
+          simulation.cancelAttract(PLAYER_ID);
+        }
         simulation.recordRepel(PLAYER_ID);
         desiredTranslation = repel.desiredTranslation;
       } else {
