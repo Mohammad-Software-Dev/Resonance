@@ -1,5 +1,5 @@
 import RAPIER from "@dimforge/rapier3d-deterministic-compat";
-import { asEntityId, type EntityId, type Vec3 } from "@resonance/game-data";
+import { type EntityId, type Vec3 } from "@resonance/game-data";
 import { initializePhysics } from "./index";
 
 export interface CharacterPhysicsConfig {
@@ -133,7 +133,11 @@ export class RapierCharacterWorld {
     platform.collider.setTranslation(next);
   }
 
-  moveCharacter(desiredTranslation: Vec3, previousGroundEntityId: EntityId | 0): CharacterCollisionResult {
+  moveCharacter(
+    desiredTranslation: Vec3,
+    previousGroundEntityId: EntityId | 0,
+    up: Vec3 = { x: 0, y: 1, z: 0 },
+  ): CharacterCollisionResult {
     const character = this.character;
     if (!character) throw new Error("Create the character before moving it.");
 
@@ -149,6 +153,7 @@ export class RapierCharacterWorld {
       z: laneCorrection,
     });
 
+    this.controller.setUp(up);
     this.controller.computeColliderMovement(
       character,
       desired,
@@ -174,13 +179,15 @@ export class RapierCharacterWorld {
 
     for (let index = 0; index < collisionCount; index += 1) {
       const collision = this.controller.computedCollision(index);
+      if (!collision) continue;
+
       const normal = collision.normal1;
-      const groundDot = normal.y;
-      if (groundDot >= minimumGroundDot && groundDot > bestGroundDot) {
+      const groundDot = normal.x * up.x + normal.y * up.y + normal.z * up.z;
+      if (groundDot >= minimumGroundDot && groundDot > bestGroundDot && collision.collider) {
         bestGroundDot = groundDot;
-        groundEntityId = this.colliderEntity.get(collision.collider.handle) ?? asEntityId(0);
+        groundEntityId = this.colliderEntity.get(collision.collider.handle) ?? 0;
       }
-      if (normal.y < -0.5) hitCeiling = true;
+      if (groundDot < -0.5) hitCeiling = true;
     }
 
     const grounded = this.controller.computedGrounded();
