@@ -97,7 +97,9 @@ async function runAttractTrace(renderFps: number): Promise<string> {
         const event = recordAttractCollision(
           state,
           attract,
-          collision.maximumCorrection > 0.03,
+          collision.blockedX
+            || collision.hitCeiling
+            || (collision.grounded && desiredTranslation.y < -0.01),
           M0_ATTRACT_CONFIG,
         );
         if (event?.type === "cancelled") cancelReason = event.reason;
@@ -139,7 +141,9 @@ describe("Attract + Rapier deterministic replay", () => {
       recordAttractCollision(
         state,
         runtime,
-        collision.maximumCorrection > 0.03,
+        collision.blockedX
+          || collision.hitCeiling
+          || (collision.grounded && pull.desiredTranslation.y < -0.01),
         M0_ATTRACT_CONFIG,
       );
     }
