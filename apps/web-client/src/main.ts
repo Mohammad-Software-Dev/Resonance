@@ -57,6 +57,7 @@ import {
   warmCriticalShaders,
 } from "./performance/browser-performance";
 import { DynamicResolutionGovernor } from "./performance/dynamic-resolution";
+import { FrameCaptureBuffer } from "./performance/frame-capture";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
@@ -235,6 +236,7 @@ const warmedShaderBindings = await warmCriticalShaders(scene);
 const shaderWarmupMs = performance.now() - shaderWarmupStartMs;
 const performanceMonitor = new BrowserPerformanceMonitor(scene, engine);
 const dynamicResolution = new DynamicResolutionGovernor(graphicsRoom.getRenderScale());
+const frameCapture = new FrameCaptureBuffer();
 let recoveryStatus: "ready" | "lost" | "restored" = "ready";
 
 engine.onContextLostObservable.add(() => {
@@ -294,6 +296,8 @@ window.addEventListener("keydown", (event) => {
     const resetScale = dynamicResolution.setEnabled(!dynamicResolution.isEnabled());
     if (resetScale !== null) graphicsRoom.applyRenderScale(resetScale);
   }
+  if (event.code === "KeyP" && !event.repeat) exportPerformanceCapture();
+  if (event.code === "KeyX" && !event.repeat) frameCapture.reset();
   if (event.code === "KeyC" && !event.repeat) {
     cameraMode = cameraMode === "perspective" ? "orthographic" : "perspective";
     applyCameraMode();
@@ -392,10 +396,39 @@ let repelRequested = false;
 let gamepadRepelWasHeld = false;
 let nextDiagnosticsUpdateMs = 0;
 
+function exportPerformanceCapture(): void {
+  const payload = {
+    schema: "resonance.m0.performance-capture.v1",
+    capturedAt: new Date().toISOString(),
+    userAgent: navigator.userAgent,
+    backend,
+    cameraMode,
+    graphics: graphicsRoom.stats(),
+    dynamicResolution: dynamicResolution.snapshot(),
+    performance: performanceMonitor.snapshot(),
+    frameSummary: frameCapture.summary(),
+    samples: frameCapture.exportSamples(),
+    shaderWarmupMs,
+    warmedShaderBindings,
+    simulationTick: Number(simulation.tick),
+    deterministicStateHash: simulation.stateHash(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `resonance-m0-performance-${Date.now()}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 engine.runRenderLoop(() => {
   const now = performance.now();
   const frameSeconds = (now - previousMs) / 1000;
   previousMs = now;
+  frameCapture.push(frameSeconds * 1000, graphicsRoom.getRenderScale());
 
   const steps = clock.advance(frameSeconds);
   stepsThisFrame = steps.length;
@@ -635,7 +668,7 @@ engine.runRenderLoop(() => {
     "RESONANCE M0.9 — PERFORMANCE PASS",
     "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift",
     "Attract: hold E / gamepad RT | Repel: Q / gamepad LT",
-    "Graphics: G cycles presets | R toggles dynamic resolution | C toggles camera",
+    "Graphics: G presets | R dynamic resolution | C camera | P export perf | X reset perf",
     "Aim: mouse or gamepad right stick; facing is keyboard fallback",
     "Arrival experiment: 1 pass-through | 2 soft-capture | 3 radius-blend",
     `backend: ${backend} | fps: ${fps.toFixed(1)} | camera: ${cameraMode}`,
