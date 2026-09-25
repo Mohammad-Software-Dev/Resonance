@@ -331,7 +331,7 @@ engine.runRenderLoop(() => {
       if (attract.event) lastAttractEvent = attract.event;
 
       if (attractRuntime.targetId === 0) {
-        state.attractTargetId = 0;
+        simulation.cancelAttract(PLAYER_ID);
       }
     } else {
       if (!simInput.attractPressed && (attractRuntime.targetId !== 0 || attractRuntime.requiresRelease)) {
@@ -374,7 +374,7 @@ engine.runRenderLoop(() => {
       );
       if (collisionEvent) {
         lastAttractEvent = collisionEvent;
-        state.attractTargetId = 0;
+        simulation.cancelAttract(PLAYER_ID);
       }
     }
 
