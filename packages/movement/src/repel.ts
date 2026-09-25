@@ -168,11 +168,13 @@ export function stepRepelRecovery(
       ? "grounded"
       : "airborne";
 
-  const ended = state.repelRecoveryTicksRemaining === 0 && runtime.lastTargetId !== 0;
+  const endedTargetId = state.repelRecoveryTicksRemaining === 0
+    ? runtime.lastTargetId
+    : 0;
   return {
     desiredTranslation: translation(state, repelConfig.maxTranslationPerTick),
-    event: ended
-      ? { type: "recovery-ended", targetId: runtime.lastTargetId }
+    event: endedTargetId !== 0
+      ? { type: "recovery-ended", targetId: endedTargetId }
       : null,
   };
 }
