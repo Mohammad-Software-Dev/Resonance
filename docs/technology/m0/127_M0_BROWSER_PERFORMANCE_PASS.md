@@ -199,6 +199,28 @@ CI does **not** prove:
 - browser driver behavior;
 - long-session heap stability.
 
+## Physical capture artifact
+
+The client keeps an allocation-stable ring containing the latest two minutes of frame cadence and render-scale samples.
+
+- P exports a JSON capture.
+- X resets the capture window.
+
+The export includes:
+
+- backend and user agent;
+- camera/preset/render state;
+- dynamic-resolution state;
+- current Babylon performance counters;
+- frame p50/p95/p99/max;
+- count of frames above 50 ms;
+- minimum/average render scale;
+- startup shader warmup;
+- raw frame/render-scale samples;
+- simulation tick and deterministic state hash.
+
+Use this artifact for M0.9 reference-hardware evidence rather than relying on screenshots of an FPS counter.
+
 ## Physical signoff checklist
 
 M0.9 is fully signed off only after recorded captures exist for:
