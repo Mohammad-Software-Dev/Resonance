@@ -379,7 +379,9 @@ engine.runRenderLoop(() => {
       const collisionEvent = recordAttractCollision(
         state,
         attractRuntime,
-        collision.maximumCorrection > 0.03,
+        collision.blockedX
+          || collision.hitCeiling
+          || (collision.grounded && desiredTranslation.y < -0.01),
         attractConfig,
       );
       if (collisionEvent) {
