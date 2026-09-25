@@ -9,27 +9,34 @@ import {
 } from "@babylonjs/core";
 import {
   M0_MOVEMENT_CONFIG,
+  asAuthoredTargetGuid,
   asEntityId,
-  asTargetId,
+  type TargetId,
+  type Vec3,
 } from "@resonance/game-data";
 import {
   applyMovementCollision,
   recoverMovementState,
   stepMovement,
 } from "@resonance/movement";
-import {
-  RapierCharacterWorld,
-} from "@resonance/physics";
+import { RapierCharacterWorld } from "@resonance/physics";
 import {
   FixedStepClock,
   InputLatch,
   Simulation,
   dequantizeAxis,
 } from "@resonance/simulation";
+import {
+  M0_TARGET_SELECTION_CONFIG,
+  TargetRegistry,
+  resolveTargetAim,
+  selectResonanceTarget,
+  type TargetAimSource,
+  type TargetCandidateDebug,
+} from "@resonance/targeting";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
-
 function requireElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) throw new Error(`Required M0 element is missing: ${selector}`);
@@ -91,8 +98,13 @@ const playerMesh = MeshBuilder.CreateCapsule(
   { height: 1.8, radius: 0.35 },
   scene,
 );
-const anchor = MeshBuilder.CreateSphere("resonance-anchor", { diameter: 0.7 }, scene);
-anchor.position.set(3.5, 2.8, 0);
+
+const anchorA = MeshBuilder.CreateSphere("anchor-a", { diameter: 0.7 }, scene);
+anchorA.position.set(3.5, 2.8, 0);
+const anchorB = MeshBuilder.CreateSphere("anchor-b", { diameter: 0.7 }, scene);
+anchorB.position.set(1.5, 1.8, 0);
+const movingAnchor = MeshBuilder.CreateSphere("anchor-moving", { diameter: 0.7 }, scene);
+movingAnchor.position.set(-2, 2.45, 0);
 
 const physics = await RapierCharacterWorld.create();
 physics.addStaticBox(FLOOR_ID, { x: 0, y: -0.25, z: 0 }, { x: 8, y: 0.25, z: 1 });
@@ -101,8 +113,39 @@ physics.addStaticBox(RIGHT_WALL_ID, { x: 8, y: 2, z: 0 }, { x: 0.15, y: 2, z: 1 
 physics.addStaticBox(SLOPE_ID, { x: 4.9, y: 0.45, z: 0 }, { x: 1.8, y: 0.15, z: 1 }, Math.PI / 12);
 physics.addMovingBox(PLATFORM_ID, { x: -2, y: 1.15, z: 0 }, { x: 1.25, y: 0.175, z: 1 });
 
+const targetRegistry = new TargetRegistry();
+targetRegistry.activate([
+  {
+    guid: asAuthoredTargetGuid("m0-anchor-a"),
+    entityId: asEntityId(301),
+    position: { x: 3.5, y: 2.8, z: 0 },
+    priority: 0.02,
+  },
+  {
+    guid: asAuthoredTargetGuid("m0-anchor-b"),
+    entityId: asEntityId(302),
+    position: { x: 1.5, y: 1.8, z: 0 },
+  },
+  {
+    guid: asAuthoredTargetGuid("m0-anchor-moving"),
+    entityId: asEntityId(303),
+    position: { x: -2, y: 2.45, z: 0 },
+    priority: 0.04,
+  },
+]);
+
+const targetMeshes = new Map<number, typeof anchorA>();
+for (const [guid, mesh] of [
+  [asAuthoredTargetGuid("m0-anchor-a"), anchorA],
+  [asAuthoredTargetGuid("m0-anchor-b"), anchorB],
+  [asAuthoredTargetGuid("m0-anchor-moving"), movingAnchor],
+] as const) {
+  const target = targetRegistry.getByGuid(guid);
+  if (target) targetMeshes.set(Number(target.id), mesh);
+}
+
+const movingTargetId = targetRegistry.getByGuid(asAuthoredTargetGuid("m0-anchor-moving"))?.id;
 const PLAYER_ID = asEntityId(1);
-const ANCHOR_TARGET_ID = asTargetId(1);
 const START = { x: -5, y: 2.2, z: 0 };
 physics.createCharacter(START);
 
@@ -111,7 +154,6 @@ const simulation = new Simulation();
 const input = new InputLatch();
 const playerState = simulation.addWayfarer(PLAYER_ID);
 playerState.position = { ...START };
-input.setTarget(Number(ANCHOR_TARGET_ID));
 
 const keys = new Set<string>();
 function syncAxes(): void {
@@ -135,7 +177,50 @@ window.addEventListener("keyup", (event) => {
   if (event.code === "KeyE") input.setAttractPressed(false);
 });
 
-function platformPositionAtTick(tick: number): { x: number; y: number; z: number } {
+let mouseAim: Vec3 = { x: 1, y: 0, z: 0 };
+let hasMouseAim = false;
+canvas.addEventListener("pointermove", (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  const y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
+  const magnitude = Math.hypot(x, y);
+  if (magnitude > 0.08) {
+    mouseAim = { x: x / magnitude, y: y / magnitude, z: 0 };
+    hasMouseAim = true;
+  }
+});
+canvas.addEventListener("pointerleave", () => {
+  hasMouseAim = false;
+});
+
+function readAim(facing: -1 | 1) {
+  let gamepadX = 0;
+  let gamepadY = 0;
+  let strongestGamepadMagnitude = 0;
+
+  for (const gamepad of navigator.getGamepads?.() ?? []) {
+    if (!gamepad?.connected) continue;
+    const x = gamepad.axes[2] ?? 0;
+    const y = -(gamepad.axes[3] ?? 0);
+    const magnitude = Math.hypot(x, y);
+    if (magnitude > strongestGamepadMagnitude) {
+      strongestGamepadMagnitude = magnitude;
+      gamepadX = x;
+      gamepadY = y;
+    }
+  }
+
+  return resolveTargetAim({
+    gamepadX,
+    gamepadY,
+    mouseX: mouseAim.x,
+    mouseY: mouseAim.y,
+    hasMouse: hasMouseAim,
+    facing,
+  });
+}
+
+function platformPositionAtTick(tick: number): Vec3 {
   const periodTicks = 240;
   const phase = (tick % periodTicks) / periodTicks;
   const triangle = phase < 0.5 ? phase * 2 : (1 - phase) * 2;
@@ -146,6 +231,9 @@ let previousMs = performance.now();
 let stepsThisFrame = 0;
 let collisionCount = 0;
 let maximumCorrection = 0;
+let selectedTargetId: TargetId | 0 = 0;
+let targetDebug: readonly TargetCandidateDebug[] = [];
+let aimSource: TargetAimSource = "facing";
 
 engine.runRenderLoop(() => {
   const now = performance.now();
@@ -159,6 +247,35 @@ engine.runRenderLoop(() => {
     const platformPosition = platformPositionAtTick(Number(step.tick));
     physics.setMovingBoxPosition(PLATFORM_ID, platformPosition);
     platformMesh.position.set(platformPosition.x, platformPosition.y, platformPosition.z);
+
+    const movingTargetPosition = {
+      x: platformPosition.x,
+      y: platformPosition.y + 1.3,
+      z: 0,
+    };
+    movingAnchor.position.set(movingTargetPosition.x, movingTargetPosition.y, movingTargetPosition.z);
+    if (movingTargetId) {
+      targetRegistry.update(movingTargetId, { position: movingTargetPosition });
+    }
+
+    const beforeStep = simulation.getWayfarer(PLAYER_ID);
+    if (!beforeStep) continue;
+
+    const aim = readAim(beforeStep.facing);
+    aimSource = aim.source;
+    const selection = selectResonanceTarget({
+      playerPosition: beforeStep.position,
+      aim: aim.vector,
+      ability: "attract",
+      previousTargetId: selectedTargetId,
+      targets: targetRegistry.queryNearby(
+        beforeStep.position,
+        M0_TARGET_SELECTION_CONFIG.retainRange,
+      ),
+    });
+    selectedTargetId = selection.selectedTargetId;
+    targetDebug = selection.candidates;
+    input.setTarget(Number(selectedTargetId));
 
     const simInput = input.consume(step.tick);
     simulation.step(new Map([[PLAYER_ID, simInput]]));
@@ -199,27 +316,31 @@ engine.runRenderLoop(() => {
   }
 
   const state = simulation.getWayfarer(PLAYER_ID);
-  if (state) {
-    playerMesh.position.set(state.position.x, state.position.y, state.position.z);
+  if (state) playerMesh.position.set(state.position.x, state.position.y, state.position.z);
+
+  for (const [id, mesh] of targetMeshes) {
+    const selected = id === Number(selectedTargetId);
+    const scale = selected ? 1.35 : 1;
+    mesh.scaling.set(scale, scale, scale);
   }
+
+  const candidateLines = targetDebug.map((candidate) => {
+    const score = candidate.score === null ? candidate.rejectedReason : candidate.score.toFixed(3);
+    return `T${Number(candidate.id)} ${candidate.retained ? "*" : " "} d=${candidate.distance.toFixed(2)} a=${candidate.alignment.toFixed(2)} s=${score}`;
+  });
 
   const fps = engine.getFps();
   diagnostics.textContent = [
-    "RESONANCE M0.4 — WAYFARER COLLISION",
-    "A/D or arrows: move | Space: jump",
-    "Left Shift: evade | E/Q: Resonance intent stubs",
-    `backend: ${backend}`,
-    `fps: ${fps.toFixed(1)}`,
-    `sim tick: ${Number(simulation.tick)}`,
-    `steps/frame: ${stepsThisFrame}`,
-    `alpha: ${clock.alpha.toFixed(3)}`,
+    "RESONANCE M0.5 — TARGET SYSTEM",
+    "Move: A/D or arrows | Jump: Space | Evade: Left Shift",
+    "Aim: mouse or gamepad right stick; facing is keyboard fallback",
+    `backend: ${backend} | fps: ${fps.toFixed(1)}`,
+    `sim tick: ${Number(simulation.tick)} | steps/frame: ${stepsThisFrame} | alpha: ${clock.alpha.toFixed(3)}`,
     `position: ${state ? `${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)}, ${state.position.z.toFixed(2)}` : "-"}`,
-    `velocity: ${state ? `${state.velocity.x.toFixed(2)}, ${state.velocity.y.toFixed(2)}` : "-"}`,
-    `grounded: ${state?.grounded ?? false}`,
-    `ground entity: ${Number(state?.groundEntityId ?? 0)}`,
-    `mode: ${state?.movementMode ?? "-"}`,
-    `collisions: ${collisionCount}`,
-    `max correction: ${maximumCorrection.toFixed(4)}`,
+    `grounded: ${state?.grounded ?? false} | ground entity: ${Number(state?.groundEntityId ?? 0)}`,
+    `selected target: ${Number(selectedTargetId)} | aim source: ${aimSource}`,
+    `collisions: ${collisionCount} | max correction: ${maximumCorrection.toFixed(4)}`,
+    ...candidateLines,
     `state hash: ${simulation.stateHash()}`,
   ].join("\n");
 
