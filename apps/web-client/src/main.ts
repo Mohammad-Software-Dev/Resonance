@@ -227,7 +227,9 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
 );
 applyCameraMode();
 
+const shaderWarmupStartMs = performance.now();
 const warmedShaderBindings = await warmCriticalShaders(scene);
+const shaderWarmupMs = performance.now() - shaderWarmupStartMs;
 const performanceMonitor = new BrowserPerformanceMonitor(scene, engine);
 const dynamicResolution = new DynamicResolutionGovernor(graphicsRoom.getRenderScale());
 let recoveryStatus: "ready" | "lost" | "restored" = "ready";
@@ -641,6 +643,7 @@ engine.runRenderLoop(() => {
     `heap: ${performanceStats.usedHeapMb === null ? "n/a" : performanceStats.usedHeapMb.toFixed(1) + " MB"} / ${performanceStats.totalHeapMb === null ? "n/a" : performanceStats.totalHeapMb.toFixed(1) + " MB"}`,
     `render: meshes ${graphicsStats.activeMeshes}/${graphicsStats.meshes} | vertices ${graphicsStats.vertices} | particles ${graphicsStats.activeParticles}`,
     `resources: materials ${graphicsStats.materials} | textures ${graphicsStats.textures} | warmed bindings ${warmedShaderBindings}`,
+    `shader warmup: ${shaderWarmupMs.toFixed(1)} ms | runtime compile: ${performanceStats.runtimeShaderCompilationMs.toFixed(1)} ms`,
     `graphics recovery: ${recoveryStatus}`,
     `sim tick: ${Number(simulation.tick)} | steps/frame: ${stepsThisFrame} | alpha: ${clock.alpha.toFixed(3)}`,
     `position: ${state ? `${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)}, ${state.position.z.toFixed(2)}` : "-"}`,
