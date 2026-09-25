@@ -79,14 +79,10 @@ export function stepMovement(
 
   if (state.grounded) {
     state.coyoteTicksRemaining = config.coyoteTicks;
-  } else {
-    state.coyoteTicksRemaining = Math.max(0, state.coyoteTicksRemaining - 1);
   }
 
   if (input.jumpPressed) {
     state.jumpBufferTicksRemaining = config.jumpBufferTicks;
-  } else {
-    state.jumpBufferTicksRemaining = Math.max(0, state.jumpBufferTicksRemaining - 1);
   }
 
   const moveX = clamp(input.moveX, -1, 1);
@@ -124,6 +120,13 @@ export function stepMovement(
     if (!input.jumpHeld && state.velocity.y > config.jumpCutVelocity) {
       state.velocity.y = config.jumpCutVelocity;
     }
+  }
+
+  if (!jumped) {
+    if (!state.grounded) {
+      state.coyoteTicksRemaining = Math.max(0, state.coyoteTicksRemaining - 1);
+    }
+    state.jumpBufferTicksRemaining = Math.max(0, state.jumpBufferTicksRemaining - 1);
   }
 
   if (!state.grounded) {
