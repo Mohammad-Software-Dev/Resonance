@@ -20,6 +20,7 @@ export interface PerformanceSnapshot {
   readonly renderMs: number;
   readonly gpuFrameMs: number | null;
   readonly drawCalls: number;
+  readonly runtimeShaderCompilationMs: number;
   readonly activeMeshesEvaluationMs: number;
   readonly particlesRenderMs: number;
   readonly usedHeapMb: number | null;
@@ -42,6 +43,7 @@ export class BrowserPerformanceMonitor {
 
     this.engineInstrumentation = new EngineInstrumentation(engine);
     this.engineInstrumentation.captureGPUFrameTime = true;
+    this.engineInstrumentation.captureShaderCompilationTime = true;
   }
 
   public snapshot(): PerformanceSnapshot {
@@ -57,6 +59,8 @@ export class BrowserPerformanceMonitor {
       renderMs: this.sceneInstrumentation.renderTimeCounter.current,
       gpuFrameMs,
       drawCalls: this.sceneInstrumentation.drawCallsCounter.current,
+      runtimeShaderCompilationMs:
+        this.engineInstrumentation.shaderCompilationTimeCounter.total,
       activeMeshesEvaluationMs:
         this.sceneInstrumentation.activeMeshesEvaluationTimeCounter.current,
       particlesRenderMs:
