@@ -235,6 +235,15 @@ function readAim(facing: -1 | 1) {
   });
 }
 
+function readGamepadAttractHeld(): boolean {
+  for (const gamepad of navigator.getGamepads?.() ?? []) {
+    if (!gamepad?.connected) continue;
+    const rightTrigger = gamepad.buttons[7];
+    if (rightTrigger && (rightTrigger.pressed || rightTrigger.value > 0.25)) return true;
+  }
+  return false;
+}
+
 function platformPositionAtTick(tick: number): Vec3 {
   const periodTicks = 240;
   const phase = (tick % periodTicks) / periodTicks;
@@ -303,6 +312,7 @@ engine.runRenderLoop(() => {
         : selectedTargetId;
     input.setTarget(Number(lockedTargetId));
 
+    input.setAttractPressed(keys.has("KeyE") || readGamepadAttractHeld());
     const simInput = input.consume(step.tick);
     simulation.step(new Map([[PLAYER_ID, simInput]]));
 
@@ -404,7 +414,7 @@ engine.runRenderLoop(() => {
   const fps = engine.getFps();
   diagnostics.textContent = [
     "RESONANCE M0.6 — ATTRACT",
-    "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift | Hold E: Attract",
+    "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift | Attract: hold E / gamepad RT",
     "Aim: mouse or gamepad right stick; facing is keyboard fallback",
     "Arrival experiment: 1 pass-through | 2 soft-capture | 3 radius-blend",
     `backend: ${backend} | fps: ${fps.toFixed(1)}`,
