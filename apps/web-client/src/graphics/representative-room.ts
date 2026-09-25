@@ -432,9 +432,7 @@ export function createRepresentativeGraphicsRoom(
     engine.setHardwareScalingLevel(hardwareScalingLevel(preset.renderScale));
     shadowGenerator.mapSize = preset.shadowMapSize;
     shadowGenerator.getShadowMap()?.resize(preset.shadowMapSize);
-    shadowGenerator.getShadowMap()?.setRefreshRate(
-      preset.shadowEnabled ? 1 : 0,
-    );
+    keyLight.shadowEnabled = preset.shadowEnabled;
     particles.emitRate = preset.particleEmitRate;
     glow.intensity = preset.glowIntensity;
     scene.fogDensity = preset.fogDensity;
@@ -464,6 +462,7 @@ export function createRepresentativeGraphicsRoom(
       }
       for (let i = 0; i < backdrop.emissiveMeshes.length; i += 1) {
         const mesh = backdrop.emissiveMeshes[i];
+        if (!mesh) continue;
         mesh.scaling.y = 0.85 + 0.15 * Math.sin(elapsedSeconds * 1.4 + i * 0.7);
       }
     },
