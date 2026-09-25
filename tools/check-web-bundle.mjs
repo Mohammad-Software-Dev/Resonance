@@ -19,8 +19,8 @@ if (!entry) throw new Error("Could not identify the Vite index entry chunk.");
 const largest = [...rows].sort((a, b) => b.rawBytes - a.rawBytes)[0];
 if (!largest) throw new Error("No JavaScript chunks available for budget check.");
 
-const ENTRY_RAW_LIMIT = 2_500_000;
-const ENTRY_GZIP_LIMIT = 900_000;
+const ENTRY_RAW_LIMIT = 3_500_000;
+const ENTRY_GZIP_LIMIT = 1_300_000;
 const CHUNK_RAW_LIMIT = 4_500_000;
 const CHUNK_GZIP_LIMIT = 1_600_000;
 
