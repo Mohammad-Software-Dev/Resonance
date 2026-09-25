@@ -2,3 +2,8 @@ packages:
   - "apps/*"
   - "packages/*"
   - "tools/*"
+
+# Dependency install scripts are blocked by default.
+# Add packages here only after review; Vite requires esbuild's platform binary setup.
+onlyBuiltDependencies:
+  - esbuild
