@@ -28,14 +28,14 @@ import {
 } from "@resonance/simulation";
 import {
   TargetRegistry,
+  resolveTargetAim,
   selectResonanceTarget,
+  type TargetAimSource,
   type TargetCandidateDebug,
 } from "@resonance/targeting";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
-type AimSource = "gamepad" | "mouse" | "facing";
-
 function requireElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) throw new Error(`Required M0 element is missing: ${selector}`);
@@ -192,22 +192,31 @@ canvas.addEventListener("pointerleave", () => {
   hasMouseAim = false;
 });
 
-function readAim(facing: -1 | 1): { vector: Vec3; source: AimSource } {
+function readAim(facing: -1 | 1) {
+  let gamepadX = 0;
+  let gamepadY = 0;
+  let strongestGamepadMagnitude = 0;
+
   for (const gamepad of navigator.getGamepads?.() ?? []) {
     if (!gamepad?.connected) continue;
     const x = gamepad.axes[2] ?? 0;
     const y = -(gamepad.axes[3] ?? 0);
     const magnitude = Math.hypot(x, y);
-    if (magnitude > 0.25) {
-      return {
-        vector: { x: x / magnitude, y: y / magnitude, z: 0 },
-        source: "gamepad",
-      };
+    if (magnitude > strongestGamepadMagnitude) {
+      strongestGamepadMagnitude = magnitude;
+      gamepadX = x;
+      gamepadY = y;
     }
   }
 
-  if (hasMouseAim) return { vector: mouseAim, source: "mouse" };
-  return { vector: { x: facing, y: 0, z: 0 }, source: "facing" };
+  return resolveTargetAim({
+    gamepadX,
+    gamepadY,
+    mouseX: mouseAim.x,
+    mouseY: mouseAim.y,
+    hasMouse: hasMouseAim,
+    facing,
+  });
 }
 
 function platformPositionAtTick(tick: number): Vec3 {
@@ -223,7 +232,7 @@ let collisionCount = 0;
 let maximumCorrection = 0;
 let selectedTargetId: TargetId | 0 = 0;
 let targetDebug: readonly TargetCandidateDebug[] = [];
-let aimSource: AimSource = "facing";
+let aimSource: TargetAimSource = "facing";
 
 engine.runRenderLoop(() => {
   const now = performance.now();
