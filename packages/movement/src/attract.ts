@@ -13,7 +13,8 @@ export type AttractCancelReason =
   | "target-missing"
   | "target-invalid"
   | "target-revision"
-  | "blocked";
+  | "blocked"
+  | "repel";
 
 export type AttractSemanticEvent =
   | { readonly type: "started"; readonly targetId: TargetId }
