@@ -82,7 +82,7 @@ describe("selectResonanceTarget", () => {
   it("switches when the challenger meaningfully beats the retained target", () => {
     const registry = new TargetRegistry();
     registry.activate([
-      definition("old", 1, 5, 2.5),
+      definition("old", 1, 5, 4.5),
       definition("new", 2, 4, 0),
     ]);
     const old = registry.getByGuid(asAuthoredTargetGuid("old"))?.id ?? asTargetId(1);
