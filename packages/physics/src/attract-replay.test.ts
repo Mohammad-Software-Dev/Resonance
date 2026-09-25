@@ -120,6 +120,35 @@ async function runAttractTrace(renderFps: number): Promise<string> {
 }
 
 describe("Attract + Rapier deterministic replay", () => {
+  it("does not tunnel through thin authored collision while pulling", async () => {
+    const physics = await RapierCharacterWorld.create();
+    physics.addStaticBox(FLOOR, { x: 0, y: -0.25, z: 0 }, { x: 8, y: 0.25, z: 1 });
+    physics.addStaticBox(PILLAR, { x: 1, y: 1.5, z: 0 }, { x: 0.06, y: 1.5, z: 1 });
+
+    const state = createInitialMovementState();
+    state.position = { x: -2, y: 1.5, z: 0 };
+    physics.createCharacter(state.position);
+    const runtime = createAttractRuntimeState();
+    const anchor = movingTarget(0);
+    anchor.position = { x: 5, y: 1.5, z: 0 };
+
+    for (let tick = 0; tick < 120 && !runtime.requiresRelease; tick += 1) {
+      const pull = stepAttract(state, runtime, anchor, 0, M0_ATTRACT_CONFIG);
+      const collision = physics.moveCharacter(pull.desiredTranslation, state.groundEntityId, state.up);
+      applyMovementCollision(state, collision);
+      recordAttractCollision(
+        state,
+        runtime,
+        collision.maximumCorrection > 0.03,
+        M0_ATTRACT_CONFIG,
+      );
+    }
+
+    expect(state.position.x).toBeLessThan(0.7);
+    expect(runtime.requiresRelease).toBe(true);
+    physics.free();
+  });
+
   it("ends identically across approved render cadences", async () => {
     const signatures = await Promise.all([30, 45, 60, 90, 120, 144].map(runAttractTrace));
     expect(new Set(signatures).size).toBe(1);
