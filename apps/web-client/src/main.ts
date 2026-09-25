@@ -8,7 +8,9 @@ import {
   WebGPUEngine,
 } from "@babylonjs/core";
 import {
+  M0_ATTRACT_CONFIG,
   M0_MOVEMENT_CONFIG,
+  type AttractArrivalMode,
   asAuthoredTargetGuid,
   asEntityId,
   type TargetId,
@@ -16,8 +18,13 @@ import {
 } from "@resonance/game-data";
 import {
   applyMovementCollision,
+  cancelAttract,
+  createAttractRuntimeState,
+  recordAttractCollision,
   recoverMovementState,
+  stepAttract,
   stepMovement,
+  type AttractSemanticEvent,
 } from "@resonance/movement";
 import { RapierCharacterWorld } from "@resonance/physics";
 import {
@@ -77,6 +84,7 @@ const LEFT_WALL_ID = asEntityId(101);
 const RIGHT_WALL_ID = asEntityId(102);
 const SLOPE_ID = asEntityId(103);
 const PLATFORM_ID = asEntityId(104);
+const ATTRACT_PILLAR_ID = asEntityId(105);
 
 const ground = MeshBuilder.CreateBox("ground", { width: 16, height: 0.5, depth: 2 }, scene);
 ground.position.set(0, -0.25, 0);
@@ -90,6 +98,9 @@ const slope = MeshBuilder.CreateBox("slope", { width: 3.6, height: 0.3, depth: 2
 slope.position.set(4.9, 0.45, 0);
 slope.rotation.z = Math.PI / 12;
 
+const attractPillar = MeshBuilder.CreateBox("attract-pillar", { width: 0.7, height: 2.4, depth: 2 }, scene);
+attractPillar.position.set(0.25, 1.2, 0);
+
 const platformMesh = MeshBuilder.CreateBox("moving-platform", { width: 2.5, height: 0.35, depth: 2 }, scene);
 platformMesh.position.set(-2, 1.15, 0);
 
@@ -100,7 +111,7 @@ const playerMesh = MeshBuilder.CreateCapsule(
 );
 
 const anchorA = MeshBuilder.CreateSphere("anchor-a", { diameter: 0.7 }, scene);
-anchorA.position.set(3.5, 2.8, 0);
+anchorA.position.set(3.5, 4.4, 0);
 const anchorB = MeshBuilder.CreateSphere("anchor-b", { diameter: 0.7 }, scene);
 anchorB.position.set(1.5, 1.8, 0);
 const movingAnchor = MeshBuilder.CreateSphere("anchor-moving", { diameter: 0.7 }, scene);
@@ -111,6 +122,7 @@ physics.addStaticBox(FLOOR_ID, { x: 0, y: -0.25, z: 0 }, { x: 8, y: 0.25, z: 1 }
 physics.addStaticBox(LEFT_WALL_ID, { x: -8, y: 2, z: 0 }, { x: 0.15, y: 2, z: 1 });
 physics.addStaticBox(RIGHT_WALL_ID, { x: 8, y: 2, z: 0 }, { x: 0.15, y: 2, z: 1 });
 physics.addStaticBox(SLOPE_ID, { x: 4.9, y: 0.45, z: 0 }, { x: 1.8, y: 0.15, z: 1 }, Math.PI / 12);
+physics.addStaticBox(ATTRACT_PILLAR_ID, { x: 0.25, y: 1.2, z: 0 }, { x: 0.35, y: 1.2, z: 1 });
 physics.addMovingBox(PLATFORM_ID, { x: -2, y: 1.15, z: 0 }, { x: 1.25, y: 0.175, z: 1 });
 
 const targetRegistry = new TargetRegistry();
@@ -118,7 +130,7 @@ targetRegistry.activate([
   {
     guid: asAuthoredTargetGuid("m0-anchor-a"),
     entityId: asEntityId(301),
-    position: { x: 3.5, y: 2.8, z: 0 },
+    position: { x: 3.5, y: 4.4, z: 0 },
     priority: 0.02,
   },
   {
@@ -169,6 +181,9 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "ShiftLeft" && !event.repeat) input.pressEvade();
   if (event.code === "KeyE") input.setAttractPressed(true);
   if (event.code === "KeyQ" && !event.repeat) input.pressRepel();
+  if (event.code === "Digit1") arrivalMode = "passThrough";
+  if (event.code === "Digit2") arrivalMode = "softCapture";
+  if (event.code === "Digit3") arrivalMode = "radiusBlend";
 });
 window.addEventListener("keyup", (event) => {
   keys.delete(event.code);
@@ -234,6 +249,11 @@ let maximumCorrection = 0;
 let selectedTargetId: TargetId | 0 = 0;
 let targetDebug: readonly TargetCandidateDebug[] = [];
 let aimSource: TargetAimSource = "facing";
+let arrivalMode: AttractArrivalMode = M0_ATTRACT_CONFIG.arrivalMode;
+const attractRuntime = createAttractRuntimeState();
+let lastAttractEvent: AttractSemanticEvent | null = null;
+let attractDistance = 0;
+let attractAcceleration = 0;
 
 engine.runRenderLoop(() => {
   const now = performance.now();
@@ -275,7 +295,11 @@ engine.runRenderLoop(() => {
     });
     selectedTargetId = selection.selectedTargetId;
     targetDebug = selection.candidates;
-    input.setTarget(Number(selectedTargetId));
+
+    const lockedTargetId = attractRuntime.targetId !== 0
+      ? attractRuntime.targetId
+      : selectedTargetId;
+    input.setTarget(Number(lockedTargetId));
 
     const simInput = input.consume(step.tick);
     simulation.step(new Map([[PLAYER_ID, simInput]]));
@@ -284,27 +308,68 @@ engine.runRenderLoop(() => {
     if (!state) continue;
 
     const previousGroundEntityId = state.groundEntityId;
-    const movement = stepMovement(
-      state,
-      {
-        moveX: dequantizeAxis(simInput.moveX),
-        jumpPressed: simInput.jumpPressed,
-        jumpHeld: simInput.jumpHeld,
-        evadePressed: simInput.evadePressed,
-      },
-      {
-        grounded: state.grounded,
-        groundEntityId: state.groundEntityId,
-      },
-      M0_MOVEMENT_CONFIG,
-    );
+    const attractConfig = { ...M0_ATTRACT_CONFIG, arrivalMode };
+    let desiredTranslation: Vec3;
+
+    if (simInput.attractPressed && simInput.targetId !== 0) {
+      const attract = stepAttract(
+        state,
+        attractRuntime,
+        targetRegistry.get(simInput.targetId),
+        dequantizeAxis(simInput.moveX),
+        attractConfig,
+      );
+      desiredTranslation = attract.desiredTranslation;
+      attractDistance = attract.distance;
+      attractAcceleration = attract.radialAcceleration;
+      if (attract.event) lastAttractEvent = attract.event;
+
+      if (attractRuntime.targetId === 0) {
+        state.attractTargetId = 0;
+      }
+    } else {
+      if (attractRuntime.targetId !== 0) {
+        lastAttractEvent = cancelAttract(state, attractRuntime, "released");
+      }
+      attractDistance = 0;
+      attractAcceleration = 0;
+
+      const movement = stepMovement(
+        state,
+        {
+          moveX: dequantizeAxis(simInput.moveX),
+          jumpPressed: simInput.jumpPressed,
+          jumpHeld: simInput.jumpHeld,
+          evadePressed: simInput.evadePressed,
+        },
+        {
+          grounded: state.grounded,
+          groundEntityId: state.groundEntityId,
+        },
+        M0_MOVEMENT_CONFIG,
+      );
+      desiredTranslation = movement.desiredTranslation;
+    }
 
     const collision = physics.moveCharacter(
-      movement.desiredTranslation,
+      desiredTranslation,
       previousGroundEntityId,
       state.up,
     );
     applyMovementCollision(state, collision);
+
+    if (attractRuntime.targetId !== 0) {
+      const collisionEvent = recordAttractCollision(
+        state,
+        attractRuntime,
+        collision.maximumCorrection > 0.03,
+        attractConfig,
+      );
+      if (collisionEvent) {
+        lastAttractEvent = collisionEvent;
+        state.attractTargetId = 0;
+      }
+    }
 
     if (state.position.y < -6 || Math.abs(state.position.x) > 20) {
       recoverMovementState(state, START);
@@ -331,14 +396,17 @@ engine.runRenderLoop(() => {
 
   const fps = engine.getFps();
   diagnostics.textContent = [
-    "RESONANCE M0.5 — TARGET SYSTEM",
-    "Move: A/D or arrows | Jump: Space | Evade: Left Shift",
+    "RESONANCE M0.6 — ATTRACT",
+    "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift | Hold E: Attract",
     "Aim: mouse or gamepad right stick; facing is keyboard fallback",
+    "Arrival experiment: 1 pass-through | 2 soft-capture | 3 radius-blend",
     `backend: ${backend} | fps: ${fps.toFixed(1)}`,
     `sim tick: ${Number(simulation.tick)} | steps/frame: ${stepsThisFrame} | alpha: ${clock.alpha.toFixed(3)}`,
     `position: ${state ? `${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)}, ${state.position.z.toFixed(2)}` : "-"}`,
     `grounded: ${state?.grounded ?? false} | ground entity: ${Number(state?.groundEntityId ?? 0)}`,
-    `selected target: ${Number(selectedTargetId)} | aim source: ${aimSource}`,
+    `selected target: ${Number(selectedTargetId)} | locked attract target: ${Number(attractRuntime.targetId)} | aim: ${aimSource}`,
+    `attract mode: ${arrivalMode} | distance: ${attractDistance.toFixed(2)} | accel: ${attractAcceleration.toFixed(2)}`,
+    `attract event: ${lastAttractEvent ? JSON.stringify(lastAttractEvent) : "-"}`,
     `collisions: ${collisionCount} | max correction: ${maximumCorrection.toFixed(4)}`,
     ...candidateLines,
     `state hash: ${simulation.stateHash()}`,
