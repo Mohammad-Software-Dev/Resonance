@@ -1,13 +1,13 @@
-import {
-  Camera,
-  Engine,
-  FreeCamera,
-  HemisphericLight,
-  MeshBuilder,
-  Scene,
-  Vector3,
-  WebGPUEngine,
-} from "@babylonjs/core";
+import { Camera } from "@babylonjs/core/Cameras/camera";
+import { FreeCamera } from "@babylonjs/core/Cameras/freeCamera";
+import { Engine } from "@babylonjs/core/Engines/engine";
+import { WebGPUEngine } from "@babylonjs/core/Engines/webgpuEngine";
+import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
+import { CreateCapsule } from "@babylonjs/core/Meshes/Builders/capsuleBuilder";
+import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
+import { Scene } from "@babylonjs/core/scene";
 import {
   M0_ATTRACT_CONFIG,
   M0_MOVEMENT_CONFIG,
@@ -122,39 +122,39 @@ const SLOPE_ID = asEntityId(103);
 const PLATFORM_ID = asEntityId(104);
 const ATTRACT_PILLAR_ID = asEntityId(105);
 
-const ground = MeshBuilder.CreateBox("ground", { width: 16, height: 0.5, depth: 2 }, scene);
+const ground = CreateBox("ground", { width: 16, height: 0.5, depth: 2 }, scene);
 ground.position.set(0, -0.25, 0);
 
-const leftWall = MeshBuilder.CreateBox("left-wall", { width: 0.3, height: 4, depth: 2 }, scene);
+const leftWall = CreateBox("left-wall", { width: 0.3, height: 4, depth: 2 }, scene);
 leftWall.position.set(-8, 2, 0);
-const rightWall = MeshBuilder.CreateBox("right-wall", { width: 0.3, height: 4, depth: 2 }, scene);
+const rightWall = CreateBox("right-wall", { width: 0.3, height: 4, depth: 2 }, scene);
 rightWall.position.set(8, 2, 0);
 
-const slope = MeshBuilder.CreateBox("slope", { width: 3.6, height: 0.3, depth: 2 }, scene);
+const slope = CreateBox("slope", { width: 3.6, height: 0.3, depth: 2 }, scene);
 slope.position.set(4.9, 0.45, 0);
 slope.rotation.z = Math.PI / 12;
 
-const attractPillar = MeshBuilder.CreateBox("attract-pillar", { width: 0.7, height: 2.4, depth: 2 }, scene);
+const attractPillar = CreateBox("attract-pillar", { width: 0.7, height: 2.4, depth: 2 }, scene);
 attractPillar.position.set(0.25, 1.2, 0);
 
-const platformMesh = MeshBuilder.CreateBox("moving-platform", { width: 2.5, height: 0.35, depth: 2 }, scene);
+const platformMesh = CreateBox("moving-platform", { width: 2.5, height: 0.35, depth: 2 }, scene);
 platformMesh.position.set(-2, 1.15, 0);
 
-const playerMesh = MeshBuilder.CreateCapsule(
+const playerMesh = CreateCapsule(
   "wayfarer-proxy",
   { height: 1.8, radius: 0.35 },
   scene,
 );
 
-const anchorA = MeshBuilder.CreateSphere("anchor-a", { diameter: 0.7 }, scene);
+const anchorA = CreateSphere("anchor-a", { diameter: 0.7 }, scene);
 anchorA.position.set(3.5, 4.4, 0);
-const anchorB = MeshBuilder.CreateSphere("anchor-b", { diameter: 0.7 }, scene);
+const anchorB = CreateSphere("anchor-b", { diameter: 0.7 }, scene);
 anchorB.position.set(1.5, 1.8, 0);
-const movingAnchor = MeshBuilder.CreateSphere("anchor-moving", { diameter: 0.7 }, scene);
+const movingAnchor = CreateSphere("anchor-moving", { diameter: 0.7 }, scene);
 movingAnchor.position.set(-2, 2.45, 0);
-const lowRepelAnchor = MeshBuilder.CreateSphere("anchor-low-repel", { diameter: 0.62 }, scene);
+const lowRepelAnchor = CreateSphere("anchor-low-repel", { diameter: 0.62 }, scene);
 lowRepelAnchor.position.set(-4.2, 0.38, 0);
-const wallRepelAnchor = MeshBuilder.CreateSphere("anchor-wall-repel", { diameter: 0.62 }, scene);
+const wallRepelAnchor = CreateSphere("anchor-wall-repel", { diameter: 0.62 }, scene);
 wallRepelAnchor.position.set(7.25, 2.1, 0);
 
 const physics = await RapierCharacterWorld.create();
