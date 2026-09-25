@@ -46,6 +46,7 @@ export function hashSimulationSnapshot(snapshot: SimSnapshot): string {
       state.coyoteTicksRemaining,
       state.jumpBufferTicksRemaining,
       state.evadeTicksRemaining,
+      state.repelRecoveryTicksRemaining,
       Number(state.attractTargetId),
       Number(state.stateRevision),
     ];
