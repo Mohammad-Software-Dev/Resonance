@@ -1,22 +1,21 @@
-import {
-  Color3,
-  Color4,
-  CubeTexture,
-  DirectionalLight,
-  DynamicTexture,
-  GlowLayer,
-  HemisphericLight,
-  Mesh,
-  MeshBuilder,
-  NodeMaterial,
-  ParticleSystem,
-  PBRMaterial,
-  Scene,
-  ShadowGenerator,
-  StandardMaterial,
-  Vector3,
-  type AbstractEngine,
-} from "@babylonjs/core";
+import type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
+import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
+import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
+import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
+import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
+import { NodeMaterial } from "@babylonjs/core/Materials/Node/nodeMaterial";
+import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
+import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
+import { CubeTexture } from "@babylonjs/core/Materials/Textures/cubeTexture";
+import { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTexture";
+import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
+import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
+import { CreateTorus } from "@babylonjs/core/Meshes/Builders/torusBuilder";
+import { Mesh } from "@babylonjs/core/Meshes/mesh";
+import { ParticleSystem } from "@babylonjs/core/Particles/particleSystem";
+import { Scene } from "@babylonjs/core/scene";
 import {
   GRAPHICS_PRESETS,
   hardwareScalingLevel,
@@ -123,7 +122,7 @@ function addIndustrialBackdrop(
     { name: "orbital-frame-left", width: 1.25, height: 6.7, x: -9.7, y: 3.55 },
     { name: "orbital-frame-right", width: 1.25, height: 6.7, x: 9.7, y: 3.55 },
   ]) {
-    const frame = MeshBuilder.CreateBox(
+    const frame = CreateBox(
       panel.name,
       { width: panel.width, height: panel.height, depth: 0.45 },
       scene,
@@ -134,7 +133,7 @@ function addIndustrialBackdrop(
   }
 
   for (let x = -7.2; x <= 7.2; x += 2.4) {
-    const rib = MeshBuilder.CreateBox(
+    const rib = CreateBox(
       `orbital-rib-${x.toFixed(1)}`,
       { width: 0.22, height: 8, depth: 0.5 },
       scene,
@@ -146,7 +145,7 @@ function addIndustrialBackdrop(
   }
 
   for (const y of [1.1, 3.1, 5.1, 7.1]) {
-    const conduit = MeshBuilder.CreateBox(
+    const conduit = CreateBox(
       `service-conduit-${y}`,
       { width: 18, height: 0.1, depth: 0.12 },
       scene,
@@ -158,7 +157,7 @@ function addIndustrialBackdrop(
   }
 
   for (const x of [-6.4, -3.2, 3.2, 6.4]) {
-    const machine = MeshBuilder.CreateBox(
+    const machine = CreateBox(
       `service-machine-${x}`,
       { width: 1.15, height: 1.75, depth: 0.85 },
       scene,
@@ -167,7 +166,7 @@ function addIndustrialBackdrop(
     machine.material = paintedMetal;
     distantMeshes.push(machine);
 
-    const status = MeshBuilder.CreateBox(
+    const status = CreateBox(
       `service-status-${x}`,
       { width: 0.62, height: 0.08, depth: 0.04 },
       scene,
@@ -178,7 +177,7 @@ function addIndustrialBackdrop(
     emissiveMeshes.push(status);
   }
 
-  const overhead = MeshBuilder.CreateBox(
+  const overhead = CreateBox(
     "overhead-spine",
     { width: 18, height: 0.28, depth: 0.55 },
     scene,
@@ -202,7 +201,7 @@ function addGasGiantVista(scene: Scene): Mesh[] {
   atmosphereMaterial.alpha = 0.32;
   atmosphereMaterial.backFaceCulling = false;
 
-  const planet = MeshBuilder.CreateSphere(
+  const planet = CreateSphere(
     "gas-giant",
     { diameter: 12, segments: 32 },
     scene,
@@ -211,7 +210,7 @@ function addGasGiantVista(scene: Scene): Mesh[] {
   planet.scaling.y = 0.92;
   planet.material = planetMaterial;
 
-  const atmosphere = MeshBuilder.CreateSphere(
+  const atmosphere = CreateSphere(
     "gas-giant-atmosphere",
     { diameter: 12.35, segments: 24 },
     scene,
@@ -220,7 +219,7 @@ function addGasGiantVista(scene: Scene): Mesh[] {
   atmosphere.scaling.y = 0.92;
   atmosphere.material = atmosphereMaterial;
 
-  const limb = MeshBuilder.CreateTorus(
+  const limb = CreateTorus(
     "gas-giant-limb-band",
     { diameter: 9.8, thickness: 0.08, tessellation: 64 },
     scene,
@@ -242,7 +241,7 @@ function addWayfarerSilhouette(
   player.material = suit;
   player.scaling.set(0.88, 1, 0.78);
 
-  const head = MeshBuilder.CreateSphere(
+  const head = CreateSphere(
     "wayfarer-helmet",
     { diameter: 0.56, segments: 16 },
     scene,
@@ -252,7 +251,7 @@ function addWayfarerSilhouette(
   head.scaling.set(1, 0.9, 0.88);
   head.material = suit;
 
-  const visor = MeshBuilder.CreateBox(
+  const visor = CreateBox(
     "wayfarer-visor",
     { width: 0.34, height: 0.14, depth: 0.08 },
     scene,
@@ -261,7 +260,7 @@ function addWayfarerSilhouette(
   visor.position.set(0, 0.02, -0.27);
   visor.material = accent;
 
-  const pack = MeshBuilder.CreateBox(
+  const pack = CreateBox(
     "wayfarer-field-pack",
     { width: 0.42, height: 0.62, depth: 0.18 },
     scene,
@@ -270,7 +269,7 @@ function addWayfarerSilhouette(
   pack.position.set(0, 0.16, 0.34);
   pack.material = suit;
 
-  const emitter = MeshBuilder.CreateSphere(
+  const emitter = CreateSphere(
     "wayfarer-field-emitter",
     { diameter: 0.18, segments: 10 },
     scene,
