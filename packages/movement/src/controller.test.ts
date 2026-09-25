@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { M0_MOVEMENT_CONFIG, asEntityId } from "@resonance/game-data";
-import { createInitialMovementState, stepMovement } from "./controller";
+import { createInitialMovementState, recoverMovementState, stepMovement } from "./controller";
 
 const GROUND = asEntityId(99);
 const grounded = { grounded: true, groundEntityId: GROUND };
@@ -83,5 +83,27 @@ describe("Wayfarer movement kernel", () => {
     }
     expect(state.evadeTicksRemaining).toBe(0);
     expect(state.movementMode).toBe("grounded");
+  });
+  it("clears transient movement state during safe recovery", () => {
+    const state = createInitialMovementState();
+    state.position = { x: 99, y: -99, z: 2 };
+    state.velocity = { x: 12, y: -18, z: 1 };
+    state.grounded = true;
+    state.groundEntityId = GROUND;
+    state.coyoteTicksRemaining = 4;
+    state.jumpBufferTicksRemaining = 3;
+    state.evadeTicksRemaining = 2;
+    state.movementMode = "evade";
+
+    recoverMovementState(state, { x: 1, y: 2, z: 0 });
+
+    expect(state.position).toEqual({ x: 1, y: 2, z: 0 });
+    expect(state.velocity).toEqual({ x: 0, y: 0, z: 0 });
+    expect(state.grounded).toBe(false);
+    expect(state.groundEntityId).toBe(0);
+    expect(state.coyoteTicksRemaining).toBe(0);
+    expect(state.jumpBufferTicksRemaining).toBe(0);
+    expect(state.evadeTicksRemaining).toBe(0);
+    expect(state.movementMode).toBe("airborne");
   });
 });

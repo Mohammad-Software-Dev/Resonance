@@ -160,3 +160,39 @@ export function stepMovement(
 
   return { desiredTranslation, jumped, startedEvade };
 }
+
+export interface MovementCollisionFeedback {
+  readonly position: Vec3;
+  readonly grounded: boolean;
+  readonly groundEntityId: EntityId | 0;
+  readonly blockedX: boolean;
+  readonly hitCeiling: boolean;
+}
+
+export function applyMovementCollision(
+  state: MovementState,
+  feedback: MovementCollisionFeedback,
+): void {
+  state.position = { ...feedback.position };
+  state.grounded = feedback.grounded;
+  state.groundEntityId = feedback.grounded ? feedback.groundEntityId : 0;
+
+  if (feedback.blockedX) state.velocity.x = 0;
+  if (feedback.hitCeiling && state.velocity.y > 0) state.velocity.y = 0;
+  if (feedback.grounded && state.velocity.y < 0) state.velocity.y = 0;
+
+  if (state.evadeTicksRemaining === 0) {
+    state.movementMode = feedback.grounded ? "grounded" : "airborne";
+  }
+}
+
+export function recoverMovementState(state: MovementState, safePosition: Vec3): void {
+  state.position = { ...safePosition };
+  state.velocity = { x: 0, y: 0, z: 0 };
+  state.grounded = false;
+  state.groundEntityId = 0;
+  state.coyoteTicksRemaining = 0;
+  state.jumpBufferTicksRemaining = 0;
+  state.evadeTicksRemaining = 0;
+  state.movementMode = "airborne";
+}
