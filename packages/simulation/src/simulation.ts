@@ -25,6 +25,12 @@ export class Simulation {
     return this.wayfarers.get(entityId);
   }
 
+  recordRepel(entityId: EntityId): void {
+    const state = this.wayfarers.get(entityId);
+    if (!state) return;
+    state.stateRevision = asRevision(Number(state.stateRevision) + 1);
+  }
+
   cancelAttract(entityId: EntityId): void {
     const state = this.wayfarers.get(entityId);
     if (!state || (state.attractTargetId === 0 && state.movementMode !== "attract")) return;
@@ -49,12 +55,15 @@ export class Simulation {
 
       const moveX = dequantizeAxis(input.moveX);
       const nextFacing: -1 | 1 = moveX < 0 ? -1 : moveX > 0 ? 1 : state.facing;
-      const nextMode = input.attractPressed && input.targetId !== 0
-        ? "attract"
-        : state.movementMode === "attract"
-          ? (state.grounded ? "grounded" : "airborne")
-          : state.movementMode;
-      const nextTarget = input.attractPressed ? input.targetId : 0;
+      const recoveringFromRepel = state.repelRecoveryTicksRemaining > 0;
+      const nextMode = recoveringFromRepel
+        ? "repelRecovery"
+        : input.attractPressed && input.targetId !== 0
+          ? "attract"
+          : state.movementMode === "attract"
+            ? (state.grounded ? "grounded" : "airborne")
+            : state.movementMode;
+      const nextTarget = recoveringFromRepel ? 0 : input.attractPressed ? input.targetId : 0;
 
       if (nextFacing !== state.facing || nextMode !== state.movementMode || nextTarget !== state.attractTargetId) {
         state.stateRevision = asRevision(Number(state.stateRevision) + 1);

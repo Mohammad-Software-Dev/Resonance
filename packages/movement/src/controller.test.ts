@@ -82,6 +82,7 @@ describe("Wayfarer movement kernel", () => {
       stepMovement(state, neutral, grounded, M0_MOVEMENT_CONFIG);
     }
     expect(state.evadeTicksRemaining).toBe(0);
+    expect(state.repelRecoveryTicksRemaining).toBe(0);
     expect(state.movementMode).toBe("grounded");
   });
   it("clears transient movement state during safe recovery", () => {
@@ -93,6 +94,7 @@ describe("Wayfarer movement kernel", () => {
     state.coyoteTicksRemaining = 4;
     state.jumpBufferTicksRemaining = 3;
     state.evadeTicksRemaining = 2;
+    state.repelRecoveryTicksRemaining = 4;
     state.movementMode = "evade";
 
     recoverMovementState(state, { x: 1, y: 2, z: 0 });
