@@ -1,13 +1,13 @@
-import {
-  Camera,
-  Engine,
-  FreeCamera,
-  HemisphericLight,
-  MeshBuilder,
-  Scene,
-  Vector3,
-  WebGPUEngine,
-} from "@babylonjs/core";
+import { Camera } from "@babylonjs/core/Cameras/camera";
+import { FreeCamera } from "@babylonjs/core/Cameras/freeCamera";
+import type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
+import { Engine } from "@babylonjs/core/Engines/engine";
+import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
+import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
+import { CreateCapsule } from "@babylonjs/core/Meshes/Builders/capsuleBuilder";
+import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
+import { Scene } from "@babylonjs/core/scene";
 import {
   M0_ATTRACT_CONFIG,
   M0_MOVEMENT_CONFIG,
@@ -48,10 +48,16 @@ import {
   type TargetCandidateDebug,
 } from "@resonance/targeting";
 import {
+  GRAPHICS_PRESETS,
   initialGraphicsPreset,
   nextGraphicsPreset,
 } from "./graphics/presets";
-import { createRepresentativeGraphicsRoom } from "./graphics/representative-room";
+import {
+  BrowserPerformanceMonitor,
+  warmCriticalShaders,
+} from "./performance/browser-performance";
+import { DynamicResolutionGovernor } from "./performance/dynamic-resolution";
+import { FrameCaptureBuffer } from "./performance/frame-capture";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
@@ -64,9 +70,10 @@ function requireElement<T extends Element>(selector: string): T {
 const canvas = requireElement<HTMLCanvasElement>("#game");
 const diagnostics = requireElement<HTMLDivElement>("#diagnostics");
 
-async function createEngine(): Promise<{ engine: Engine | WebGPUEngine; backend: Backend }> {
+async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
   if ("gpu" in navigator) {
     try {
+      const { WebGPUEngine } = await import("@babylonjs/core/Engines/webgpuEngine");
       const engine = new WebGPUEngine(canvas, { antialias: true });
       await engine.initAsync();
       return { engine, backend: "webgpu" };
@@ -116,39 +123,39 @@ const SLOPE_ID = asEntityId(103);
 const PLATFORM_ID = asEntityId(104);
 const ATTRACT_PILLAR_ID = asEntityId(105);
 
-const ground = MeshBuilder.CreateBox("ground", { width: 16, height: 0.5, depth: 2 }, scene);
+const ground = CreateBox("ground", { width: 16, height: 0.5, depth: 2 }, scene);
 ground.position.set(0, -0.25, 0);
 
-const leftWall = MeshBuilder.CreateBox("left-wall", { width: 0.3, height: 4, depth: 2 }, scene);
+const leftWall = CreateBox("left-wall", { width: 0.3, height: 4, depth: 2 }, scene);
 leftWall.position.set(-8, 2, 0);
-const rightWall = MeshBuilder.CreateBox("right-wall", { width: 0.3, height: 4, depth: 2 }, scene);
+const rightWall = CreateBox("right-wall", { width: 0.3, height: 4, depth: 2 }, scene);
 rightWall.position.set(8, 2, 0);
 
-const slope = MeshBuilder.CreateBox("slope", { width: 3.6, height: 0.3, depth: 2 }, scene);
+const slope = CreateBox("slope", { width: 3.6, height: 0.3, depth: 2 }, scene);
 slope.position.set(4.9, 0.45, 0);
 slope.rotation.z = Math.PI / 12;
 
-const attractPillar = MeshBuilder.CreateBox("attract-pillar", { width: 0.7, height: 2.4, depth: 2 }, scene);
+const attractPillar = CreateBox("attract-pillar", { width: 0.7, height: 2.4, depth: 2 }, scene);
 attractPillar.position.set(0.25, 1.2, 0);
 
-const platformMesh = MeshBuilder.CreateBox("moving-platform", { width: 2.5, height: 0.35, depth: 2 }, scene);
+const platformMesh = CreateBox("moving-platform", { width: 2.5, height: 0.35, depth: 2 }, scene);
 platformMesh.position.set(-2, 1.15, 0);
 
-const playerMesh = MeshBuilder.CreateCapsule(
+const playerMesh = CreateCapsule(
   "wayfarer-proxy",
   { height: 1.8, radius: 0.35 },
   scene,
 );
 
-const anchorA = MeshBuilder.CreateSphere("anchor-a", { diameter: 0.7 }, scene);
+const anchorA = CreateSphere("anchor-a", { diameter: 0.7 }, scene);
 anchorA.position.set(3.5, 4.4, 0);
-const anchorB = MeshBuilder.CreateSphere("anchor-b", { diameter: 0.7 }, scene);
+const anchorB = CreateSphere("anchor-b", { diameter: 0.7 }, scene);
 anchorB.position.set(1.5, 1.8, 0);
-const movingAnchor = MeshBuilder.CreateSphere("anchor-moving", { diameter: 0.7 }, scene);
+const movingAnchor = CreateSphere("anchor-moving", { diameter: 0.7 }, scene);
 movingAnchor.position.set(-2, 2.45, 0);
-const lowRepelAnchor = MeshBuilder.CreateSphere("anchor-low-repel", { diameter: 0.62 }, scene);
+const lowRepelAnchor = CreateSphere("anchor-low-repel", { diameter: 0.62 }, scene);
 lowRepelAnchor.position.set(-4.2, 0.38, 0);
-const wallRepelAnchor = MeshBuilder.CreateSphere("anchor-wall-repel", { diameter: 0.62 }, scene);
+const wallRepelAnchor = CreateSphere("anchor-wall-repel", { diameter: 0.62 }, scene);
 wallRepelAnchor.position.set(7.25, 2.1, 0);
 
 const physics = await RapierCharacterWorld.create();
@@ -204,6 +211,9 @@ for (const [guid, mesh] of [
   if (target) targetMeshes.set(Number(target.id), mesh);
 }
 
+const { createRepresentativeGraphicsRoom } = await import(
+  "./graphics/representative-room"
+);
 const graphicsRoom = createRepresentativeGraphicsRoom(
   scene,
   engine,
@@ -220,6 +230,29 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
   initialGraphicsPreset(backend),
 );
 applyCameraMode();
+
+const shaderWarmupStartMs = performance.now();
+const warmedShaderBindings = await warmCriticalShaders(scene);
+const shaderWarmupMs = performance.now() - shaderWarmupStartMs;
+const performanceMonitor = new BrowserPerformanceMonitor(scene, engine);
+const dynamicResolution = new DynamicResolutionGovernor(graphicsRoom.getRenderScale());
+const frameCapture = new FrameCaptureBuffer();
+let recoveryStatus: "ready" | "lost" | "restored" = "ready";
+
+engine.onContextLostObservable.add(() => {
+  recoveryStatus = "lost";
+  clock.clearAccumulator();
+});
+
+engine.onContextRestoredObservable.add(() => {
+  recoveryStatus = "restored";
+  previousMs = performance.now();
+  const preset = graphicsRoom.getPreset();
+  graphicsRoom.applyPreset(preset);
+  graphicsRoom.applyRenderScale(
+    dynamicResolution.setBaseScale(GRAPHICS_PRESETS[preset].renderScale),
+  );
+});
 
 const movingTargetId = targetRegistry.getByGuid(asAuthoredTargetGuid("m0-anchor-moving"))?.id;
 const PLAYER_ID = asEntityId(1);
@@ -253,8 +286,18 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "Digit2") arrivalMode = "softCapture";
   if (event.code === "Digit3") arrivalMode = "radiusBlend";
   if (event.code === "KeyG" && !event.repeat) {
-    graphicsRoom.applyPreset(nextGraphicsPreset(graphicsRoom.getPreset()));
+    const nextPreset = nextGraphicsPreset(graphicsRoom.getPreset());
+    graphicsRoom.applyPreset(nextPreset);
+    graphicsRoom.applyRenderScale(
+      dynamicResolution.setBaseScale(GRAPHICS_PRESETS[nextPreset].renderScale),
+    );
   }
+  if (event.code === "KeyR" && !event.repeat) {
+    const resetScale = dynamicResolution.setEnabled(!dynamicResolution.isEnabled());
+    if (resetScale !== null) graphicsRoom.applyRenderScale(resetScale);
+  }
+  if (event.code === "KeyP" && !event.repeat) exportPerformanceCapture();
+  if (event.code === "KeyX" && !event.repeat) frameCapture.reset();
   if (event.code === "KeyC" && !event.repeat) {
     cameraMode = cameraMode === "perspective" ? "orthographic" : "perspective";
     applyCameraMode();
@@ -351,11 +394,41 @@ const repelRuntime = createRepelRuntimeState();
 let lastRepelEvent: RepelSemanticEvent | null = null;
 let repelRequested = false;
 let gamepadRepelWasHeld = false;
+let nextDiagnosticsUpdateMs = 0;
+
+function exportPerformanceCapture(): void {
+  const payload = {
+    schema: "resonance.m0.performance-capture.v1",
+    capturedAt: new Date().toISOString(),
+    userAgent: navigator.userAgent,
+    backend,
+    cameraMode,
+    graphics: graphicsRoom.stats(),
+    dynamicResolution: dynamicResolution.snapshot(),
+    performance: performanceMonitor.snapshot(),
+    frameSummary: frameCapture.summary(),
+    samples: frameCapture.exportSamples(),
+    shaderWarmupMs,
+    warmedShaderBindings,
+    simulationTick: Number(simulation.tick),
+    deterministicStateHash: simulation.stateHash(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `resonance-m0-performance-${Date.now()}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
 
 engine.runRenderLoop(() => {
   const now = performance.now();
   const frameSeconds = (now - previousMs) / 1000;
   previousMs = now;
+  frameCapture.push(frameSeconds * 1000, graphicsRoom.getRenderScale());
 
   const steps = clock.advance(frameSeconds);
   stepsThisFrame = steps.length;
@@ -573,7 +646,18 @@ engine.runRenderLoop(() => {
   graphicsRoom.update(now / 1000);
   scene.render();
 
+  const adaptiveScale = dynamicResolution.sample(frameSeconds * 1000);
+  if (adaptiveScale !== null) {
+    graphicsRoom.applyRenderScale(adaptiveScale);
+    applyCameraMode();
+  }
+
+  if (now < nextDiagnosticsUpdateMs) return;
+  nextDiagnosticsUpdateMs = now + 250;
+
   const graphicsStats = graphicsRoom.stats();
+  const performanceStats = performanceMonitor.snapshot();
+  const dynamicStats = dynamicResolution.snapshot();
   const candidateLines = targetDebug.map((candidate) => {
     const score = candidate.score === null ? candidate.rejectedReason : candidate.score.toFixed(3);
     return `T${Number(candidate.id)} ${candidate.retained ? "*" : " "} d=${candidate.distance.toFixed(2)} a=${candidate.alignment.toFixed(2)} s=${score}`;
@@ -581,16 +665,22 @@ engine.runRenderLoop(() => {
 
   const fps = engine.getFps();
   diagnostics.textContent = [
-    "RESONANCE M0.8 — REPRESENTATIVE GRAPHICS ROOM",
+    "RESONANCE M0.9 — PERFORMANCE PASS",
     "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift",
     "Attract: hold E / gamepad RT | Repel: Q / gamepad LT",
-    "Graphics: G cycles Low/Medium/High/Ultra | Camera: C toggles perspective/ortho",
+    "Graphics: G presets | R dynamic resolution | C camera | P export perf | X reset perf",
     "Aim: mouse or gamepad right stick; facing is keyboard fallback",
     "Arrival experiment: 1 pass-through | 2 soft-capture | 3 radius-blend",
     `backend: ${backend} | fps: ${fps.toFixed(1)} | camera: ${cameraMode}`,
-    `graphics: ${graphicsStats.preset} | render scale: ${graphicsStats.renderScale.toFixed(2)}`,
+    `graphics: ${graphicsStats.preset} | render scale: ${graphicsStats.renderScale.toFixed(2)} | dynamic: ${dynamicStats.enabled ? "on" : "off"}`,
+    `frame: cpu ${performanceStats.cpuFrameMs.toFixed(2)} ms | render ${performanceStats.renderMs.toFixed(2)} ms | gpu ${performanceStats.gpuFrameMs === null ? "n/a" : performanceStats.gpuFrameMs.toFixed(2) + " ms"}`,
+    `draw calls: ${performanceStats.drawCalls} | active-mesh eval: ${performanceStats.activeMeshesEvaluationMs.toFixed(2)} ms | particles: ${performanceStats.particlesRenderMs.toFixed(2)} ms`,
+    `adaptive: avg ${dynamicStats.averageFrameMs.toFixed(2)} ms | cooldown ${dynamicStats.cooldownRemaining} | changes ${dynamicStats.changes}`,
+    `heap: ${performanceStats.usedHeapMb === null ? "n/a" : performanceStats.usedHeapMb.toFixed(1) + " MB"} / ${performanceStats.totalHeapMb === null ? "n/a" : performanceStats.totalHeapMb.toFixed(1) + " MB"}`,
     `render: meshes ${graphicsStats.activeMeshes}/${graphicsStats.meshes} | vertices ${graphicsStats.vertices} | particles ${graphicsStats.activeParticles}`,
-    `resources: materials ${graphicsStats.materials} | textures ${graphicsStats.textures}`,
+    `resources: materials ${graphicsStats.materials} | textures ${graphicsStats.textures} | warmed bindings ${warmedShaderBindings}`,
+    `shader warmup: ${shaderWarmupMs.toFixed(1)} ms | runtime compile: ${performanceStats.runtimeShaderCompilationMs.toFixed(1)} ms`,
+    `graphics recovery: ${recoveryStatus}`,
     `sim tick: ${Number(simulation.tick)} | steps/frame: ${stepsThisFrame} | alpha: ${clock.alpha.toFixed(3)}`,
     `position: ${state ? `${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)}, ${state.position.z.toFixed(2)}` : "-"}`,
     `grounded: ${state?.grounded ?? false} | ground entity: ${Number(state?.groundEntityId ?? 0)}`,
