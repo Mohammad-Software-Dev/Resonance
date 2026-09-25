@@ -32,6 +32,24 @@ describe("TargetRegistry", () => {
     expect(first.getByGuid(c.guid)?.id).toBe(second.getByGuid(c.guid)?.id);
   });
 
+  it("does not invalidate semantic revision for fixed-tick transform updates", () => {
+    const registry = new TargetRegistry();
+    registry.activate([definition("moving", 1, 3)]);
+    const moving = registry.getByGuid(asAuthoredTargetGuid("moving"));
+    expect(moving).toBeDefined();
+    if (!moving) return;
+
+    const initialRevision = moving.revision;
+    registry.update(moving.id, {
+      position: { x: 4, y: 1, z: 0 },
+      velocity: { x: 1, y: 0, z: 0 },
+    });
+    expect(registry.get(moving.id)?.revision).toBe(initialRevision);
+
+    registry.update(moving.id, { attractable: false });
+    expect(Number(registry.get(moving.id)?.revision)).toBe(Number(initialRevision) + 1);
+  });
+
   it("returns deterministic nearby candidates only", () => {
     const registry = new TargetRegistry();
     registry.activate([

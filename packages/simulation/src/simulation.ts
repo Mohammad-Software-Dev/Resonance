@@ -25,6 +25,17 @@ export class Simulation {
     return this.wayfarers.get(entityId);
   }
 
+  cancelAttract(entityId: EntityId): void {
+    const state = this.wayfarers.get(entityId);
+    if (!state || (state.attractTargetId === 0 && state.movementMode !== "attract")) return;
+
+    state.attractTargetId = 0;
+    if (state.movementMode === "attract") {
+      state.movementMode = state.grounded ? "grounded" : "airborne";
+    }
+    state.stateRevision = asRevision(Number(state.stateRevision) + 1);
+  }
+
   step(inputByEntity: ReadonlyMap<EntityId, SimInput>): void {
     const nextTick = this.tickValue + 1;
 
@@ -38,7 +49,11 @@ export class Simulation {
 
       const moveX = dequantizeAxis(input.moveX);
       const nextFacing: -1 | 1 = moveX < 0 ? -1 : moveX > 0 ? 1 : state.facing;
-      const nextMode = input.attractPressed && input.targetId !== 0 ? "attract" : state.movementMode;
+      const nextMode = input.attractPressed && input.targetId !== 0
+        ? "attract"
+        : state.movementMode === "attract"
+          ? (state.grounded ? "grounded" : "airborne")
+          : state.movementMode;
       const nextTarget = input.attractPressed ? input.targetId : 0;
 
       if (nextFacing !== state.facing || nextMode !== state.movementMode || nextTarget !== state.attractTargetId) {

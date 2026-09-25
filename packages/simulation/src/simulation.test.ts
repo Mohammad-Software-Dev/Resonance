@@ -54,6 +54,23 @@ describe("Simulation state contract", () => {
     expect(Number(sim.tick)).toBe(20);
   });
 
+  it("records semantic Attract cancellation in authoritative state revision", () => {
+    const sim = new Simulation();
+    const input = new InputLatch();
+    const state = sim.addWayfarer(PLAYER);
+
+    input.setTarget(Number(asTargetId(7)));
+    input.setAttractPressed(true);
+    sim.step(new Map([[PLAYER, input.consume(asTick(1))]]));
+    const before = Number(state.stateRevision);
+
+    sim.cancelAttract(PLAYER);
+
+    expect(state.attractTargetId).toBe(0);
+    expect(state.movementMode).toBe("airborne");
+    expect(Number(state.stateRevision)).toBe(before + 1);
+  });
+
   it("latches edge-triggered input for exactly one fixed tick", () => {
     const input = new InputLatch();
     input.setJumpHeld(true);

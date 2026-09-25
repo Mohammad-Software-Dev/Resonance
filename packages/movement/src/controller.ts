@@ -181,7 +181,7 @@ export function applyMovementCollision(
   if (feedback.hitCeiling && state.velocity.y > 0) state.velocity.y = 0;
   if (feedback.grounded && state.velocity.y < 0) state.velocity.y = 0;
 
-  if (state.evadeTicksRemaining === 0) {
+  if (state.evadeTicksRemaining === 0 && state.movementMode !== "attract") {
     state.movementMode = feedback.grounded ? "grounded" : "airborne";
   }
 }
