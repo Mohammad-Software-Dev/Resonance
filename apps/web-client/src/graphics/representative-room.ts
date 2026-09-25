@@ -23,8 +23,8 @@ import {
   type GraphicsPresetName,
 } from "./presets";
 
-const TEMPORARY_M0_ENVIRONMENT_URL =
-  "https://assets.babylonjs.com/environments/environmentSpecular.env";
+const M0_ENVIRONMENT_URL =
+  "/assets/environment/resonance-m0-orbital.env";
 
 export interface RepresentativeRoomMeshes {
   readonly ground: Mesh;
@@ -300,7 +300,7 @@ export function createRepresentativeGraphicsRoom(
   }
 
   scene.environmentTexture = CubeTexture.CreateFromPrefilteredData(
-    TEMPORARY_M0_ENVIRONMENT_URL,
+    M0_ENVIRONMENT_URL,
     scene,
   );
 
@@ -376,6 +376,21 @@ export function createRepresentativeGraphicsRoom(
   const backdrop = addIndustrialBackdrop(scene, darkMetal, paintedMetal, emissive);
   const vista = addGasGiantVista(scene);
   const wayfarerMeshes = addWayfarerSilhouette(scene, meshes.player, suit, suitAccent);
+
+  scene.skipPointerMovePicking = true;
+  for (const mesh of scene.meshes) mesh.isPickable = false;
+  for (const mesh of [...backdrop.distantMeshes, ...vista]) mesh.freezeWorldMatrix();
+  for (const material of [
+    darkMetal,
+    paintedMetal,
+    floorMaterial,
+    hazardMaterial,
+    emissive,
+    suit,
+    suitAccent,
+  ]) {
+    material.freeze();
+  }
 
   const keyLight = new DirectionalLight(
     "orbital-key",
