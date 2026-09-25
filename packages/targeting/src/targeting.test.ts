@@ -125,6 +125,33 @@ describe("selectResonanceTarget", () => {
     );
   });
 
+
+  it("does not flicker between near-equal targets under small aim jitter", () => {
+    const registry = new TargetRegistry();
+    registry.activate([
+      definition("upper", 1, 5, 0.35),
+      definition("lower", 2, 5, -0.35),
+    ]);
+
+    let selected: ReturnType<typeof asTargetId> | 0 = 0;
+    let switches = 0;
+    for (let tick = 0; tick < 240; tick += 1) {
+      const jitter = Math.sin(tick * 0.73) * 0.025;
+      const result = selectResonanceTarget({
+        playerPosition: { x: 0, y: 0, z: 0 },
+        aim: { x: 1, y: jitter, z: 0 },
+        ability: "attract",
+        previousTargetId: selected,
+        targets: registry.all(),
+      });
+      if (selected !== 0 && result.selectedTargetId !== selected) switches += 1;
+      selected = result.selectedTargetId;
+    }
+
+    expect(selected).not.toBe(0);
+    expect(switches).toBe(0);
+  });
+
   it("does not acquire a new target without aim intent", () => {
     const registry = new TargetRegistry();
     registry.activate([definition("anchor", 1, 3)]);
