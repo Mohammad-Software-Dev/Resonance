@@ -5,9 +5,14 @@ import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
 
-const canvas = document.querySelector<HTMLCanvasElement>("#game");
-const diagnostics = document.querySelector<HTMLDivElement>("#diagnostics");
-if (!canvas || !diagnostics) throw new Error("M0 shell elements are missing.");
+function requireElement<T extends Element>(selector: string): T {
+  const element = document.querySelector<T>(selector);
+  if (!element) throw new Error(`Required M0 element is missing: ${selector}`);
+  return element;
+}
+
+const canvas = requireElement<HTMLCanvasElement>("#game");
+const diagnostics = requireElement<HTMLDivElement>("#diagnostics");
 
 async function createEngine(): Promise<{ engine: Engine | WebGPUEngine; backend: Backend }> {
   if ("gpu" in navigator) {
