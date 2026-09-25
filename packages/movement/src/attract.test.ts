@@ -79,6 +79,46 @@ describe("Attract movement kernel", () => {
     expect(state.velocity.y).toBeGreaterThan(firstY);
   });
 
+  it("keeps the three arrival experiments mechanically distinct", () => {
+    const anchor = target(0.4, 0);
+
+    const passState = createInitialMovementState();
+    const passRuntime = createAttractRuntimeState();
+    const pass = stepAttract(
+      passState,
+      passRuntime,
+      anchor,
+      0,
+      { ...M0_ATTRACT_CONFIG, arrivalMode: "passThrough" },
+    );
+
+    const blendState = createInitialMovementState();
+    const blendRuntime = createAttractRuntimeState();
+    const blend = stepAttract(
+      blendState,
+      blendRuntime,
+      anchor,
+      0,
+      { ...M0_ATTRACT_CONFIG, arrivalMode: "radiusBlend" },
+    );
+
+    const captureState = createInitialMovementState();
+    captureState.velocity.x = 12;
+    const captureRuntime = createAttractRuntimeState();
+    stepAttract(
+      captureState,
+      captureRuntime,
+      anchor,
+      0,
+      { ...M0_ATTRACT_CONFIG, arrivalMode: "softCapture" },
+    );
+
+    expect(blend.radialAcceleration).toBeLessThan(pass.radialAcceleration);
+    expect(Math.abs(captureState.velocity.x)).toBeLessThanOrEqual(
+      M0_ATTRACT_CONFIG.softCaptureRadialSpeed + 1e-9,
+    );
+  });
+
   it("preserves release momentum and emits an explicit release event", () => {
     const state = createInitialMovementState();
     const runtime = createAttractRuntimeState();
