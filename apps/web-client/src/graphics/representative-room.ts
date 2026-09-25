@@ -115,14 +115,21 @@ function addIndustrialBackdrop(
   const distantMeshes: Mesh[] = [];
   const emissiveMeshes: Mesh[] = [];
 
-  const backPlate = MeshBuilder.CreateBox(
-    "orbital-backplate",
-    { width: 21, height: 8.5, depth: 0.45 },
-    scene,
-  );
-  backPlate.position.set(0, 3.3, 4.7);
-  backPlate.material = darkMetal;
-  distantMeshes.push(backPlate);
+  for (const panel of [
+    { name: "orbital-frame-top", width: 21, height: 1.1, x: 0, y: 7.35 },
+    { name: "orbital-frame-bottom", width: 21, height: 0.8, x: 0, y: -0.05 },
+    { name: "orbital-frame-left", width: 1.25, height: 6.7, x: -9.7, y: 3.55 },
+    { name: "orbital-frame-right", width: 1.25, height: 6.7, x: 9.7, y: 3.55 },
+  ]) {
+    const frame = MeshBuilder.CreateBox(
+      panel.name,
+      { width: panel.width, height: panel.height, depth: 0.45 },
+      scene,
+    );
+    frame.position.set(panel.x, panel.y, 4.7);
+    frame.material = darkMetal;
+    distantMeshes.push(frame);
+  }
 
   for (let x = -7.2; x <= 7.2; x += 2.4) {
     const rib = MeshBuilder.CreateBox(
