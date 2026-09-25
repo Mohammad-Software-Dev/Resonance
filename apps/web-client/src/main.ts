@@ -10,6 +10,7 @@ import {
 import {
   M0_ATTRACT_CONFIG,
   M0_MOVEMENT_CONFIG,
+  M0_REPEL_CONFIG,
   type AttractArrivalMode,
   asAuthoredTargetGuid,
   asEntityId,
@@ -21,10 +22,14 @@ import {
   cancelAttract,
   createAttractRuntimeState,
   recordAttractCollision,
+  createRepelRuntimeState,
   recoverMovementState,
   stepAttract,
   stepMovement,
+  stepRepel,
+  stepRepelRecovery,
   type AttractSemanticEvent,
+  type RepelSemanticEvent,
 } from "@resonance/movement";
 import { RapierCharacterWorld } from "@resonance/physics";
 import {
@@ -116,6 +121,10 @@ const anchorB = MeshBuilder.CreateSphere("anchor-b", { diameter: 0.7 }, scene);
 anchorB.position.set(1.5, 1.8, 0);
 const movingAnchor = MeshBuilder.CreateSphere("anchor-moving", { diameter: 0.7 }, scene);
 movingAnchor.position.set(-2, 2.45, 0);
+const lowRepelAnchor = MeshBuilder.CreateSphere("anchor-low-repel", { diameter: 0.62 }, scene);
+lowRepelAnchor.position.set(-4.2, 0.38, 0);
+const wallRepelAnchor = MeshBuilder.CreateSphere("anchor-wall-repel", { diameter: 0.62 }, scene);
+wallRepelAnchor.position.set(7.25, 2.1, 0);
 
 const physics = await RapierCharacterWorld.create();
 physics.addStaticBox(FLOOR_ID, { x: 0, y: -0.25, z: 0 }, { x: 8, y: 0.25, z: 1 });
@@ -144,6 +153,18 @@ targetRegistry.activate([
     position: { x: -2, y: 2.45, z: 0 },
     priority: 0.04,
   },
+  {
+    guid: asAuthoredTargetGuid("m0-anchor-low-repel"),
+    entityId: asEntityId(304),
+    position: { x: -4.2, y: 0.38, z: 0 },
+    priority: 0.03,
+  },
+  {
+    guid: asAuthoredTargetGuid("m0-anchor-wall-repel"),
+    entityId: asEntityId(305),
+    position: { x: 7.25, y: 2.1, z: 0 },
+    priority: 0.03,
+  },
 ]);
 
 const targetMeshes = new Map<number, typeof anchorA>();
@@ -151,6 +172,8 @@ for (const [guid, mesh] of [
   [asAuthoredTargetGuid("m0-anchor-a"), anchorA],
   [asAuthoredTargetGuid("m0-anchor-b"), anchorB],
   [asAuthoredTargetGuid("m0-anchor-moving"), movingAnchor],
+  [asAuthoredTargetGuid("m0-anchor-low-repel"), lowRepelAnchor],
+  [asAuthoredTargetGuid("m0-anchor-wall-repel"), wallRepelAnchor],
 ] as const) {
   const target = targetRegistry.getByGuid(guid);
   if (target) targetMeshes.set(Number(target.id), mesh);
@@ -180,7 +203,10 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "Space") input.setJumpHeld(true);
   if (event.code === "ShiftLeft" && !event.repeat) input.pressEvade();
   if (event.code === "KeyE") input.setAttractPressed(true);
-  if (event.code === "KeyQ" && !event.repeat) input.pressRepel();
+  if (event.code === "KeyQ" && !event.repeat) {
+    input.pressRepel();
+    repelRequested = true;
+  }
   if (event.code === "Digit1") arrivalMode = "passThrough";
   if (event.code === "Digit2") arrivalMode = "softCapture";
   if (event.code === "Digit3") arrivalMode = "radiusBlend";
@@ -244,6 +270,15 @@ function readGamepadAttractHeld(): boolean {
   return false;
 }
 
+function readGamepadRepelHeld(): boolean {
+  for (const gamepad of navigator.getGamepads?.() ?? []) {
+    if (!gamepad?.connected) continue;
+    const leftTrigger = gamepad.buttons[6];
+    if (leftTrigger && (leftTrigger.pressed || leftTrigger.value > 0.25)) return true;
+  }
+  return false;
+}
+
 function platformPositionAtTick(tick: number): Vec3 {
   const periodTicks = 240;
   const phase = (tick % periodTicks) / periodTicks;
@@ -263,6 +298,10 @@ const attractRuntime = createAttractRuntimeState();
 let lastAttractEvent: AttractSemanticEvent | null = null;
 let attractDistance = 0;
 let attractAcceleration = 0;
+const repelRuntime = createRepelRuntimeState();
+let lastRepelEvent: RepelSemanticEvent | null = null;
+let repelRequested = false;
+let gamepadRepelWasHeld = false;
 
 engine.runRenderLoop(() => {
   const now = performance.now();
@@ -292,10 +331,17 @@ engine.runRenderLoop(() => {
 
     const aim = readAim(beforeStep.facing);
     aimSource = aim.source;
+    const gamepadRepelHeld = readGamepadRepelHeld();
+    if (gamepadRepelHeld && !gamepadRepelWasHeld) {
+      input.pressRepel();
+      repelRequested = true;
+    }
+    gamepadRepelWasHeld = gamepadRepelHeld;
+
     const selection = selectResonanceTarget({
       playerPosition: beforeStep.position,
       aim: aim.vector,
-      ability: "attract",
+      ability: repelRequested ? "repel" : "attract",
       previousTargetId: selectedTargetId,
       targets: targetRegistry.queryNearby(
         beforeStep.position,
@@ -305,15 +351,18 @@ engine.runRenderLoop(() => {
     selectedTargetId = selection.selectedTargetId;
     targetDebug = selection.candidates;
 
-    const lockedTargetId = attractRuntime.requiresRelease
+    const lockedTargetId = beforeStep.repelRecoveryTicksRemaining > 0
       ? 0
-      : attractRuntime.targetId !== 0
-        ? attractRuntime.targetId
-        : selectedTargetId;
+      : attractRuntime.requiresRelease && !repelRequested
+        ? 0
+        : attractRuntime.targetId !== 0
+          ? attractRuntime.targetId
+          : selectedTargetId;
     input.setTarget(Number(lockedTargetId));
 
     input.setAttractPressed(keys.has("KeyE") || readGamepadAttractHeld());
     const simInput = input.consume(step.tick);
+    repelRequested = false;
     simulation.step(new Map([[PLAYER_ID, simInput]]));
 
     const state = simulation.getWayfarer(PLAYER_ID);
@@ -323,7 +372,51 @@ engine.runRenderLoop(() => {
     const attractConfig = { ...M0_ATTRACT_CONFIG, arrivalMode };
     let desiredTranslation: Vec3;
 
-    if (
+    if (simInput.repelPressed && simInput.targetId !== 0) {
+      if (attractRuntime.targetId !== 0) {
+        const comboCancel = cancelAttract(state, attractRuntime, "repel");
+        if (comboCancel) lastAttractEvent = comboCancel;
+        simulation.cancelAttract(PLAYER_ID);
+      }
+
+      const repel = stepRepel(
+        state,
+        repelRuntime,
+        targetRegistry.get(simInput.targetId),
+        M0_REPEL_CONFIG,
+      );
+      lastRepelEvent = repel.event;
+      if (repel.applied) {
+        simulation.recordRepel(PLAYER_ID);
+        desiredTranslation = repel.desiredTranslation;
+      } else {
+        desiredTranslation = stepMovement(
+          state,
+          {
+            moveX: dequantizeAxis(simInput.moveX),
+            jumpPressed: simInput.jumpPressed,
+            jumpHeld: simInput.jumpHeld,
+            evadePressed: simInput.evadePressed,
+          },
+          { grounded: state.grounded, groundEntityId: state.groundEntityId },
+          M0_MOVEMENT_CONFIG,
+        ).desiredTranslation;
+      }
+      attractDistance = 0;
+      attractAcceleration = 0;
+    } else if (state.repelRecoveryTicksRemaining > 0) {
+      const recovery = stepRepelRecovery(
+        state,
+        repelRuntime,
+        dequantizeAxis(simInput.moveX),
+        M0_MOVEMENT_CONFIG,
+        M0_REPEL_CONFIG,
+      );
+      desiredTranslation = recovery.desiredTranslation;
+      if (recovery.event) lastRepelEvent = recovery.event;
+      attractDistance = 0;
+      attractAcceleration = 0;
+    } else if (
       simInput.attractPressed
       && simInput.targetId !== 0
       && !attractRuntime.requiresRelease
@@ -415,8 +508,9 @@ engine.runRenderLoop(() => {
 
   const fps = engine.getFps();
   diagnostics.textContent = [
-    "RESONANCE M0.6 — ATTRACT",
-    "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift | Attract: hold E / gamepad RT",
+    "RESONANCE M0.7 — ATTRACT + REPEL",
+    "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift",
+    "Attract: hold E / gamepad RT | Repel: Q / gamepad LT",
     "Aim: mouse or gamepad right stick; facing is keyboard fallback",
     "Arrival experiment: 1 pass-through | 2 soft-capture | 3 radius-blend",
     `backend: ${backend} | fps: ${fps.toFixed(1)}`,
@@ -426,6 +520,8 @@ engine.runRenderLoop(() => {
     `selected target: ${Number(selectedTargetId)} | locked attract target: ${Number(attractRuntime.targetId)} | aim: ${aimSource}`,
     `attract mode: ${arrivalMode} | distance: ${attractDistance.toFixed(2)} | accel: ${attractAcceleration.toFixed(2)}`,
     `attract event: ${lastAttractEvent ? JSON.stringify(lastAttractEvent) : "-"}`,
+    `repel recovery: ${state?.repelRecoveryTicksRemaining ?? 0} ticks | uses: ${repelRuntime.uses}`,
+    `repel event: ${lastRepelEvent ? JSON.stringify(lastRepelEvent) : "-"}`,
     `collisions: ${collisionCount} | max correction: ${maximumCorrection.toFixed(4)}`,
     ...candidateLines,
     `state hash: ${simulation.stateHash()}`,
