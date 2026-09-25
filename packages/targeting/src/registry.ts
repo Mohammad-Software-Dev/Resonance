@@ -92,6 +92,13 @@ export class TargetRegistry {
     const target = this.byId.get(id);
     if (!target) throw new Error(`Unknown TargetId ${Number(id)}.`);
 
+    const semanticRevisionChanged =
+      (patch.active !== undefined && patch.active !== target.active)
+      || (patch.attractable !== undefined && patch.attractable !== target.attractable)
+      || (patch.repelable !== undefined && patch.repelable !== target.repelable)
+      || (patch.anchored !== undefined && patch.anchored !== target.anchored)
+      || (patch.massClass !== undefined && patch.massClass !== target.massClass);
+
     if (patch.position) target.position = { ...patch.position };
     if (patch.velocity) target.velocity = { ...patch.velocity };
     if (patch.active !== undefined) target.active = patch.active;
@@ -101,7 +108,9 @@ export class TargetRegistry {
     if (patch.massClass !== undefined) target.massClass = patch.massClass;
     if (patch.priority !== undefined) target.priority = patch.priority;
     if (patch.designerBias !== undefined) target.designerBias = patch.designerBias;
-    target.revision = asRevision(Number(target.revision) + 1);
+    if (semanticRevisionChanged) {
+      target.revision = asRevision(Number(target.revision) + 1);
+    }
     return target;
   }
 }
