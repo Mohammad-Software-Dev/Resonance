@@ -26,6 +26,7 @@ export interface AttractRuntimeState {
   ticksActive: number;
   blockedTicks: number;
   arrived: boolean;
+  requiresRelease: boolean;
 }
 
 export interface AttractStepResult {
@@ -42,6 +43,7 @@ export function createAttractRuntimeState(): AttractRuntimeState {
     ticksActive: 0,
     blockedTicks: 0,
     arrived: false,
+    requiresRelease: false,
   };
 }
 
@@ -79,6 +81,7 @@ function cancel(
   runtime: AttractRuntimeState,
   reason: AttractCancelReason,
 ): AttractSemanticEvent | null {
+  if (reason === "released") runtime.requiresRelease = false;
   if (runtime.targetId === 0) return null;
   const targetId = runtime.targetId;
   runtime.targetId = 0;
@@ -86,6 +89,7 @@ function cancel(
   runtime.ticksActive = 0;
   runtime.blockedTicks = 0;
   runtime.arrived = false;
+  runtime.requiresRelease = reason !== "released";
   return { type: "cancelled", targetId, reason };
 }
 
@@ -108,6 +112,15 @@ export function stepAttract(
   tangentialInput: number,
   config: AttractConfig,
 ): AttractStepResult {
+  if (runtime.requiresRelease) {
+    return {
+      desiredTranslation: { x: 0, y: 0, z: 0 },
+      distance: 0,
+      radialAcceleration: 0,
+      event: null,
+    };
+  }
+
   if (!target) {
     return {
       desiredTranslation: { x: 0, y: 0, z: 0 },
