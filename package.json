@@ -1,0 +1,9 @@
+{
+  "name": "resonance",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Browser-first 2.5D action Metroidvania with solo and 1-4 player online co-op.",
+  "engines": {
+    "node": "24.21.x"
+  }
+}
