@@ -38,7 +38,11 @@ export class Simulation {
 
       const moveX = dequantizeAxis(input.moveX);
       const nextFacing: -1 | 1 = moveX < 0 ? -1 : moveX > 0 ? 1 : state.facing;
-      const nextMode = input.attractPressed && input.targetId !== 0 ? "attract" : state.movementMode;
+      const nextMode = input.attractPressed && input.targetId !== 0
+        ? "attract"
+        : state.movementMode === "attract"
+          ? (state.grounded ? "grounded" : "airborne")
+          : state.movementMode;
       const nextTarget = input.attractPressed ? input.targetId : 0;
 
       if (nextFacing !== state.facing || nextMode !== state.movementMode || nextTarget !== state.attractTargetId) {
