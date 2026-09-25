@@ -185,3 +185,14 @@ export function applyMovementCollision(
     state.movementMode = feedback.grounded ? "grounded" : "airborne";
   }
 }
+
+export function recoverMovementState(state: MovementState, safePosition: Vec3): void {
+  state.position = { ...safePosition };
+  state.velocity = { x: 0, y: 0, z: 0 };
+  state.grounded = false;
+  state.groundEntityId = 0;
+  state.coyoteTicksRemaining = 0;
+  state.jumpBufferTicksRemaining = 0;
+  state.evadeTicksRemaining = 0;
+  state.movementMode = "airborne";
+}
