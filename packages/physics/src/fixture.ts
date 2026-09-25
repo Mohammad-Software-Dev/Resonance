@@ -1,4 +1,3 @@
-import type RAPIER from "@dimforge/rapier3d-deterministic";
 import { SIM_DT_SECONDS } from "@resonance/game-data";
 import { initializePhysics } from "./index";
 
@@ -49,7 +48,7 @@ export async function runPhysicsDeterminismFixture(tickCount = 600): Promise<Phy
 
   const position = body.translation();
   const velocity = body.linvel();
-  const result = {
+  const result: PhysicsFixtureResult = {
     tickCount,
     position: { x: position.x, y: position.y, z: position.z },
     velocity: { x: velocity.x, y: velocity.y, z: velocity.z },
@@ -63,5 +62,3 @@ export async function runPhysicsDeterminismFixture(tickCount = 600): Promise<Phy
   world.free();
   return result;
 }
-
-export type RapierModule = typeof RAPIER;
