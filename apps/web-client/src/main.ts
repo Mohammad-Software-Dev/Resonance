@@ -1,4 +1,5 @@
 import {
+  Camera,
   Engine,
   FreeCamera,
   HemisphericLight,
@@ -46,6 +47,11 @@ import {
   type TargetAimSource,
   type TargetCandidateDebug,
 } from "@resonance/targeting";
+import {
+  initialGraphicsPreset,
+  nextGraphicsPreset,
+} from "./graphics/presets";
+import { createRepresentativeGraphicsRoom } from "./graphics/representative-room";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
@@ -78,8 +84,27 @@ const { engine, backend } = await createEngine();
 const scene = new Scene(engine);
 scene.clearColor.set(0.018, 0.027, 0.045, 1);
 
-const camera = new FreeCamera("m0-camera", new Vector3(0, 3, -13), scene);
-camera.setTarget(new Vector3(0, 1.5, 0));
+const camera = new FreeCamera("m0-camera", new Vector3(0, 3.1, -14.5), scene);
+camera.setTarget(new Vector3(0, 1.65, 0));
+camera.fov = 0.58;
+camera.minZ = 0.1;
+camera.maxZ = 80;
+let cameraMode: "perspective" | "orthographic" = "perspective";
+
+function applyCameraMode(): void {
+  if (cameraMode === "perspective") {
+    camera.mode = Camera.PERSPECTIVE_CAMERA;
+    return;
+  }
+
+  const aspect = Math.max(0.5, engine.getRenderWidth() / Math.max(1, engine.getRenderHeight()));
+  const halfHeight = 4.6;
+  camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+  camera.orthoTop = halfHeight;
+  camera.orthoBottom = -halfHeight;
+  camera.orthoLeft = -halfHeight * aspect;
+  camera.orthoRight = halfHeight * aspect;
+}
 
 const light = new HemisphericLight("ambient", new Vector3(0.2, 1, -0.2), scene);
 light.intensity = 0.8;
@@ -179,6 +204,23 @@ for (const [guid, mesh] of [
   if (target) targetMeshes.set(Number(target.id), mesh);
 }
 
+const graphicsRoom = createRepresentativeGraphicsRoom(
+  scene,
+  engine,
+  {
+    ground,
+    leftWall,
+    rightWall,
+    slope,
+    attractPillar,
+    platform: platformMesh,
+    player: playerMesh,
+    targets: [...targetMeshes.values()],
+  },
+  initialGraphicsPreset(backend),
+);
+applyCameraMode();
+
 const movingTargetId = targetRegistry.getByGuid(asAuthoredTargetGuid("m0-anchor-moving"))?.id;
 const PLAYER_ID = asEntityId(1);
 const START = { x: -5, y: 2.2, z: 0 };
@@ -210,6 +252,13 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "Digit1") arrivalMode = "passThrough";
   if (event.code === "Digit2") arrivalMode = "softCapture";
   if (event.code === "Digit3") arrivalMode = "radiusBlend";
+  if (event.code === "KeyG" && !event.repeat) {
+    graphicsRoom.applyPreset(nextGraphicsPreset(graphicsRoom.getPreset()));
+  }
+  if (event.code === "KeyC" && !event.repeat) {
+    cameraMode = cameraMode === "perspective" ? "orthographic" : "perspective";
+    applyCameraMode();
+  }
 });
 window.addEventListener("keyup", (event) => {
   keys.delete(event.code);
@@ -521,6 +570,10 @@ engine.runRenderLoop(() => {
     mesh.scaling.set(scale, scale, scale);
   }
 
+  graphicsRoom.update(now / 1000);
+  scene.render();
+
+  const graphicsStats = graphicsRoom.stats();
   const candidateLines = targetDebug.map((candidate) => {
     const score = candidate.score === null ? candidate.rejectedReason : candidate.score.toFixed(3);
     return `T${Number(candidate.id)} ${candidate.retained ? "*" : " "} d=${candidate.distance.toFixed(2)} a=${candidate.alignment.toFixed(2)} s=${score}`;
@@ -528,12 +581,16 @@ engine.runRenderLoop(() => {
 
   const fps = engine.getFps();
   diagnostics.textContent = [
-    "RESONANCE M0.7 — ATTRACT + REPEL",
+    "RESONANCE M0.8 — REPRESENTATIVE GRAPHICS ROOM",
     "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift",
     "Attract: hold E / gamepad RT | Repel: Q / gamepad LT",
+    "Graphics: G cycles Low/Medium/High/Ultra | Camera: C toggles perspective/ortho",
     "Aim: mouse or gamepad right stick; facing is keyboard fallback",
     "Arrival experiment: 1 pass-through | 2 soft-capture | 3 radius-blend",
-    `backend: ${backend} | fps: ${fps.toFixed(1)}`,
+    `backend: ${backend} | fps: ${fps.toFixed(1)} | camera: ${cameraMode}`,
+    `graphics: ${graphicsStats.preset} | render scale: ${graphicsStats.renderScale.toFixed(2)}`,
+    `render: meshes ${graphicsStats.activeMeshes}/${graphicsStats.meshes} | vertices ${graphicsStats.vertices} | particles ${graphicsStats.activeParticles}`,
+    `resources: materials ${graphicsStats.materials} | textures ${graphicsStats.textures}`,
     `sim tick: ${Number(simulation.tick)} | steps/frame: ${stepsThisFrame} | alpha: ${clock.alpha.toFixed(3)}`,
     `position: ${state ? `${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)}, ${state.position.z.toFixed(2)}` : "-"}`,
     `grounded: ${state?.grounded ?? false} | ground entity: ${Number(state?.groundEntityId ?? 0)}`,
@@ -547,10 +604,12 @@ engine.runRenderLoop(() => {
     `state hash: ${simulation.stateHash()}`,
   ].join("\n");
 
-  scene.render();
 });
 
-window.addEventListener("resize", () => engine.resize());
+window.addEventListener("resize", () => {
+  engine.resize();
+  applyCameraMode();
+});
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     clock.clearAccumulator();
