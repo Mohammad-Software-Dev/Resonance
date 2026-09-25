@@ -1,5 +1,6 @@
 import { Engine, FreeCamera, HemisphericLight, MeshBuilder, Scene, Vector3, WebGPUEngine } from "@babylonjs/core";
-import { FixedStepClock } from "@resonance/simulation";
+import { asEntityId, asTargetId } from "@resonance/game-data";
+import { FixedStepClock, InputLatch, Simulation } from "@resonance/simulation";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
@@ -18,7 +19,10 @@ async function createEngine(): Promise<{ engine: Engine | WebGPUEngine; backend:
       console.warn("WebGPU initialization failed; falling back to WebGL2.", error);
     }
   }
-  return { engine: new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: true }), backend: "webgl2" };
+  return {
+    engine: new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: true }),
+    backend: "webgl2",
+  };
 }
 
 const { engine, backend } = await createEngine();
@@ -33,15 +37,43 @@ light.intensity = 0.8;
 
 const ground = MeshBuilder.CreateGround("ground", { width: 18, height: 6 }, scene);
 ground.position.y = -0.05;
-const player = MeshBuilder.CreateCapsule("wayfarer-proxy", { height: 1.8, radius: 0.35 }, scene);
-player.position.y = 0.9;
+const playerMesh = MeshBuilder.CreateCapsule("wayfarer-proxy", { height: 1.8, radius: 0.35 }, scene);
+playerMesh.position.y = 0.9;
 const anchor = MeshBuilder.CreateSphere("resonance-anchor", { diameter: 0.7 }, scene);
 anchor.position.set(3.5, 2.2, 0);
 
+const PLAYER_ID = asEntityId(1);
+const ANCHOR_TARGET_ID = asTargetId(1);
 const clock = new FixedStepClock();
+const simulation = new Simulation();
+const input = new InputLatch();
+simulation.addWayfarer(PLAYER_ID);
+input.setTarget(Number(ANCHOR_TARGET_ID));
+
+const keys = new Set<string>();
+function syncAxes(): void {
+  const left = keys.has("KeyA") || keys.has("ArrowLeft");
+  const right = keys.has("KeyD") || keys.has("ArrowRight");
+  input.setMoveAxes(Number(right) - Number(left), 0);
+}
+
+window.addEventListener("keydown", (event) => {
+  keys.add(event.code);
+  syncAxes();
+  if (event.code === "Space") input.setJumpHeld(true);
+  if (event.code === "ShiftLeft" && !event.repeat) input.pressEvade();
+  if (event.code === "KeyE") input.setAttractPressed(true);
+  if (event.code === "KeyQ" && !event.repeat) input.pressRepel();
+});
+window.addEventListener("keyup", (event) => {
+  keys.delete(event.code);
+  syncAxes();
+  if (event.code === "Space") input.setJumpHeld(false);
+  if (event.code === "KeyE") input.setAttractPressed(false);
+});
+
 let previousMs = performance.now();
 let stepsThisFrame = 0;
-let fps = 0;
 
 engine.runRenderLoop(() => {
   const now = performance.now();
@@ -51,19 +83,25 @@ engine.runRenderLoop(() => {
   const steps = clock.advance(frameSeconds);
   stepsThisFrame = steps.length;
 
-  // M0.3 boundary: authoritative gameplay will advance only inside these fixed steps.
   for (const step of steps) {
-    void step;
+    simulation.step(new Map([[PLAYER_ID, input.consume(step.tick)]]));
   }
 
-  fps = engine.getFps();
+  const playerState = simulation.getWayfarer(PLAYER_ID);
+  const fps = engine.getFps();
   diagnostics.textContent = [
     "RESONANCE M0",
+    "A/D or arrows: facing input",
+    "E: hold Attract intent | Q: Repel edge",
     `backend: ${backend}`,
     `fps: ${fps.toFixed(1)}`,
-    `sim tick: ${Number(clock.tick)}`,
+    `sim tick: ${Number(simulation.tick)}`,
     `steps/frame: ${stepsThisFrame}`,
     `alpha: ${clock.alpha.toFixed(3)}`,
+    `facing: ${playerState?.facing ?? "-"}`,
+    `mode: ${playerState?.movementMode ?? "-"}`,
+    `target: ${Number(playerState?.attractTargetId ?? 0)}`,
+    `state hash: ${simulation.stateHash()}`,
   ].join("\n");
 
   scene.render();
@@ -71,5 +109,9 @@ engine.runRenderLoop(() => {
 
 window.addEventListener("resize", () => engine.resize());
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) clock.reset();
+  if (document.hidden) {
+    clock.clearAccumulator();
+  } else {
+    previousMs = performance.now();
+  }
 });
