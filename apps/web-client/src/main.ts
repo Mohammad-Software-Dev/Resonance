@@ -27,6 +27,7 @@ import {
   dequantizeAxis,
 } from "@resonance/simulation";
 import {
+  M0_TARGET_SELECTION_CONFIG,
   TargetRegistry,
   resolveTargetAim,
   selectResonanceTarget,
@@ -267,7 +268,10 @@ engine.runRenderLoop(() => {
       aim: aim.vector,
       ability: "attract",
       previousTargetId: selectedTargetId,
-      targets: targetRegistry.all(),
+      targets: targetRegistry.queryNearby(
+        beforeStep.position,
+        M0_TARGET_SELECTION_CONFIG.retainRange,
+      ),
     });
     selectedTargetId = selection.selectedTargetId;
     targetDebug = selection.candidates;
