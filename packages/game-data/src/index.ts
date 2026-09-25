@@ -15,3 +15,5 @@ export const asTick = (value: number): Tick => value as Tick;
 export const asEntityId = (value: number): EntityId => value as EntityId;
 export const asTargetId = (value: number): TargetId => value as TargetId;
 export const asRevision = (value: number): Revision => value as Revision;
+
+export * from "./movement";
