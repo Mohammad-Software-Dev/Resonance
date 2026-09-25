@@ -72,6 +72,19 @@ export class TargetRegistry {
       .map(cloneTarget);
   }
 
+  queryNearby(center: { x: number; y: number; z: number }, range: number): readonly ResonanceTargetState[] {
+    const rangeSquared = range * range;
+    return [...this.byId.values()]
+      .filter((target) => {
+        const dx = target.position.x - center.x;
+        const dy = target.position.y - center.y;
+        const dz = target.position.z - center.z;
+        return dx * dx + dy * dy + dz * dz <= rangeSquared;
+      })
+      .sort((a, b) => Number(a.id) - Number(b.id))
+      .map(cloneTarget);
+  }
+
   update(
     id: TargetId,
     patch: Partial<Omit<ResonanceTargetState, "id" | "guid" | "entityId" | "revision">>,
