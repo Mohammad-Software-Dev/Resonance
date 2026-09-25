@@ -21,3 +21,5 @@ export * from "./movement";
 export * from "./target";
 
 export * from "./attract";
+
+export * from "./repel";
