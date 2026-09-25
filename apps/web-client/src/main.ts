@@ -311,7 +311,11 @@ engine.runRenderLoop(() => {
     const attractConfig = { ...M0_ATTRACT_CONFIG, arrivalMode };
     let desiredTranslation: Vec3;
 
-    if (simInput.attractPressed && simInput.targetId !== 0) {
+    if (
+      simInput.attractPressed
+      && simInput.targetId !== 0
+      && !attractRuntime.requiresRelease
+    ) {
       const attract = stepAttract(
         state,
         attractRuntime,
@@ -328,8 +332,9 @@ engine.runRenderLoop(() => {
         state.attractTargetId = 0;
       }
     } else {
-      if (attractRuntime.targetId !== 0) {
-        lastAttractEvent = cancelAttract(state, attractRuntime, "released");
+      if (!simInput.attractPressed && (attractRuntime.targetId !== 0 || attractRuntime.requiresRelease)) {
+        const releaseEvent = cancelAttract(state, attractRuntime, "released");
+        if (releaseEvent) lastAttractEvent = releaseEvent;
       }
       attractDistance = 0;
       attractAcceleration = 0;
