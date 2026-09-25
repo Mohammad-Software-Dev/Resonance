@@ -53,7 +53,9 @@ export interface RepresentativeGraphicsRoom {
   readonly shadowGenerator: ShadowGenerator;
   readonly resonanceMaterial: NodeMaterial;
   getPreset(): GraphicsPresetName;
+  getRenderScale(): number;
   applyPreset(name: GraphicsPresetName): void;
+  applyRenderScale(scale: number): void;
   update(elapsedSeconds: number): void;
   stats(): GraphicsRoomStats;
 }
@@ -429,14 +431,20 @@ export function createRepresentativeGraphicsRoom(
   particles.start();
 
   let presetName = initialPreset;
+  let currentRenderScale = GRAPHICS_PRESETS[initialPreset].renderScale;
   const colorInput = resonanceMaterial.getInputBlockByPredicate(
     (block) => block.name.toLowerCase().includes("color"),
   );
 
+  function applyRenderScale(scale: number): void {
+    currentRenderScale = Math.max(0.5, Math.min(1, scale));
+    engine.setHardwareScalingLevel(hardwareScalingLevel(currentRenderScale));
+  }
+
   function applyPreset(name: GraphicsPresetName): void {
     const preset = GRAPHICS_PRESETS[name];
     presetName = name;
-    engine.setHardwareScalingLevel(hardwareScalingLevel(preset.renderScale));
+    applyRenderScale(preset.renderScale);
     shadowGenerator.mapSize = preset.shadowMapSize;
     shadowGenerator.getShadowMap()?.resize(preset.shadowMapSize);
     keyLight.shadowEnabled = preset.shadowEnabled;
@@ -456,7 +464,9 @@ export function createRepresentativeGraphicsRoom(
     shadowGenerator,
     resonanceMaterial,
     getPreset: () => presetName,
+    getRenderScale: () => currentRenderScale,
     applyPreset,
+    applyRenderScale,
     update(elapsedSeconds: number): void {
       const pulse = 0.5 + 0.5 * Math.sin(elapsedSeconds * 3.1);
       if (colorInput) {
@@ -477,7 +487,7 @@ export function createRepresentativeGraphicsRoom(
       const preset = GRAPHICS_PRESETS[presetName];
       return {
         preset: presetName,
-        renderScale: preset.renderScale,
+        renderScale: currentRenderScale,
         meshes: scene.meshes.length,
         activeMeshes: scene.getActiveMeshes().length,
         vertices: scene.getTotalVertices(),
