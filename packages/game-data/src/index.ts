@@ -19,3 +19,5 @@ export const asRevision = (value: number): Revision => value as Revision;
 export * from "./movement";
 
 export * from "./target";
+
+export * from "./attract";
