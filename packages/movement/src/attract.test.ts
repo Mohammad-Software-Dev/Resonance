@@ -118,6 +118,27 @@ describe("Attract movement kernel", () => {
     });
   });
 
+  it("requires button release before restarting after a hard cancel", () => {
+    const state = createInitialMovementState();
+    const runtime = createAttractRuntimeState();
+    const anchor = target(6, 0);
+    stepAttract(state, runtime, anchor, 0, M0_ATTRACT_CONFIG);
+
+    for (let tick = 0; tick < M0_ATTRACT_CONFIG.collisionCancelTicks; tick += 1) {
+      recordAttractCollision(state, runtime, true, M0_ATTRACT_CONFIG);
+    }
+
+    expect(runtime.requiresRelease).toBe(true);
+    const held = stepAttract(state, runtime, anchor, 0, M0_ATTRACT_CONFIG);
+    expect(held.event).toBeNull();
+    expect(runtime.targetId).toBe(0);
+
+    cancelAttract(state, runtime, "released");
+    const restarted = stepAttract(state, runtime, anchor, 0, M0_ATTRACT_CONFIG);
+    expect(restarted.event?.type).toBe("started");
+    expect(runtime.requiresRelease).toBe(false);
+  });
+
   it("emits arrival once when entering the authored arrival radius", () => {
     const state = createInitialMovementState();
     state.position = { x: 0.3, y: 0, z: 0 };
