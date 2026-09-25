@@ -26,8 +26,7 @@ export class TargetRegistry {
     const ordered = [...definitions].sort((a, b) => String(a.guid).localeCompare(String(b.guid)));
     const seenEntities = new Set<number>();
 
-    for (let index = 0; index < ordered.length; index += 1) {
-      const definition = ordered[index];
+    for (const [index, definition] of ordered.entries()) {
       if (this.idByGuid.has(definition.guid)) {
         throw new Error(`Duplicate authored target GUID: ${String(definition.guid)}`);
       }
