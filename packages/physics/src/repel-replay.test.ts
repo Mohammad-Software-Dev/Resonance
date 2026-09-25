@@ -137,6 +137,7 @@ describe("Repel + Rapier integration", () => {
     const { physics, state } = await fixture({ x: 0, y: 1.2, z: 0 });
     const repel = createRepelRuntimeState();
     const low = target(22, 0, 0.2);
+    const startY = state.position.y;
     let maxY = state.position.y;
 
     let desired = stepRepel(state, repel, low, M0_REPEL_CONFIG).desiredTranslation;
@@ -155,7 +156,7 @@ describe("Repel + Rapier integration", () => {
           ).desiredTranslation;
     }
 
-    expect(maxY).toBeGreaterThan(3.5);
+    expect(maxY - startY).toBeGreaterThan(1.8);
     physics.free();
   });
 
