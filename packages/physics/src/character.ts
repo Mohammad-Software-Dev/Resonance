@@ -141,6 +141,11 @@ export class RapierCharacterWorld {
     const character = this.character;
     if (!character) throw new Error("Create the character before moving it.");
 
+    // Character queries consume Rapier's broad phase. Step the zero-gravity
+    // authored world once so collider insertions and deterministic platform
+    // translations are visible to this tick's movement query.
+    this.world.step();
+
     const platformTranslation = previousGroundEntityId === 0
       ? { x: 0, y: 0, z: 0 }
       : this.platforms.get(previousGroundEntityId)?.translationDelta ?? { x: 0, y: 0, z: 0 };
