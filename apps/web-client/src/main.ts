@@ -52,7 +52,6 @@ import {
   initialGraphicsPreset,
   nextGraphicsPreset,
 } from "./graphics/presets";
-import { createRepresentativeGraphicsRoom } from "./graphics/representative-room";
 import {
   BrowserPerformanceMonitor,
   warmCriticalShaders,
@@ -211,6 +210,9 @@ for (const [guid, mesh] of [
   if (target) targetMeshes.set(Number(target.id), mesh);
 }
 
+const { createRepresentativeGraphicsRoom } = await import(
+  "./graphics/representative-room"
+);
 const graphicsRoom = createRepresentativeGraphicsRoom(
   scene,
   engine,
