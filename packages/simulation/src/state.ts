@@ -26,6 +26,7 @@ export interface WayfarerState {
   coyoteTicksRemaining: number;
   jumpBufferTicksRemaining: number;
   evadeTicksRemaining: number;
+  repelRecoveryTicksRemaining: number;
   attractTargetId: TargetId | 0;
   stateRevision: Revision;
 }
@@ -42,6 +43,7 @@ export interface WayfarerSnapshot {
   readonly coyoteTicksRemaining: number;
   readonly jumpBufferTicksRemaining: number;
   readonly evadeTicksRemaining: number;
+  readonly repelRecoveryTicksRemaining: number;
   readonly attractTargetId: TargetId | 0;
   readonly stateRevision: Revision;
 }
@@ -64,6 +66,7 @@ export function createInitialWayfarerState(entityId: EntityId): WayfarerState {
     coyoteTicksRemaining: 0,
     jumpBufferTicksRemaining: 0,
     evadeTicksRemaining: 0,
+    repelRecoveryTicksRemaining: 0,
     attractTargetId: 0,
     stateRevision: asRevision(0),
   };
