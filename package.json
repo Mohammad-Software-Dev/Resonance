@@ -3,7 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "description": "Browser-first 2.5D action Metroidvania with solo and 1-4 player online co-op.",
-  "engines": {
-    "node": "24.21.x"
+  "packageManager": "pnpm@12.6.0",
+  "engines": { "node": "24.21.x" },
+  "scripts": {
+    "dev:web": "pnpm --filter @resonance/web-client dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "test:determinism": "pnpm --filter @resonance/simulation test",
+    "lint": "pnpm -r --if-present lint"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.1",
+    "vitest": "4.0.18"
   }
 }
