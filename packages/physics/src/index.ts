@@ -18,3 +18,5 @@ export async function createPhysicsWorld(
   const rapier = await initializePhysics();
   return new rapier.World(gravity);
 }
+
+export * from "./character";
