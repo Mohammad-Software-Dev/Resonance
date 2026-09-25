@@ -296,9 +296,11 @@ engine.runRenderLoop(() => {
     selectedTargetId = selection.selectedTargetId;
     targetDebug = selection.candidates;
 
-    const lockedTargetId = attractRuntime.targetId !== 0
-      ? attractRuntime.targetId
-      : selectedTargetId;
+    const lockedTargetId = attractRuntime.requiresRelease
+      ? 0
+      : attractRuntime.targetId !== 0
+        ? attractRuntime.targetId
+        : selectedTargetId;
     input.setTarget(Number(lockedTargetId));
 
     const simInput = input.consume(step.tick);
