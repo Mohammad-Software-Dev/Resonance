@@ -368,6 +368,14 @@ engine.runRenderLoop(() => {
     const state = simulation.getWayfarer(PLAYER_ID);
     if (!state) continue;
 
+    if (
+      !simInput.attractPressed
+      && attractRuntime.targetId === 0
+      && attractRuntime.requiresRelease
+    ) {
+      cancelAttract(state, attractRuntime, "released");
+    }
+
     const previousGroundEntityId = state.groundEntityId;
     const attractConfig = { ...M0_ATTRACT_CONFIG, arrivalMode };
     let desiredTranslation: Vec3;
@@ -391,6 +399,16 @@ engine.runRenderLoop(() => {
         }
         simulation.recordRepel(PLAYER_ID);
         desiredTranslation = repel.desiredTranslation;
+      } else if (state.repelRecoveryTicksRemaining > 0) {
+        const recovery = stepRepelRecovery(
+          state,
+          repelRuntime,
+          dequantizeAxis(simInput.moveX),
+          M0_MOVEMENT_CONFIG,
+          M0_REPEL_CONFIG,
+        );
+        desiredTranslation = recovery.desiredTranslation;
+        if (recovery.event) lastRepelEvent = recovery.event;
       } else {
         desiredTranslation = stepMovement(
           state,
