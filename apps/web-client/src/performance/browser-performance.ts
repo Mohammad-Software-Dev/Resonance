@@ -92,5 +92,11 @@ export async function warmCriticalShaders(scene: Scene): Promise<number> {
 
   await Promise.all(compilations);
   await scene.whenReadyAsync();
+
+  // Warm shadow/glow/particle render paths that are not covered by material
+  // forceCompilationAsync. No simulation tick is advanced during these frames.
+  scene.render();
+  scene.render();
+
   return warmed;
 }
