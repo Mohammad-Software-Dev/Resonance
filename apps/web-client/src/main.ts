@@ -14,6 +14,7 @@ import {
 } from "@resonance/game-data";
 import {
   applyMovementCollision,
+  recoverMovementState,
   stepMovement,
 } from "@resonance/movement";
 import {
@@ -187,6 +188,12 @@ engine.runRenderLoop(() => {
       state.up,
     );
     applyMovementCollision(state, collision);
+
+    if (state.position.y < -6 || Math.abs(state.position.x) > 20) {
+      recoverMovementState(state, START);
+      physics.setCharacterPosition(START);
+    }
+
     collisionCount = collision.collisionCount;
     maximumCorrection = collision.maximumCorrection;
   }
