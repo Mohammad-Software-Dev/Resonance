@@ -10,11 +10,16 @@ test("canonical M0 replay matches Node in the browser runtime", async ({ page })
   await page.goto("/replay.html");
   await page.waitForFunction(() => typeof window.__RESONANCE_VERIFY_REPLAY__ === "function");
 
-  const result = await page.evaluate(async (replay) => {
-    const verify = window.__RESONANCE_VERIFY_REPLAY__;
-    if (!verify) throw new Error("Browser replay verifier was not installed.");
-    return await verify(replay);
-  }, artifact) as {
+  const result = await Promise.race([
+    page.evaluate(async (replay) => {
+      const verify = window.__RESONANCE_VERIFY_REPLAY__;
+      if (!verify) throw new Error("Browser replay verifier was not installed.");
+      return await verify(replay);
+    }, artifact),
+    new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("Browser replay exceeded 15-second watchdog.")), 15_000);
+    }),
+  ]) as {
     direct: { ok: boolean; finalHash: string; divergence: unknown };
   };
 
