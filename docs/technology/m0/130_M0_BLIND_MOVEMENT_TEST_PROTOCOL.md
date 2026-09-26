@@ -131,7 +131,15 @@ The free-form response is intentionally last so the numerical questions do not p
 
 M0.11 hard evidence requires at least **five blind testers** who did not build the movement system and were not coached through the course.
 
-Keep each exported JSON report.
+Keep each exported JSON report in a private/local evidence directory. Do not commit tester free-form responses to the public repository by default.
+
+Aggregate the directory with:
+
+```text
+pnpm blind-test:report <report-directory>
+```
+
+The command rejects invalid/duplicate sessions and exits nonzero until at least five unique reports are present.
 
 For signoff, summarize:
 
