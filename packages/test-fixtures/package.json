@@ -1,0 +1,23 @@
+{
+  "name": "@resonance/test-fixtures",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@resonance/game-data": "workspace:*",
+    "@resonance/movement": "workspace:*",
+    "@resonance/physics": "workspace:*",
+    "@resonance/simulation": "workspace:*",
+    "@resonance/targeting": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "4.0.18"
+  }
+}
