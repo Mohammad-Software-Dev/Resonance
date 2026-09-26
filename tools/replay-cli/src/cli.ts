@@ -1,5 +1,5 @@
-import { readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { parseReplayArtifact } from "@resonance/simulation";
 import {
   generateCanonicalM0Replay,
@@ -41,7 +41,9 @@ if (args[0] === "--fingerprint") {
 if (args[0] === "--generate") {
   const output = args[1] ?? usage();
   const artifact = await generateCanonicalM0Replay();
-  await writeFile(resolve(output), JSON.stringify(artifact, null, 2) + "\n", "utf8");
+  const outputPath = resolve(output);
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, JSON.stringify(artifact, null, 2) + "\n", "utf8");
   console.log(
     `generated ${output}: ${artifact.inputs.length} ticks, ${artifact.checkpoints.length} checkpoints, final=${artifact.finalHash}`,
   );
