@@ -19,5 +19,8 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm replay:fingerprint
       - run: pnpm build
       - run: pnpm check:bundle
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - run: pnpm test:browser:replay
