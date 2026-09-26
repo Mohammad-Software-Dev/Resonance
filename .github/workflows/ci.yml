@@ -26,5 +26,5 @@ jobs:
       - run: pnpm replay:fingerprint
       - run: pnpm build
       - run: pnpm check:bundle
-      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - run: pnpm exec playwright install chromium firefox webkit
       - run: pnpm test:browser:replay
