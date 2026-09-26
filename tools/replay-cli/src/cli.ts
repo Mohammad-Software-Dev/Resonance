@@ -29,10 +29,9 @@ if (args[0] === "--fingerprint") {
   const artifact = await generateCanonicalM0Replay();
   console.log(JSON.stringify({
     finalHash: artifact.finalHash,
-    checkpoints: artifact.checkpoints.map(({ tick, hash, telemetry }) => ({
+    checkpoints: artifact.checkpoints.map(({ tick, hash }) => ({
       tick,
       hash,
-      telemetry,
     })),
   }));
   process.exit(0);

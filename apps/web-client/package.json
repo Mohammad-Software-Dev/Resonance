@@ -15,10 +15,10 @@
     "@resonance/movement": "workspace:*",
     "@resonance/physics": "workspace:*",
     "@resonance/simulation": "workspace:*",
-    "@resonance/targeting": "workspace:*",
-    "@resonance/test-fixtures": "workspace:*"
+    "@resonance/targeting": "workspace:*"
   },
   "devDependencies": {
-    "vite": "8.3.1"
+    "vite": "8.3.1",
+    "@resonance/test-fixtures": "workspace:*"
   }
 }

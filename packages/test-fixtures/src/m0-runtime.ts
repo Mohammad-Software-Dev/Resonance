@@ -373,12 +373,21 @@ export async function verifyM0Replay(
   const actual: ReplayCheckpoint[] = [];
   let divergence: ReplayDivergence | null = null;
   let finalHash = "";
+  let lastTelemetry: Readonly<Record<string, ReplayTelemetryValue>> = {};
+  let expectedInputTick = Number(artifact.initialSnapshot.tick) + 1;
 
   try {
     for (const serialized of artifact.inputs) {
+      if (serialized.tick !== expectedInputTick) {
+        throw new Error(
+          `Replay input tick ${serialized.tick} does not match expected tick ${expectedInputTick}.`,
+        );
+      }
+      expectedInputTick += 1;
       const input = deserializeSimInput(serialized);
       const step = runtime.step(input);
       finalHash = step.gameplayHash;
+      lastTelemetry = step.telemetry;
       const checkpoint = expected.get(step.tick);
       if (checkpoint) {
         actual.push({
@@ -413,7 +422,7 @@ export async function verifyM0Replay(
         expectedHash: artifact.finalHash,
         actualHash: finalHash,
         input: deserializeSimInput(last),
-        actualTelemetry: {},
+        actualTelemetry: lastTelemetry,
       };
     }
   }

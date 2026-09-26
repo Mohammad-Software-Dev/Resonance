@@ -107,7 +107,10 @@ export class ReplayRecorder {
 
   public shouldCheckpoint(tick: Tick): boolean {
     const value = Number(tick);
-    return value % this.options.checkpointIntervalTicks === 0;
+    const startTick = Number(this.options.initialSnapshot.tick);
+    const elapsedTicks = value - startTick;
+    return elapsedTicks > 0
+      && elapsedTicks % this.options.checkpointIntervalTicks === 0;
   }
 
   public recordCheckpoint(

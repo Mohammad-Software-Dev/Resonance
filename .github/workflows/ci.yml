@@ -23,8 +23,13 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm replay:fingerprint
+      - name: Verify canonical replay fingerprint
+        run: |
+          pnpm --filter @resonance/replay-cli exec tsx src/cli.ts --fingerprint > /tmp/m0-canonical.fingerprint.json
+          diff -u packages/test-fixtures/replays/m0-canonical.fingerprint.json /tmp/m0-canonical.fingerprint.json
       - run: pnpm --filter @resonance/replay-cli replay --generate ../../packages/test-fixtures/replays/m0-canonical.json
+      - run: pnpm test:replay
+      - run: pnpm test:replay:matrix
       - uses: actions/upload-artifact@v4
         with:
           name: m0-canonical-replay
@@ -40,7 +45,6 @@ jobs:
     timeout-minutes: 15
     strategy:
       fail-fast: false
-      max-parallel: 1
       matrix:
         browser: [chromium, firefox, webkit]
     steps:

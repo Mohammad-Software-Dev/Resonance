@@ -457,6 +457,9 @@ function startReplayCapture(): void {
     return;
   }
 
+  Object.assign(attractRuntime, createAttractRuntimeState());
+  Object.assign(repelRuntime, createRepelRuntimeState());
+
   replayRecorder = new ReplayRecorder({
     buildId: import.meta.env.VITE_BUILD_ID ?? "dev",
     fixture: { id: "m0-representative-course", version: 1 },

@@ -99,6 +99,8 @@ Capture start is rejected while:
 - Attract is active or awaiting release;
 - Repel recovery is active.
 
+Once neutral, F9 re-baselines the non-snapshotted Attract/Repel runtime bookkeeping before recording. This keeps a capture taken after earlier Repel use reproducible from its embedded simulation snapshot.
+
 Changing the experimental Attract arrival mode while recording cancels the recording, because replay settings are fixed for one artifact.
 
 Target selection is recorded as the resulting `TargetId` in `SimInput`. The replay therefore reproduces the authoritative gameplay consequence without requiring mouse/gamepad presentation sampling.
@@ -139,7 +141,7 @@ CI projects:
 
 Each browser must reproduce the Node final hash and pass direct checkpoint verification.
 
-The full 30–144 fps cadence matrix runs in the headless deterministic runtime as part of the ordinary test/fingerprint gate. It is deliberately not repeated inside every browser: cadence independence tests the fixed-step scheduler, while the browser gate tests the separate question of cross-runtime gameplay/physics equivalence.
+Chromium additionally runs the full 30/45/60/90/120/144 render-cadence matrix inside the browser replay runtime. The same matrix also runs in Node, while Firefox and WebKit provide the independent cross-runtime direct-hash checks.
 
 Linux Playwright WebKit is useful cross-runtime evidence but does **not** replace the required Safari/macOS physical acceptance run.
 
@@ -147,15 +149,17 @@ Linux Playwright WebKit is useful cross-runtime evidence but does **not** replac
 
 M0.10 adds these gates after ordinary unit tests:
 
-1. canonical replay fingerprint generation;
-2. production web build;
-3. bundle budget;
-4. Playwright browser installation;
-5. Chromium/Firefox/WebKit direct replay equivalence.
+1. generated fingerprint diff against `packages/test-fixtures/replays/m0-canonical.fingerprint.json`;
+2. generated canonical replay verification and Node cadence matrix;
+3. production web build;
+4. bundle budget;
+5. Playwright browser installation;
+6. Chromium/Firefox/WebKit direct replay equivalence;
+7. Chromium browser-side 30–144 fps cadence matrix.
 
-The cadence matrix is already exercised by the deterministic Node test/fingerprint gate and is not multiplied across browser engines.
+The committed fingerprint locks the canonical final hash and every 30-tick checkpoint. CI generates the full replay JSON from Node and uploads that artifact for the browser jobs.
 
-Once the committed canonical fingerprint is locked, CI also verifies that code changes do not silently change expected checkpoints.
+Code changes therefore cannot silently change expected deterministic checkpoints.
 
 Intentional deterministic behavior changes must update the canonical fixture in the same reviewed change and explain why the hashes changed.
 
@@ -175,9 +179,9 @@ M0.10 is complete when:
 - browser replay export works;
 - canonical checkpoint hashes are committed;
 - CLI verification reports first divergence;
-- render-FPS matrix passes;
+- Node render-FPS matrix passes;
+- Chromium browser render-FPS matrix passes;
 - Node ↔ Chromium ↔ Firefox ↔ WebKit direct replay hashes agree in CI;
-- the Node deterministic gate passes the 30–144 fps cadence matrix;
 - replay regression is part of normal CI.
 
 The next engineering milestone after M0.10 is **M0.11 — Blind Movement Test**, while physical M0.9 performance signoff remains a separate required M0 gate.

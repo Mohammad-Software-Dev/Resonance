@@ -54,6 +54,20 @@ describe("ReplayRecorder", () => {
     expect(artifact.checkpoints[0]?.hash).toBe("abcd");
   });
 
+  it("measures checkpoint cadence from the recorded snapshot tick", () => {
+    const recorder = new ReplayRecorder({
+      buildId: "test",
+      fixture: { id: "fixture", version: 1 },
+      initialSeed: 0,
+      checkpointIntervalTicks: 30,
+      initialSnapshot: { ...initialSnapshot, tick: asTick(17) },
+    });
+
+    expect(recorder.shouldCheckpoint(asTick(30))).toBe(false);
+    expect(recorder.shouldCheckpoint(asTick(47))).toBe(true);
+    expect(recorder.shouldCheckpoint(asTick(77))).toBe(true);
+  });
+
   it("rejects discontinuous input ticks", () => {
     const recorder = new ReplayRecorder({
       buildId: "test",
