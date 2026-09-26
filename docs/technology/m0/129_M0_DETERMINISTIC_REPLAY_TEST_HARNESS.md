@@ -139,7 +139,7 @@ CI projects:
 
 Each browser must reproduce the Node final hash and pass direct checkpoint verification.
 
-Chromium additionally runs the full 30–144 fps cadence matrix. Render cadence is a fixed-step scheduling property, while Firefox/WebKit provide the cross-runtime deterministic comparison without repeating six extra physics replays per engine.
+The full 30–144 fps cadence matrix runs in the headless deterministic runtime as part of the ordinary test/fingerprint gate. It is deliberately not repeated inside every browser: cadence independence tests the fixed-step scheduler, while the browser gate tests the separate question of cross-runtime gameplay/physics equivalence.
 
 Linux Playwright WebKit is useful cross-runtime evidence but does **not** replace the required Safari/macOS physical acceptance run.
 
@@ -151,7 +151,9 @@ M0.10 adds these gates after ordinary unit tests:
 2. production web build;
 3. bundle budget;
 4. Playwright browser installation;
-5. Chromium/Firefox/WebKit replay equivalence.
+5. Chromium/Firefox/WebKit direct replay equivalence.
+
+The cadence matrix is already exercised by the deterministic Node test/fingerprint gate and is not multiplied across browser engines.
 
 Once the committed canonical fingerprint is locked, CI also verifies that code changes do not silently change expected checkpoints.
 
@@ -174,7 +176,8 @@ M0.10 is complete when:
 - canonical checkpoint hashes are committed;
 - CLI verification reports first divergence;
 - render-FPS matrix passes;
-- Node ↔ Chromium ↔ Firefox ↔ WebKit replay hashes agree in CI;
+- Node ↔ Chromium ↔ Firefox ↔ WebKit direct replay hashes agree in CI;
+- the Node deterministic gate passes the 30–144 fps cadence matrix;
 - replay regression is part of normal CI.
 
 The next engineering milestone after M0.10 is **M0.11 — Blind Movement Test**, while physical M0.9 performance signoff remains a separate required M0 gate.
