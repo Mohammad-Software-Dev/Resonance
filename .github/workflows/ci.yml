@@ -1,5 +1,9 @@
 name: CI
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
@@ -19,5 +23,31 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm replay:fingerprint
       - run: pnpm build
       - run: pnpm check:bundle
+
+  replay-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.6.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+      - run: pnpm install --no-frozen-lockfile
+      - name: Install browser runtime
+        run: |
+          if [ "${{ matrix.browser }}" = "webkit" ]; then
+            pnpm exec playwright install --with-deps webkit
+          else
+            pnpm exec playwright install ${{ matrix.browser }}
+          fi
+      - run: pnpm exec playwright test --project=${{ matrix.browser }}

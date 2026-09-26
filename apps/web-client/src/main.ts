@@ -36,8 +36,10 @@ import { RapierCharacterWorld } from "@resonance/physics";
 import {
   FixedStepClock,
   InputLatch,
+  ReplayRecorder,
   Simulation,
   dequantizeAxis,
+  hashReplayState,
 } from "@resonance/simulation";
 import {
   M0_TARGET_SELECTION_CONFIG,
@@ -61,6 +63,7 @@ import { FrameCaptureBuffer } from "./performance/frame-capture";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
+
 function requireElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) throw new Error(`Required M0 element is missing: ${selector}`);
@@ -282,9 +285,9 @@ window.addEventListener("keydown", (event) => {
     input.pressRepel();
     repelRequested = true;
   }
-  if (event.code === "Digit1") arrivalMode = "passThrough";
-  if (event.code === "Digit2") arrivalMode = "softCapture";
-  if (event.code === "Digit3") arrivalMode = "radiusBlend";
+  if (event.code === "Digit1") setArrivalMode("passThrough");
+  if (event.code === "Digit2") setArrivalMode("softCapture");
+  if (event.code === "Digit3") setArrivalMode("radiusBlend");
   if (event.code === "KeyG" && !event.repeat) {
     const nextPreset = nextGraphicsPreset(graphicsRoom.getPreset());
     graphicsRoom.applyPreset(nextPreset);
@@ -298,6 +301,8 @@ window.addEventListener("keydown", (event) => {
   }
   if (event.code === "KeyP" && !event.repeat) exportPerformanceCapture();
   if (event.code === "KeyX" && !event.repeat) frameCapture.reset();
+  if (event.code === "F9" && !event.repeat) startReplayCapture();
+  if (event.code === "F10" && !event.repeat) exportReplayCapture();
   if (event.code === "KeyC" && !event.repeat) {
     cameraMode = cameraMode === "perspective" ? "orthographic" : "perspective";
     applyCameraMode();
@@ -391,6 +396,103 @@ let lastAttractEvent: AttractSemanticEvent | null = null;
 let attractDistance = 0;
 let attractAcceleration = 0;
 const repelRuntime = createRepelRuntimeState();
+let replayRecorder: ReplayRecorder | null = null;
+let replayCaptureStatus = "idle";
+
+function replayHash(): string {
+  return hashReplayState(simulation.stateHash(), [
+    Number(attractRuntime.targetId),
+    Number(attractRuntime.targetRevision),
+    attractRuntime.ticksActive,
+    attractRuntime.blockedTicks,
+    attractRuntime.arrived,
+    attractRuntime.requiresRelease,
+    Number(repelRuntime.lastTargetId),
+    repelRuntime.uses,
+  ]);
+}
+
+function replayTelemetry() {
+  const state = simulation.getWayfarer(PLAYER_ID);
+  return {
+    simulationHash: simulation.stateHash(),
+    positionX: state?.position.x ?? 0,
+    positionY: state?.position.y ?? 0,
+    velocityX: state?.velocity.x ?? 0,
+    velocityY: state?.velocity.y ?? 0,
+    movementMode: state?.movementMode ?? "missing",
+    grounded: state?.grounded ?? false,
+    groundEntityId: Number(state?.groundEntityId ?? 0),
+    attractTargetId: Number(attractRuntime.targetId),
+    attractTicks: attractRuntime.ticksActive,
+    attractBlockedTicks: attractRuntime.blockedTicks,
+    attractRequiresRelease: attractRuntime.requiresRelease,
+    repelLastTargetId: Number(repelRuntime.lastTargetId),
+    repelUses: repelRuntime.uses,
+    collisionCount,
+    maximumCorrection,
+  };
+}
+
+function setArrivalMode(mode: AttractArrivalMode): void {
+  if (replayRecorder) {
+    replayRecorder = null;
+    replayCaptureStatus = "cancelled: arrival mode changed";
+  }
+  arrivalMode = mode;
+}
+
+function startReplayCapture(): void {
+  const state = simulation.getWayfarer(PLAYER_ID);
+  if (!state) {
+    replayCaptureStatus = "blocked: player missing";
+    return;
+  }
+  if (
+    attractRuntime.targetId !== 0
+    || attractRuntime.requiresRelease
+    || state.repelRecoveryTicksRemaining > 0
+  ) {
+    replayCaptureStatus = "blocked: start from neutral ability state";
+    return;
+  }
+
+  replayRecorder = new ReplayRecorder({
+    buildId: import.meta.env.VITE_BUILD_ID ?? "dev",
+    fixture: { id: "m0-representative-course", version: 1 },
+    initialSeed: 0,
+    settings: { attractArrivalMode: arrivalMode },
+    checkpointIntervalTicks: 30,
+    initialSnapshot: simulation.createSnapshot(),
+  });
+  replayCaptureStatus = `recording from tick ${Number(simulation.tick)}`;
+}
+
+function exportReplayCapture(): void {
+  if (!replayRecorder) {
+    replayCaptureStatus = "nothing to export; press F9 first";
+    return;
+  }
+  replayRecorder.setFinalHash(replayHash());
+  const artifact = replayRecorder.artifact();
+  if (artifact.inputs.length === 0) {
+    replayCaptureStatus = "nothing to export: no fixed ticks recorded";
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify(artifact, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `resonance-replay-${Date.now()}.json`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+  replayCaptureStatus = `exported ${artifact.inputs.length} ticks`;
+  replayRecorder = null;
+}
+
 let lastRepelEvent: RepelSemanticEvent | null = null;
 let repelRequested = false;
 let gamepadRepelWasHeld = false;
@@ -485,6 +587,7 @@ engine.runRenderLoop(() => {
     input.setAttractPressed(keys.has("KeyE") || readGamepadAttractHeld());
     const simInput = input.consume(step.tick);
     repelRequested = false;
+    replayRecorder?.recordInput(simInput);
     simulation.step(new Map([[PLAYER_ID, simInput]]));
 
     const state = simulation.getWayfarer(PLAYER_ID);
@@ -632,6 +735,14 @@ engine.runRenderLoop(() => {
 
     collisionCount = collision.collisionCount;
     maximumCorrection = collision.maximumCorrection;
+
+    if (replayRecorder) {
+      const hash = replayHash();
+      if (replayRecorder.shouldCheckpoint(simulation.tick)) {
+        replayRecorder.recordCheckpoint(simulation.tick, hash, replayTelemetry());
+      }
+      replayRecorder.setFinalHash(hash);
+    }
   }
 
   const state = simulation.getWayfarer(PLAYER_ID);
@@ -669,6 +780,7 @@ engine.runRenderLoop(() => {
     "Move/steer: A/D or arrows | Jump: Space | Evade: Left Shift",
     "Attract: hold E / gamepad RT | Repel: Q / gamepad LT",
     "Graphics: G presets | R dynamic resolution | C camera | P export perf | X reset perf",
+    "Replay: F9 start from neutral state | F10 export deterministic replay",
     "Aim: mouse or gamepad right stick; facing is keyboard fallback",
     "Arrival experiment: 1 pass-through | 2 soft-capture | 3 radius-blend",
     `backend: ${backend} | fps: ${fps.toFixed(1)} | camera: ${cameraMode}`,
@@ -680,7 +792,7 @@ engine.runRenderLoop(() => {
     `render: meshes ${graphicsStats.activeMeshes}/${graphicsStats.meshes} | vertices ${graphicsStats.vertices} | particles ${graphicsStats.activeParticles}`,
     `resources: materials ${graphicsStats.materials} | textures ${graphicsStats.textures} | warmed bindings ${warmedShaderBindings}`,
     `shader warmup: ${shaderWarmupMs.toFixed(1)} ms | runtime compile: ${performanceStats.runtimeShaderCompilationMs.toFixed(1)} ms`,
-    `graphics recovery: ${recoveryStatus}`,
+    `graphics recovery: ${recoveryStatus} | replay: ${replayCaptureStatus}`,
     `sim tick: ${Number(simulation.tick)} | steps/frame: ${stepsThisFrame} | alpha: ${clock.alpha.toFixed(3)}`,
     `position: ${state ? `${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)}, ${state.position.z.toFixed(2)}` : "-"}`,
     `grounded: ${state?.grounded ?? false} | ground entity: ${Number(state?.groundEntityId ?? 0)}`,
@@ -707,3 +819,4 @@ document.addEventListener("visibilitychange", () => {
     previousMs = performance.now();
   }
 });
+
