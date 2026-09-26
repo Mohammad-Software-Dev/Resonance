@@ -444,12 +444,15 @@ export async function verifyM0ReplayAtRenderFps(
 
   try {
     let frames = 0;
+    let inputIndex = 0;
     const maxFrames = Math.ceil((artifact.inputs.length / 60) * renderFps) + renderFps;
-    while (Number(clock.tick) < artifact.inputs.length && frames < maxFrames) {
+    while (inputIndex < artifact.inputs.length && frames < maxFrames) {
       frames += 1;
       for (const fixed of clock.advance(1 / renderFps)) {
-        const serialized = artifact.inputs[Number(fixed.tick) - 1];
+        void fixed;
+        const serialized = artifact.inputs[inputIndex];
         if (!serialized) break;
+        inputIndex += 1;
         const step = runtime.step(deserializeSimInput(serialized));
         finalHash = step.gameplayHash;
         const checkpointHash = expected.get(step.tick);
