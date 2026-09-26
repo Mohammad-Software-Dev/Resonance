@@ -64,11 +64,6 @@ import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
 
-declare global {
-  interface Window {
-    __RESONANCE_VERIFY_REPLAY__?: (artifact: ReplayArtifact) => Promise<unknown>;
-  }
-}
 function requireElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) throw new Error(`Required M0 element is missing: ${selector}`);
