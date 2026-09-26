@@ -39,6 +39,7 @@ export interface ReplayArtifact {
   readonly buildId: string;
   readonly fixture: ReplayFixtureDescriptor;
   readonly initialSeed: number;
+  readonly settings: Readonly<Record<string, ReplayTelemetryValue>>;
   readonly checkpointIntervalTicks: number;
   readonly initialSnapshot: SimSnapshot;
   readonly inputs: readonly SerializedSimInput[];
@@ -78,6 +79,7 @@ export interface ReplayRecorderOptions {
   readonly buildId: string;
   readonly fixture: ReplayFixtureDescriptor;
   readonly initialSeed: number;
+  readonly settings?: Readonly<Record<string, ReplayTelemetryValue>>;
   readonly checkpointIntervalTicks: number;
   readonly initialSnapshot: SimSnapshot;
 }
@@ -136,6 +138,7 @@ export class ReplayRecorder {
       buildId: this.options.buildId,
       fixture: { ...this.options.fixture },
       initialSeed: this.options.initialSeed,
+      settings: { ...(this.options.settings ?? {}) },
       checkpointIntervalTicks: this.options.checkpointIntervalTicks,
       initialSnapshot: this.options.initialSnapshot,
       inputs: this.inputs.map((input) => ({ ...input })),
