@@ -3,7 +3,7 @@ import { generateCanonicalM0Replay } from "@resonance/test-fixtures";
 
 test("canonical M0 replay matches Node in the browser runtime", async ({ page }) => {
   const artifact = await generateCanonicalM0Replay("playwright-node");
-  await page.goto("/");
+  await page.goto("/replay.html");
   await page.waitForFunction(() => typeof window.__RESONANCE_VERIFY_REPLAY__ === "function");
 
   const result = await page.evaluate(async (replay) => {
