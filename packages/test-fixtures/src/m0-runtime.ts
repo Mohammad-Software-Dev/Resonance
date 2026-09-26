@@ -27,8 +27,10 @@ import {
   type CharacterCollisionResult,
 } from "@resonance/physics";
 import {
+  FixedStepClock,
   Simulation,
   dequantizeAxis,
+  deserializeSimInput,
   type ReplayArtifact,
   type ReplayCheckpoint,
   type ReplayTelemetryValue,
@@ -388,13 +390,7 @@ export async function verifyM0Replay(
 
   try {
     for (const serialized of artifact.inputs) {
-      const input: SimInput = {
-        ...serialized,
-        tick: serialized.tick as SimInput["tick"],
-        moveX: serialized.moveX as SimInput["moveX"],
-        moveY: serialized.moveY as SimInput["moveY"],
-        targetId: serialized.targetId as SimInput["targetId"],
-      };
+      const input = deserializeSimInput(serialized);
       const step = runtime.step(input);
       finalHash = step.gameplayHash;
       const checkpoint = expected.get(step.tick);
@@ -428,13 +424,7 @@ export async function verifyM0Replay(
         tick: last.tick,
         expectedHash: artifact.finalHash,
         actualHash: finalHash,
-        input: {
-          ...last,
-          tick: last.tick as SimInput["tick"],
-          moveX: last.moveX as SimInput["moveX"],
-          moveY: last.moveY as SimInput["moveY"],
-          targetId: last.targetId as SimInput["targetId"],
-        },
+        input: deserializeSimInput(last),
         actualTelemetry: {},
       };
     }
@@ -446,4 +436,63 @@ export async function verifyM0Replay(
     checkpoints: actual,
     divergence,
   };
+}
+
+
+export interface RenderCadenceReplayResult {
+  readonly renderFps: number;
+  readonly ok: boolean;
+  readonly finalHash: string;
+  readonly divergenceTick: number | null;
+}
+
+export async function verifyM0ReplayAtRenderFps(
+  artifact: ReplayArtifact,
+  renderFps: number,
+): Promise<RenderCadenceReplayResult> {
+  const runtime = await M0ReplayRuntime.create(artifact);
+  const clock = new FixedStepClock();
+  const expected = new Map(artifact.checkpoints.map((checkpoint) => [checkpoint.tick, checkpoint.hash]));
+  let finalHash = "";
+  let divergenceTick: number | null = null;
+
+  try {
+    let frames = 0;
+    const maxFrames = Math.ceil((artifact.inputs.length / 60) * renderFps) + renderFps;
+    while (Number(clock.tick) < artifact.inputs.length && frames < maxFrames) {
+      frames += 1;
+      for (const fixed of clock.advance(1 / renderFps)) {
+        const serialized = artifact.inputs[Number(fixed.tick) - 1];
+        if (!serialized) break;
+        const step = runtime.step(deserializeSimInput(serialized));
+        finalHash = step.gameplayHash;
+        const checkpointHash = expected.get(step.tick);
+        if (checkpointHash && checkpointHash !== step.gameplayHash) {
+          divergenceTick = step.tick;
+          break;
+        }
+      }
+      if (divergenceTick !== null) break;
+    }
+  } finally {
+    runtime.free();
+  }
+
+  return {
+    renderFps,
+    ok: divergenceTick === null && finalHash === artifact.finalHash,
+    finalHash,
+    divergenceTick,
+  };
+}
+
+export async function verifyM0ReplayRenderMatrix(
+  artifact: ReplayArtifact,
+  renderFpsValues: readonly number[] = [30, 45, 60, 90, 120, 144],
+): Promise<readonly RenderCadenceReplayResult[]> {
+  const results: RenderCadenceReplayResult[] = [];
+  for (const renderFps of renderFpsValues) {
+    results.push(await verifyM0ReplayAtRenderFps(artifact, renderFps));
+  }
+  return results;
 }
