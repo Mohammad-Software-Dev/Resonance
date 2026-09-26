@@ -25,6 +25,19 @@ async function load(path: string) {
 }
 
 const args = process.argv.slice(2);
+if (args[0] === "--fingerprint") {
+  const artifact = await generateCanonicalM0Replay();
+  console.log(JSON.stringify({
+    finalHash: artifact.finalHash,
+    checkpoints: artifact.checkpoints.map(({ tick, hash, telemetry }) => ({
+      tick,
+      hash,
+      telemetry,
+    })),
+  }));
+  process.exit(0);
+}
+
 if (args[0] === "--generate") {
   const output = args[1] ?? usage();
   const artifact = await generateCanonicalM0Replay();
