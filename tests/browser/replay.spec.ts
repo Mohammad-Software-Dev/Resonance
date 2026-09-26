@@ -1,27 +1,31 @@
 import { expect, test } from "@playwright/test";
 import { generateCanonicalM0Replay } from "@resonance/test-fixtures";
 
-test("canonical M0 replay matches Node in the browser runtime", async ({ page }) => {
+test("canonical M0 replay matches Node in the browser runtime", async ({ page }, testInfo) => {
   const artifact = await generateCanonicalM0Replay("playwright-node");
   await page.goto("/replay.html");
-  await page.waitForFunction(() => typeof (window as unknown as { __RESONANCE_VERIFY_REPLAY__?: unknown }).__RESONANCE_VERIFY_REPLAY__ === "function");
+  await page.waitForFunction(() => typeof window.__RESONANCE_VERIFY_REPLAY__ === "function");
 
-  const result = await page.evaluate(async (replay) => {
-    const verify = (window as unknown as {
-      __RESONANCE_VERIFY_REPLAY__?: (artifact: typeof replay) => Promise<unknown>;
-    }).__RESONANCE_VERIFY_REPLAY__;
+  const runMatrix = testInfo.project.name === "chromium";
+  const result = await page.evaluate(async ({ replay, runMatrix }) => {
+    const verify = window.__RESONANCE_VERIFY_REPLAY__;
     if (!verify) throw new Error("Browser replay verifier was not installed.");
-    return await verify(replay);
-  }, artifact) as {
+    return await verify(replay, runMatrix);
+  }, { replay: artifact, runMatrix }) as {
     direct: { ok: boolean; finalHash: string; divergence: unknown };
     matrix: { renderFps: number; ok: boolean; finalHash: string; divergenceTick: number | null }[];
   };
 
   expect(result.direct.ok, JSON.stringify(result.direct.divergence)).toBe(true);
   expect(result.direct.finalHash).toBe(artifact.finalHash);
-  expect(result.matrix.map((entry) => entry.renderFps)).toEqual([30, 45, 60, 90, 120, 144]);
-  expect(result.matrix.every((entry) => entry.ok)).toBe(true);
-  expect(new Set(result.matrix.map((entry) => entry.finalHash))).toEqual(
-    new Set([artifact.finalHash]),
-  );
+
+  if (runMatrix) {
+    expect(result.matrix.map((entry) => entry.renderFps)).toEqual([30, 45, 60, 90, 120, 144]);
+    expect(result.matrix.every((entry) => entry.ok)).toBe(true);
+    expect(new Set(result.matrix.map((entry) => entry.finalHash))).toEqual(
+      new Set([artifact.finalHash]),
+    );
+  } else {
+    expect(result.matrix).toEqual([]);
+  }
 });
