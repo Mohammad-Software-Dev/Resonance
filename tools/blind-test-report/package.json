@@ -1,0 +1,14 @@
+{
+  "name": "@resonance/blind-test-report",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "report": "tsx src/cli.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "tsx": "4.23.15"
+  }
+}
