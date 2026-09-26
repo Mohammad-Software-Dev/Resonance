@@ -18,7 +18,8 @@
     "test:replay": "pnpm --filter @resonance/replay-cli replay packages/test-fixtures/replays/m0-canonical.json",
     "test:replay:matrix": "pnpm --filter @resonance/replay-cli replay --matrix packages/test-fixtures/replays/m0-canonical.json",
     "test:browser:replay": "playwright test",
-    "replay:fingerprint": "pnpm --filter @resonance/replay-cli replay --fingerprint"
+    "replay:fingerprint": "pnpm --filter @resonance/replay-cli replay --fingerprint",
+    "blind-test:report": "pnpm --filter @resonance/blind-test-report report"
   },
   "devDependencies": {
     "@types/node": "24.10.0",
