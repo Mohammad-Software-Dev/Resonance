@@ -172,9 +172,12 @@ export class M0ReplayRuntime {
       { x: 0.25, y: 1.2, z: 0 },
       { x: 0.35, y: 1.2, z: 1 },
     );
+    const initialPlatformPosition = platformPositionAtTick(
+      Number(artifact.initialSnapshot.tick),
+    );
     physics.addMovingBox(
       PLATFORM_ID,
-      { x: -2, y: 1.15, z: 0 },
+      initialPlatformPosition,
       { x: 1.25, y: 0.175, z: 1 },
     );
 
@@ -194,7 +197,11 @@ export class M0ReplayRuntime {
       {
         guid: asAuthoredTargetGuid("m0-anchor-moving"),
         entityId: asEntityId(303),
-        position: { x: -2, y: 2.45, z: 0 },
+        position: {
+          x: initialPlatformPosition.x,
+          y: initialPlatformPosition.y + 1.3,
+          z: 0,
+        },
         priority: 0.04,
       },
       {
