@@ -4,16 +4,11 @@ import {
   verifyM0ReplayRenderMatrix,
 } from "@resonance/test-fixtures";
 
-declare global {
-  interface Window {
-    __RESONANCE_VERIFY_REPLAY__?: (artifact: ReplayArtifact) => Promise<unknown>;
-  }
-}
-
 const status = document.querySelector<HTMLPreElement>("#status");
-window.__RESONANCE_VERIFY_REPLAY__ = async (artifact: ReplayArtifact) => {
+const verifyReplay = async (artifact: ReplayArtifact) => {
   const direct = await verifyM0Replay(artifact);
   const matrix = await verifyM0ReplayRenderMatrix(artifact);
   return { direct, matrix };
 };
+Object.assign(window, { __RESONANCE_VERIFY_REPLAY__: verifyReplay });
 if (status) status.textContent = "replay harness ready";
