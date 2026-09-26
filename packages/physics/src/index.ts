@@ -3,8 +3,10 @@ import RAPIER from "@dimforge/rapier3d-deterministic-compat";
 let initialization: Promise<void> | undefined;
 
 export async function initializePhysics(): Promise<typeof RAPIER> {
-  initialization ??= RAPIER.init();
-  await initialization;
+  if (typeof window === "undefined") {
+    initialization ??= RAPIER.init();
+    await initialization;
+  }
   return RAPIER;
 }
 
