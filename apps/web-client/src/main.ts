@@ -40,6 +40,7 @@ import {
   Simulation,
   dequantizeAxis,
   hashReplayState,
+  type ReplayArtifact,
 } from "@resonance/simulation";
 import {
   M0_TARGET_SELECTION_CONFIG,
@@ -63,6 +64,12 @@ import { FrameCaptureBuffer } from "./performance/frame-capture";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
+
+declare global {
+  interface Window {
+    __RESONANCE_VERIFY_REPLAY__?: (artifact: ReplayArtifact) => Promise<unknown>;
+  }
+}
 function requireElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) throw new Error(`Required M0 element is missing: ${selector}`);
@@ -818,3 +825,14 @@ document.addEventListener("visibilitychange", () => {
     previousMs = performance.now();
   }
 });
+
+
+window.__RESONANCE_VERIFY_REPLAY__ = async (artifact: ReplayArtifact) => {
+  const {
+    verifyM0Replay,
+    verifyM0ReplayRenderMatrix,
+  } = await import("@resonance/test-fixtures");
+  const direct = await verifyM0Replay(artifact);
+  const matrix = await verifyM0ReplayRenderMatrix(artifact);
+  return { direct, matrix };
+};
