@@ -137,11 +137,9 @@ CI projects:
 - Firefox;
 - WebKit.
 
-Each browser must:
+Each browser must reproduce the Node final hash and pass direct checkpoint verification.
 
-- reproduce the Node final hash;
-- pass direct checkpoint verification;
-- pass the 30–144 fps cadence matrix.
+Chromium additionally runs the full 30–144 fps cadence matrix. Render cadence is a fixed-step scheduling property, while Firefox/WebKit provide the cross-runtime deterministic comparison without repeating six extra physics replays per engine.
 
 Linux Playwright WebKit is useful cross-runtime evidence but does **not** replace the required Safari/macOS physical acceptance run.
 
