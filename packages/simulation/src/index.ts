@@ -1,7 +1,8 @@
 import { SIM_DT_SECONDS, asTick, type Tick } from "@resonance/game-data";
 
 export * from "./hash";
-export * from "./input";\nexport * from "./replay";
+export * from "./input";
+export * from "./replay";
 export * from "./simulation";
 export * from "./state";
 
