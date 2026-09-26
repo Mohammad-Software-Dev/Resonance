@@ -17,7 +17,8 @@
     "check:bundle": "node tools/check-web-bundle.mjs",
     "test:replay": "pnpm --filter @resonance/replay-cli replay packages/test-fixtures/replays/m0-canonical.json",
     "test:replay:matrix": "pnpm --filter @resonance/replay-cli replay --matrix packages/test-fixtures/replays/m0-canonical.json",
-    "test:browser:replay": "playwright test"
+    "test:browser:replay": "playwright test",
+    "replay:fingerprint": "pnpm --filter @resonance/replay-cli replay --fingerprint"
   },
   "devDependencies": {
     "@types/node": "24.10.0",
