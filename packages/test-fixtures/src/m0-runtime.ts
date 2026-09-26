@@ -31,6 +31,7 @@ import {
   Simulation,
   dequantizeAxis,
   deserializeSimInput,
+  hashReplayState,
   type ReplayArtifact,
   type ReplayCheckpoint,
   type ReplayTelemetryValue,
@@ -83,36 +84,21 @@ function platformPositionAtTick(tick: number): Vec3 {
   return { x: -2 + triangle * 3, y: 1.15, z: 0 };
 }
 
-function mixString(hash: number, value: string): number {
-  let next = hash >>> 0;
-  for (let index = 0; index < value.length; index += 1) {
-    next ^= value.charCodeAt(index);
-    next = Math.imul(next, 0x01000193) >>> 0;
-  }
-  return next;
-}
-
 function gameplayHash(
   simulationHash: string,
   attract: AttractRuntimeState,
   repel: RepelRuntimeState,
 ): string {
-  let hash = 0x811c9dc5;
-  for (const value of [
-    simulationHash,
-    String(Number(attract.targetId)),
-    String(Number(attract.targetRevision)),
-    String(attract.ticksActive),
-    String(attract.blockedTicks),
-    attract.arrived ? "1" : "0",
-    attract.requiresRelease ? "1" : "0",
-    String(Number(repel.lastTargetId)),
-    String(repel.uses),
-  ]) {
-    hash = mixString(hash, value);
-    hash = mixString(hash, "|");
-  }
-  return hash.toString(16).padStart(8, "0");
+  return hashReplayState(simulationHash, [
+    Number(attract.targetId),
+    Number(attract.targetRevision),
+    attract.ticksActive,
+    attract.blockedTicks,
+    attract.arrived,
+    attract.requiresRelease,
+    Number(repel.lastTargetId),
+    repel.uses,
+  ]);
 }
 
 function telemetry(
