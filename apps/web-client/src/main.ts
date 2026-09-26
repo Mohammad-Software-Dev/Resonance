@@ -40,7 +40,6 @@ import {
   Simulation,
   dequantizeAxis,
   hashReplayState,
-  type ReplayArtifact,
 } from "@resonance/simulation";
 import {
   M0_TARGET_SELECTION_CONFIG,
@@ -826,13 +825,3 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-
-window.__RESONANCE_VERIFY_REPLAY__ = async (artifact: ReplayArtifact) => {
-  const {
-    verifyM0Replay,
-    verifyM0ReplayRenderMatrix,
-  } = await import("@resonance/test-fixtures");
-  const direct = await verifyM0Replay(artifact);
-  const matrix = await verifyM0ReplayRenderMatrix(artifact);
-  return { direct, matrix };
-};
