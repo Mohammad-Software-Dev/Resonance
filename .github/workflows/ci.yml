@@ -37,9 +37,10 @@ jobs:
   replay-browser:
     needs: verify
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         browser: [chromium, firefox, webkit]
     steps:
@@ -56,10 +57,5 @@ jobs:
           name: m0-canonical-replay
           path: packages/test-fixtures/replays
       - name: Install browser runtime
-        run: |
-          if [ "${{ matrix.browser }}" = "webkit" ]; then
-            pnpm exec playwright install --with-deps webkit
-          else
-            pnpm exec playwright install ${{ matrix.browser }}
-          fi
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
       - run: pnpm exec playwright test --project=${{ matrix.browser }}
