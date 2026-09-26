@@ -10,15 +10,27 @@ test("canonical M0 replay matches Node in the browser runtime", async ({
     await readFile("packages/test-fixtures/replays/m0-canonical.json", "utf8"),
   ) as ReplayArtifact;
 
+  page.on("console", (message) => console.log(`[${browserName}] ${message.text()}`));
   await page.goto("/replay.html");
   await page.waitForFunction(() => typeof window.__RESONANCE_VERIFY_REPLAY__ === "function");
 
   const runMatrix = browserName === "chromium";
-  const result = await page.evaluate(async ({ replay, renderCadenceMatrix }) => {
-    const verify = window.__RESONANCE_VERIFY_REPLAY__;
-    if (!verify) throw new Error("Browser replay verifier was not installed.");
-    return await verify(replay, { renderCadenceMatrix });
-  }, { replay: artifact, renderCadenceMatrix: runMatrix }) as {
+  let watchdog: ReturnType<typeof setTimeout> | undefined;
+  const result = await Promise.race([
+    page.evaluate(async ({ replay, renderCadenceMatrix }) => {
+      const verify = window.__RESONANCE_VERIFY_REPLAY__;
+      if (!verify) throw new Error("Browser replay verifier was not installed.");
+      return await verify(replay, { renderCadenceMatrix });
+    }, { replay: artifact, renderCadenceMatrix: runMatrix }),
+    new Promise<never>((_, reject) => {
+      watchdog = setTimeout(
+        () => reject(new Error("Browser replay exceeded 20-second watchdog.")),
+        20_000,
+      );
+    }),
+  ]).finally(() => {
+    if (watchdog) clearTimeout(watchdog);
+  }) as {
     direct: { ok: boolean; finalHash: string; divergence: unknown };
     matrix: Array<{
       renderFps: number;
