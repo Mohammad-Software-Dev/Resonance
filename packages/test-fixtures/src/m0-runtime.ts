@@ -392,7 +392,9 @@ export async function verifyM0Replay(
             expectedHash: checkpoint.hash,
             actualHash: step.gameplayHash,
             input,
-            expectedTelemetry: checkpoint.telemetry,
+            ...(checkpoint.telemetry
+              ? { expectedTelemetry: checkpoint.telemetry }
+              : {}),
             actualTelemetry: step.telemetry,
           };
           break;
