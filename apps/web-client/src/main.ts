@@ -60,6 +60,7 @@ import {
 } from "./performance/browser-performance";
 import { DynamicResolutionGovernor } from "./performance/dynamic-resolution";
 import { FrameCaptureBuffer } from "./performance/frame-capture";
+import { BlindMovementTestSession } from "./blind-test";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
@@ -260,6 +261,11 @@ engine.onContextRestoredObservable.add(() => {
 const movingTargetId = targetRegistry.getByGuid(asAuthoredTargetGuid("m0-anchor-moving"))?.id;
 const PLAYER_ID = asEntityId(1);
 const START = { x: -5, y: 2.2, z: 0 };
+const blindTest = new BlindMovementTestSession(
+  import.meta.env.VITE_BUILD_ID ?? "dev",
+  START,
+  Number(PLATFORM_ID),
+);
 physics.createCharacter(START);
 
 const clock = new FixedStepClock();
@@ -303,6 +309,8 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "KeyX" && !event.repeat) frameCapture.reset();
   if (event.code === "F9" && !event.repeat) startReplayCapture();
   if (event.code === "F10" && !event.repeat) exportReplayCapture();
+  if (event.code === "F7" && !event.repeat) blindTest.showQuestionnaire();
+  if (event.code === "F8" && !event.repeat) blindTest.export();
   if (event.code === "KeyC" && !event.repeat) {
     cameraMode = cameraMode === "perspective" ? "orthographic" : "perspective";
     applyCameraMode();
@@ -562,6 +570,7 @@ engine.runRenderLoop(() => {
     }
     gamepadRepelWasHeld = gamepadRepelHeld;
 
+    const previousSelectedTargetId = selectedTargetId;
     const selection = selectResonanceTarget({
       playerPosition: beforeStep.position,
       aim: aim.vector,
@@ -573,6 +582,7 @@ engine.runRenderLoop(() => {
       ),
     });
     selectedTargetId = selection.selectedTargetId;
+    blindTest.recordTargetChange(Number(step.tick), previousSelectedTargetId, selectedTargetId);
     targetDebug = selection.candidates;
 
     const lockedTargetId = beforeStep.repelRecoveryTicksRemaining > 0
@@ -729,12 +739,26 @@ engine.runRenderLoop(() => {
     }
 
     if (state.position.y < -6 || Math.abs(state.position.x) > 20) {
+      blindTest.recordRecovery(Number(step.tick));
       recoverMovementState(state, START);
       physics.setCharacterPosition(START);
     }
 
     collisionCount = collision.collisionCount;
     maximumCorrection = collision.maximumCorrection;
+
+    blindTest.recordTick({
+      tick: Number(step.tick),
+      position: { ...state.position },
+      velocity: { ...state.velocity },
+      grounded: state.grounded,
+      groundEntityId: Number(state.groundEntityId),
+      selectedTargetId: Number(selectedTargetId),
+      attractTargetId: Number(attractRuntime.targetId),
+      repelUses: repelRuntime.uses,
+      collisionCount,
+      maximumCorrection,
+    });
 
     if (replayRecorder) {
       const hash = replayHash();
