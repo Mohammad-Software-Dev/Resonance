@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { asEntityId, asTick } from "@resonance/game-data";
+import { asEntityId, asRevision, asTick } from "@resonance/game-data";
 import { quantizeAxis } from "./input";
 import { ReplayRecorder, deserializeSimInput, parseReplayArtifact } from "./replay";
 import type { SimSnapshot } from "./state";
@@ -20,7 +20,7 @@ const initialSnapshot: SimSnapshot = {
     evadeTicksRemaining: 0,
     repelRecoveryTicksRemaining: 0,
     attractTargetId: 0,
-    stateRevision: 0 as never,
+    stateRevision: asRevision(0),
   }],
 };
 
