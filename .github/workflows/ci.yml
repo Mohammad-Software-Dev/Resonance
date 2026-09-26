@@ -24,7 +24,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm replay:fingerprint
-      - run: pnpm --filter @resonance/replay-cli replay --generate packages/test-fixtures/replays/m0-canonical.json
+      - run: pnpm --filter @resonance/replay-cli replay --generate ../../packages/test-fixtures/replays/m0-canonical.json
       - uses: actions/upload-artifact@v4
         with:
           name: m0-canonical-replay
