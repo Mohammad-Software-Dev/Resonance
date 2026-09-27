@@ -77,6 +77,19 @@ function pbr(
   return material;
 }
 
+function semanticMaterial(
+  name: string,
+  scene: Scene,
+  diffuse: Color3,
+  emissive = Color3.Black(),
+): StandardMaterial {
+  const material = new StandardMaterial(name, scene);
+  material.diffuseColor = diffuse;
+  material.emissiveColor = emissive;
+  material.specularColor = new Color3(0.03, 0.04, 0.05);
+  return material;
+}
+
 function createParticleTexture(scene: Scene): DynamicTexture {
   const texture = new DynamicTexture(
     "resonance-particle-texture",
@@ -385,6 +398,102 @@ function decorateResonanceTargets(
   return rings;
 }
 
+function addGameplayReadabilityLayer(
+  scene: Scene,
+  meshes: RepresentativeRoomMeshes,
+  deckAccent: StandardMaterial,
+  hazardAccent: StandardMaterial,
+  movingAccent: StandardMaterial,
+  anchorAccent: StandardMaterial,
+): { staticMeshes: Mesh[]; dynamicMeshes: Mesh[] } {
+  const staticMeshes: Mesh[] = [];
+  const dynamicMeshes: Mesh[] = [];
+
+  const deckLip = CreateBox(
+    "gameplay-deck-edge",
+    { width: 15.7, height: 0.07, depth: 2.05 },
+    scene,
+  );
+  deckLip.position.set(0, 0.035, -0.03);
+  deckLip.material = deckAccent;
+  staticMeshes.push(deckLip);
+
+  for (const x of [-6.8, -5.2, -3.6, -0.8, 1.8, 3.4]) {
+    const marker = CreateBox(
+      `deck-route-marker-${x}`,
+      { width: 0.68, height: 0.035, depth: 2.08 },
+      scene,
+    );
+    marker.position.set(x, 0.075, 0);
+    marker.material = deckAccent;
+    staticMeshes.push(marker);
+  }
+
+  for (let index = -2; index <= 2; index += 1) {
+    const band = CreateBox(
+      `hazard-band-${index}`,
+      { width: 0.18, height: 0.055, depth: 2.12 },
+      scene,
+    );
+    band.parent = meshes.slope;
+    band.position.set(index * 0.55, 0.19, 0);
+    band.rotation.z = -0.42;
+    band.material = hazardAccent;
+    staticMeshes.push(band);
+  }
+
+  for (const x of [-0.9, 0.9]) {
+    const rail = CreateBox(
+      `moving-platform-rail-${x}`,
+      { width: 0.12, height: 0.16, depth: 2.12 },
+      scene,
+    );
+    rail.parent = meshes.platform;
+    rail.position.set(x, 0.22, 0);
+    rail.material = movingAccent;
+    dynamicMeshes.push(rail);
+  }
+
+  const pillarStripe = CreateBox(
+    "attract-pillar-resonance-stripe",
+    { width: 0.13, height: 2.12, depth: 2.08 },
+    scene,
+  );
+  pillarStripe.parent = meshes.attractPillar;
+  pillarStripe.position.set(0, 0, 0);
+  pillarStripe.material = anchorAccent;
+  staticMeshes.push(pillarStripe);
+
+  for (let index = 0; index < meshes.targets.length; index += 1) {
+    const target = meshes.targets[index];
+    if (!target) continue;
+    for (let fin = 0; fin < 4; fin += 1) {
+      const marker = CreateBox(
+        `anchor-fin-${index}-${fin}`,
+        { width: fin % 2 === 0 ? 1.0 : 0.11, height: fin % 2 === 0 ? 0.11 : 1.0, depth: 0.08 },
+        scene,
+      );
+      marker.parent = target;
+      marker.position.set(0, 0, -0.43);
+      marker.material = anchorAccent;
+      dynamicMeshes.push(marker);
+    }
+  }
+
+  const playerMarker = CreateTorus(
+    "wayfarer-ground-marker",
+    { diameter: 1.05, thickness: 0.035, tessellation: 40 },
+    scene,
+  );
+  playerMarker.parent = meshes.player;
+  playerMarker.position.set(0, -0.92, 0.08);
+  playerMarker.rotation.x = Math.PI / 2;
+  playerMarker.material = deckAccent;
+  dynamicMeshes.push(playerMarker);
+
+  return { staticMeshes, dynamicMeshes };
+}
+
 function addGasGiantVista(scene: Scene): Mesh[] {
   const planetMaterial = new StandardMaterial("gas-giant-material", scene);
   planetMaterial.diffuseColor = new Color3(0.32, 0.18, 0.12);
@@ -431,8 +540,8 @@ function addGasGiantVista(scene: Scene): Mesh[] {
 function addWayfarerSilhouette(
   scene: Scene,
   player: Mesh,
-  suit: PBRMaterial,
-  accent: PBRMaterial,
+  suit: StandardMaterial,
+  accent: StandardMaterial,
 ): Mesh[] {
   player.material = suit;
   player.scaling.set(0.88, 1, 0.78);
@@ -600,20 +709,6 @@ export function createRepresentativeGraphicsRoom(
     0.28,
     0.58,
   );
-  const floorMaterial = pbr(
-    "orbital-floor",
-    scene,
-    new Color3(0.075, 0.095, 0.11),
-    0.22,
-    0.5,
-  );
-  const hazardMaterial = pbr(
-    "orbital-hazard",
-    scene,
-    new Color3(0.34, 0.17, 0.055),
-    0.16,
-    0.55,
-  );
   const emissive = pbr(
     "orbital-emissive",
     scene,
@@ -646,28 +741,67 @@ export function createRepresentativeGraphicsRoom(
     new Color3(0.08, 0.88, 0.72),
   );
 
-  const suit = pbr(
-    "wayfarer-suit",
+  const gameplayDeck = semanticMaterial(
+    "gameplay-deck",
     scene,
-    new Color3(0.075, 0.085, 0.11),
-    0.32,
-    0.5,
+    new Color3(0.08, 0.13, 0.17),
+    new Color3(0.015, 0.035, 0.045),
   );
-  const suitAccent = pbr(
-    "wayfarer-accent",
+  const gameplayWall = semanticMaterial(
+    "gameplay-wall",
     scene,
-    new Color3(0.02, 0.13, 0.16),
-    0.2,
-    0.3,
-    new Color3(0.06, 0.75, 0.92),
+    new Color3(0.055, 0.085, 0.11),
+  );
+  const gameplayHazard = semanticMaterial(
+    "gameplay-hazard",
+    scene,
+    new Color3(0.32, 0.105, 0.03),
+    new Color3(0.2, 0.045, 0.008),
+  );
+  const gameplayMover = semanticMaterial(
+    "gameplay-mover",
+    scene,
+    new Color3(0.11, 0.24, 0.25),
+    new Color3(0.015, 0.12, 0.13),
+  );
+  const deckAccent = semanticMaterial(
+    "gameplay-route-accent",
+    scene,
+    new Color3(0.03, 0.28, 0.28),
+    new Color3(0.02, 0.34, 0.34),
+  );
+  const hazardAccent = semanticMaterial(
+    "gameplay-hazard-accent",
+    scene,
+    new Color3(0.48, 0.16, 0.025),
+    new Color3(0.7, 0.15, 0.02),
+  );
+  const anchorAccent = semanticMaterial(
+    "gameplay-anchor-accent",
+    scene,
+    new Color3(0.03, 0.35, 0.42),
+    new Color3(0.03, 0.55, 0.72),
   );
 
-  meshes.ground.material = floorMaterial;
-  meshes.leftWall.material = darkMetal;
-  meshes.rightWall.material = darkMetal;
-  meshes.slope.material = hazardMaterial;
-  meshes.attractPillar.material = paintedMetal;
-  meshes.platform.material = paintedMetal;
+  const suit = semanticMaterial(
+    "wayfarer-suit",
+    scene,
+    new Color3(0.31, 0.34, 0.33),
+    new Color3(0.018, 0.024, 0.03),
+  );
+  const suitAccent = semanticMaterial(
+    "wayfarer-accent",
+    scene,
+    new Color3(0.02, 0.18, 0.2),
+    new Color3(0.04, 0.72, 0.88),
+  );
+
+  meshes.ground.material = gameplayDeck;
+  meshes.leftWall.material = gameplayWall;
+  meshes.rightWall.material = gameplayWall;
+  meshes.slope.material = gameplayHazard;
+  meshes.attractPillar.material = gameplayMover;
+  meshes.platform.material = gameplayMover;
 
   meshes.ground.receiveShadows = true;
   meshes.leftWall.receiveShadows = true;
@@ -690,6 +824,14 @@ export function createRepresentativeGraphicsRoom(
   const vista = addGasGiantVista(scene);
   const wayfarerMeshes = addWayfarerSilhouette(scene, meshes.player, suit, suitAccent);
   const anchorRings = decorateResonanceTargets(scene, meshes.targets, resonanceMaterial);
+  const readability = addGameplayReadabilityLayer(
+    scene,
+    meshes,
+    deckAccent,
+    hazardAccent,
+    gameplayMover,
+    anchorAccent,
+  );
 
   const leftArm = scene.getMeshByName("wayfarer-left-arm") as Mesh | null;
   const rightArm = scene.getMeshByName("wayfarer-right-arm") as Mesh | null;
@@ -700,18 +842,28 @@ export function createRepresentativeGraphicsRoom(
 
   scene.skipPointerMovePicking = true;
   for (const mesh of scene.meshes) mesh.isPickable = false;
-  for (const mesh of [...backdrop.distantMeshes, ...scar.distantMeshes, ...vista]) {
+  for (const mesh of [
+    ...backdrop.distantMeshes,
+    ...scar.distantMeshes,
+    ...vista,
+    ...readability.staticMeshes,
+  ]) {
     mesh.freezeWorldMatrix();
   }
   for (const material of [
     darkMetal,
     paintedMetal,
-    floorMaterial,
-    hazardMaterial,
     emissive,
     hullCeramic,
     emergency,
     relayMaterial,
+    gameplayDeck,
+    gameplayWall,
+    gameplayHazard,
+    gameplayMover,
+    deckAccent,
+    hazardAccent,
+    anchorAccent,
     suit,
     suitAccent,
   ]) {
@@ -852,6 +1004,12 @@ export function createRepresentativeGraphicsRoom(
         const ring = anchorRings[i];
         if (!ring || !ring.name.includes("ring")) continue;
         ring.rotation.z = elapsedSeconds * (i % 2 === 0 ? 0.42 : -0.31);
+      }
+      for (let i = 0; i < readability.dynamicMeshes.length; i += 1) {
+        const mesh = readability.dynamicMeshes[i];
+        if (!mesh || !mesh.name.startsWith("anchor-fin")) continue;
+        const pulseScale = 0.94 + 0.06 * Math.sin(elapsedSeconds * 2.8 + i * 0.35);
+        mesh.scaling.z = pulseScale;
       }
 
       const dx = meshes.player.position.x - lastPlayerX;
