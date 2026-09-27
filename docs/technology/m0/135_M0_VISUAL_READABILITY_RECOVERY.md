@@ -114,3 +114,18 @@ The deployed smoke verifies that:
 - a valid interaction state is published by the normal route;
 - the Resonance interaction HUD is visible on the normal route;
 - the full game HUD remains hidden in blind-test mode.
+
+
+## Pass 5 — ability impact and objective choreography
+
+The fifth M0.12 pass makes successful movement-system actions feel like game events rather than hidden state changes.
+
+Presentation additions:
+
+- a world-space expanding orange Repel shockwave using the existing line-rendering path;
+- short objective-stage callouts for breach, Resonance discovery, Attract confirmation, Repel confirmation and Relay restoration;
+- objective callout tones that reuse the existing neutral / Resonance / Repel / completion language;
+- automated visual-landmark coverage for the Repel impact surface;
+- deployed-smoke checks for objective choreography presence on the normal route and concealment in blind mode.
+
+The pass observes existing gameplay state only. It does not alter target selection, force magnitudes, movement, collision, progression thresholds or deterministic simulation.

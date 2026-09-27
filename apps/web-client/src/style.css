@@ -92,6 +92,59 @@ body {
   box-shadow: 0 0 12px #43e5d288;
 }
 
+.objective-event {
+  position: fixed;
+  left: 50%;
+  top: 24%;
+  transform: translate(-50%, -50%) translateY(8px);
+  display: grid;
+  gap: 3px;
+  min-width: 300px;
+  padding: 12px 22px 14px;
+  border-top: 1px solid #8baaa65c;
+  border-bottom: 2px solid #7ba39f;
+  background: linear-gradient(90deg, transparent, #041117e8 14%, #041117f2 86%, transparent);
+  color: #eaf9f7;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  text-align: center;
+  text-shadow: 0 2px 10px #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 180ms ease, transform 220ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.objective-event strong {
+  font-size: 17px;
+  letter-spacing: 0.13em;
+}
+
+.objective-event > span:last-child {
+  color: #a7bfbc;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+.objective-event.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(0);
+}
+
+.objective-event[data-tone="resonance"] {
+  border-bottom-color: #5de7ef;
+  box-shadow: 0 0 28px #39d8e63b;
+}
+
+.objective-event[data-tone="repel"] {
+  border-bottom-color: #ff9b43;
+  box-shadow: 0 0 28px #ff853d38;
+}
+
+.objective-event[data-tone="complete"] {
+  border-bottom-color: #6effc4;
+  box-shadow: 0 0 34px #55e6a43d;
+}
+
 .slice-complete {
   position: fixed;
   left: 50%;
@@ -333,6 +386,7 @@ body.debug #diagnostics {
 
 body.blind-test #diagnostics,
 body.blind-test #game-hud,
+body.blind-test #objective-event,
 body.blind-test #slice-complete {
   display: none;
 }
