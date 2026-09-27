@@ -7,8 +7,11 @@ import {
 } from "./authored-visual-assets";
 
 describe("authored visual asset contract", () => {
-  it("keeps procedural presentation as the explicit fallback until authored art is assigned", () => {
-    expect(authoredVisualAssetMode()).toBe("fallback");
+  it("publishes authored mode once the first reviewed runtime slot is assigned", () => {
+    expect(authoredVisualAssetMode()).toBe("authored");
+    expect(
+      AUTHORED_VISUAL_ASSETS.find((spec) => spec.slot === "wayfarer-player")?.url,
+    ).toBe("/assets/visual/characters/wayfarer-mara-m0.glb");
     expect(AUTHORED_VISUAL_ASSETS.every((spec) => spec.fallback === "procedural")).toBe(true);
   });
 
