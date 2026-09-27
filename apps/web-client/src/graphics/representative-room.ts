@@ -159,21 +159,21 @@ function createSurfacePatternTexture(
   );
   const context = texture.getContext();
   context.fillStyle = pattern === "deck"
-    ? "#60686b"
+    ? "#777f82"
     : pattern === "wall"
-      ? "#4c555a"
+      ? "#565f64"
       : pattern === "hazard"
         ? "#4a3328"
         : "#566267";
   context.fillRect(0, 0, 256, 256);
 
   if (pattern === "deck" || pattern === "wall") {
-    context.fillStyle = pattern === "deck" ? "#343b3e" : "#2f363a";
+    context.fillStyle = pattern === "deck" ? "#444b4e" : "#343b3f";
     for (const offset of [0, 64, 128, 192, 252]) {
       context.fillRect(offset, 0, 4, 256);
       context.fillRect(0, offset, 256, 4);
     }
-    context.fillStyle = "#899296";
+    context.fillStyle = "#a0a8aa";
     for (const x of [18, 82, 146, 210]) {
       for (const y of [18, 82, 146, 210]) {
         context.fillRect(x, y, 5, 5);
@@ -341,6 +341,30 @@ function addIndustrialBackdrop(
   overhead.position.set(0, 6.75, 2.7);
   overhead.material = darkMetal;
   distantMeshes.push(overhead);
+
+  const orbitalArc = CreateTorus(
+    "orbital-parallax-ring",
+    { diameter: 15.5, thickness: 0.42, tessellation: 72 },
+    scene,
+  );
+  orbitalArc.position.set(1.6, 4.1, 8.2);
+  orbitalArc.rotation.x = Math.PI / 2;
+  orbitalArc.rotation.z = -0.17;
+  orbitalArc.scaling.y = 0.72;
+  orbitalArc.material = darkMetal;
+  distantMeshes.push(orbitalArc);
+
+  const orbitalArcInner = CreateTorus(
+    "orbital-parallax-ring-inner",
+    { diameter: 12.9, thickness: 0.12, tessellation: 64 },
+    scene,
+  );
+  orbitalArcInner.position.set(1.6, 4.1, 8.0);
+  orbitalArcInner.rotation.x = Math.PI / 2;
+  orbitalArcInner.rotation.z = -0.17;
+  orbitalArcInner.scaling.y = 0.72;
+  orbitalArcInner.material = paintedMetal;
+  distantMeshes.push(orbitalArcInner);
 
   return { distantMeshes, emissiveMeshes };
 }
@@ -671,13 +695,13 @@ function addGameplayReadabilityLayer(
 
   const playerMarker = CreateTorus(
     "wayfarer-ground-marker",
-    { diameter: 0.88, thickness: 0.024, tessellation: 40 },
+    { diameter: 0.7, thickness: 0.014, tessellation: 40 },
     scene,
   );
   playerMarker.parent = meshes.player;
   playerMarker.position.set(0, -0.92, 0.08);
   playerMarker.rotation.x = Math.PI / 2;
-  playerMarker.material = deckAccent;
+  playerMarker.material = deckStructure;
   dynamicMeshes.push(playerMarker);
 
   return { staticMeshes, dynamicMeshes };
@@ -1149,27 +1173,29 @@ function addGasGiantVista(scene: Scene): Mesh[] {
   planetMaterial.diffuseColor = Color3.White();
   planetMaterial.diffuseTexture = gasGiantTexture;
   planetMaterial.emissiveTexture = gasGiantTexture;
-  planetMaterial.emissiveColor = new Color3(0.1, 0.055, 0.04);
+  planetMaterial.emissiveColor = new Color3(0.18, 0.095, 0.06);
   planetMaterial.specularColor = Color3.Black();
+  planetMaterial.disableLighting = true;
 
   const atmosphereMaterial = new StandardMaterial("gas-giant-atmosphere", scene);
   atmosphereMaterial.diffuseColor = new Color3(0.08, 0.17, 0.24);
   atmosphereMaterial.emissiveColor = new Color3(0.025, 0.09, 0.13);
-  atmosphereMaterial.alpha = 0.32;
+  atmosphereMaterial.alpha = 0.24;
   atmosphereMaterial.backFaceCulling = false;
+  atmosphereMaterial.disableLighting = true;
 
   const planet = CreateSphere(
     "gas-giant",
-    { diameter: 12, segments: 32 },
+    { diameter: 13.4, segments: 32 },
     scene,
   );
-  planet.position.set(7.8, 5.4, 15);
-  planet.scaling.y = 0.92;
+  planet.position.set(1.2, 5.35, 14.5);
+  planet.scaling.y = 0.88;
   planet.material = planetMaterial;
 
   const atmosphere = CreateSphere(
     "gas-giant-atmosphere",
-    { diameter: 12.35, segments: 24 },
+    { diameter: 13.75, segments: 24 },
     scene,
   );
   atmosphere.position.copyFrom(planet.position);
@@ -1178,7 +1204,7 @@ function addGasGiantVista(scene: Scene): Mesh[] {
 
   const limb = CreateTorus(
     "gas-giant-limb-band",
-    { diameter: 9.8, thickness: 0.08, tessellation: 64 },
+    { diameter: 10.9, thickness: 0.08, tessellation: 64 },
     scene,
   );
   limb.position.copyFrom(planet.position);
@@ -1400,7 +1426,7 @@ export function createRepresentativeGraphicsRoom(
   if (ambient) {
     ambient.diffuse = new Color3(0.32, 0.43, 0.55);
     ambient.groundColor = new Color3(0.025, 0.03, 0.045);
-    ambient.intensity = 0.28;
+    ambient.intensity = 0.36;
   }
 
   scene.environmentTexture = CubeTexture.CreateFromPrefilteredData(
@@ -1418,7 +1444,7 @@ export function createRepresentativeGraphicsRoom(
   const paintedMetal = pbr(
     "orbital-painted-metal",
     scene,
-    new Color3(0.105, 0.16, 0.19),
+    new Color3(0.14, 0.18, 0.2),
     0.28,
     0.58,
   );
@@ -1433,9 +1459,9 @@ export function createRepresentativeGraphicsRoom(
   const hullCeramic = pbr(
     "scar-hull-ceramic",
     scene,
-    new Color3(0.12, 0.15, 0.16),
-    0.16,
-    0.72,
+    new Color3(0.205, 0.22, 0.225),
+    0.12,
+    0.66,
   );
   const emergency = pbr(
     "scar-emergency",
@@ -1457,7 +1483,7 @@ export function createRepresentativeGraphicsRoom(
   const gameplayDeck = semanticMaterial(
     "gameplay-deck",
     scene,
-    new Color3(0.115, 0.125, 0.135),
+    new Color3(0.145, 0.152, 0.16),
     new Color3(0.004, 0.006, 0.008),
   );
   const gameplayWall = semanticMaterial(
@@ -1730,7 +1756,10 @@ export function createRepresentativeGraphicsRoom(
     glow.intensity = preset.glowIntensity;
     scene.fogDensity = preset.fogDensity;
     scene.environmentIntensity = preset.environmentIntensity;
-    for (const mesh of [...backdrop.distantMeshes, ...scar.distantMeshes, ...vista]) {
+    for (const mesh of [...backdrop.distantMeshes, ...vista]) {
+      mesh.setEnabled(true);
+    }
+    for (const mesh of scar.distantMeshes) {
       mesh.setEnabled(preset.distantDetail);
     }
     for (const mesh of scar.relayRings) mesh.setEnabled(true);
