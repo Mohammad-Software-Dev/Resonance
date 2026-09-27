@@ -154,7 +154,7 @@ try {
   const depthComposition = await root.locator("body").getAttribute(
     "data-resonance-depth-composition",
   );
-  if (depthComposition !== "essential-v1") {
+  if (depthComposition !== "essential-v2") {
     throw new Error(`Expected essential depth composition, got: ${depthComposition}`);
   }
   await root.waitForFunction(
@@ -247,6 +247,11 @@ try {
     || !Array.isArray(performance.samples.drawCalls)
   ) {
     throw new Error("Performance export is missing full-window raw telemetry arrays");
+  }
+  if (performance.graphics?.materials !== 24) {
+    throw new Error(
+      `M0.13 presentation palette expected 24 materials, got: ${performance.graphics?.materials}`,
+    );
   }
   if (performance.graphics?.materials > 24) {
     throw new Error(
