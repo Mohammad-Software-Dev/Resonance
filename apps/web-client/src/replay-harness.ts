@@ -14,7 +14,7 @@ declare global {
     __RESONANCE_VERIFY_REPLAY__?: (
       artifact: ReplayArtifact,
       options?: BrowserReplayOptions,
-    ) => Promise<unknown>;
+    ) => Promise<string>;
   }
 }
 
@@ -36,6 +36,15 @@ window.__RESONANCE_VERIFY_REPLAY__ = async (
     ? await verifyM0ReplayRenderMatrix(artifact)
     : [];
   console.info("[replay-harness] matrix:done");
-  return { direct, matrix };
+  const result = JSON.stringify({
+    direct: {
+      ok: direct.ok,
+      finalHash: direct.finalHash,
+      divergence: direct.divergence,
+    },
+    matrix,
+  });
+  console.info("[replay-harness] serialize:done");
+  return result;
 };
 if (status) status.textContent = "replay harness ready";
