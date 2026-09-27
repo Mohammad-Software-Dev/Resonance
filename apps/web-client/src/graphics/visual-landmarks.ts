@@ -1,6 +1,4 @@
 export const REQUIRED_VISUAL_LANDMARKS = [
-  "wayfarer-helmet",
-  "wayfarer-visor",
   "Mara_Helmet",
   "Mara_GauntletEmitter",
   "gameplay-deck-edge",
@@ -12,9 +10,6 @@ export const REQUIRED_VISUAL_LANDMARKS = [
   "world-sign-relay",
   "story-prop-cargo-stack",
   "repel-impact-shockwave",
-  "scrapper-damaged-torso",
-  "scrapper-hostile-eye",
-  "scrapper-loose-forearm-plate",
   "scrapper-threat-ring",
   "Scrapper_Torso",
   "Scrapper_HostileEye",

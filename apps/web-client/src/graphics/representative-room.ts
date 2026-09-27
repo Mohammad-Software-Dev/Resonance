@@ -3,6 +3,7 @@ import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
+import type { Material } from "@babylonjs/core/Materials/material";
 import { NodeMaterial } from "@babylonjs/core/Materials/Node/nodeMaterial";
 import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
@@ -49,10 +50,20 @@ export interface GraphicsRoomStats {
   readonly textures: number;
 }
 
+export interface AuthoredPresentationPalette {
+  readonly dark: Material;
+  readonly shell: Material;
+  readonly ceramic: Material;
+  readonly resonance: Material;
+  readonly hostile: Material;
+  readonly damage: Material;
+}
+
 export interface RepresentativeGraphicsRoom {
   readonly keyLight: DirectionalLight;
   readonly shadowGenerator: ShadowGenerator;
   readonly resonanceMaterial: NodeMaterial;
+  readonly authoredPalette: AuthoredPresentationPalette;
   getPreset(): GraphicsPresetName;
   getRenderScale(): number;
   applyPreset(name: GraphicsPresetName): void;
@@ -60,6 +71,8 @@ export interface RepresentativeGraphicsRoom {
   setRelayActivated(active: boolean): void;
   setProceduralWayfarerEnabled(enabled: boolean): void;
   setProceduralScrapperEnabled(enabled: boolean): void;
+  releaseProceduralWayfarerFallback(): void;
+  releaseProceduralScrapperFallback(): void;
   update(elapsedSeconds: number): void;
   stats(): GraphicsRoomStats;
 }
@@ -969,28 +982,13 @@ function addDamagedScrapperVignette(
 
 function addWreckDamageLayer(
   scene: Scene,
+  damagedMetal: Material,
+  fault: Material,
+  leak: Material,
 ): {
   animatedMeshes: Mesh[];
   particleSystems: ParticleSystem[];
 } {
-  const damagedMetal = semanticMaterial(
-    "wreck-damaged-metal",
-    scene,
-    new Color3(0.08, 0.09, 0.095),
-  );
-  const fault = semanticMaterial(
-    "wreck-fault-emissive",
-    scene,
-    new Color3(0.25, 0.055, 0.018),
-    new Color3(0.95, 0.16, 0.025),
-  );
-  const leak = semanticMaterial(
-    "wreck-leak-emissive",
-    scene,
-    new Color3(0.08, 0.14, 0.16),
-    new Color3(0.28, 0.62, 0.72),
-  );
-
   const animatedMeshes: Mesh[] = [];
 
   const brokenConduit = CreateCylinder(
@@ -1103,8 +1101,6 @@ function addWreckDamageLayer(
   airLeak.updateSpeed = 0.018;
   airLeak.blendMode = ParticleSystem.BLENDMODE_STANDARD;
   airLeak.start();
-
-  for (const material of [damagedMetal, fault, leak]) material.freeze();
 
   return {
     animatedMeshes,
@@ -1556,7 +1552,12 @@ export function createRepresentativeGraphicsRoom(
     relayMaterial,
   );
   const encounter = addDamagedScrapperVignette(scene);
-  const wreckDamage = addWreckDamageLayer(scene);
+  const wreckDamage = addWreckDamageLayer(
+    scene,
+    darkMetal,
+    emergency,
+    deckAccent,
+  );
 
   const leftArm = scene.getMeshByName("wayfarer-left-arm") as Mesh | null;
   const rightArm = scene.getMeshByName("wayfarer-right-arm") as Mesh | null;
@@ -1564,6 +1565,8 @@ export function createRepresentativeGraphicsRoom(
   const rightLeg = scene.getMeshByName("wayfarer-right-leg") as Mesh | null;
   const fabricTab = scene.getMeshByName("wayfarer-fabric-tab") as Mesh | null;
   let lastPlayerX = meshes.player.position.x;
+  let proceduralWayfarerReleased = false;
+  let proceduralScrapperReleased = false;
 
   scene.skipPointerMovePicking = true;
   for (const mesh of scene.meshes) mesh.isPickable = false;
@@ -1688,6 +1691,14 @@ export function createRepresentativeGraphicsRoom(
     keyLight,
     shadowGenerator,
     resonanceMaterial,
+    authoredPalette: {
+      dark: darkMetal,
+      shell: paintedMetal,
+      ceramic: hullCeramic,
+      resonance: relayMaterial,
+      hostile: emergency,
+      damage: hazardAccent,
+    },
     getPreset: () => presetName,
     getRenderScale: () => currentRenderScale,
     applyPreset,
@@ -1703,6 +1714,35 @@ export function createRepresentativeGraphicsRoom(
       for (const mesh of encounter.meshes) {
         if (mesh === encounter.warningRing) continue;
         mesh.setEnabled(enabled);
+      }
+    },
+    releaseProceduralWayfarerFallback(): void {
+      if (proceduralWayfarerReleased) return;
+      proceduralWayfarerReleased = true;
+      const fallbackMaterials = new Set<Material>();
+      if (meshes.player.material) fallbackMaterials.add(meshes.player.material);
+      meshes.player.material = null;
+      meshes.player.isVisible = false;
+      for (const mesh of wayfarerMeshes.slice(1)) {
+        if (mesh.material) fallbackMaterials.add(mesh.material);
+        mesh.dispose(false, false);
+      }
+      for (const material of fallbackMaterials) material.dispose();
+    },
+    releaseProceduralScrapperFallback(): void {
+      if (proceduralScrapperReleased) return;
+      proceduralScrapperReleased = true;
+      const fallbackMaterials = new Set<Material>();
+      const previousWarningMaterial = encounter.warningRing.material;
+      encounter.warningRing.material = emergency;
+      if (previousWarningMaterial) fallbackMaterials.add(previousWarningMaterial);
+      for (const mesh of encounter.meshes) {
+        if (mesh === encounter.warningRing) continue;
+        if (mesh.material) fallbackMaterials.add(mesh.material);
+        mesh.dispose(false, false);
+      }
+      for (const material of fallbackMaterials) {
+        if (material !== emergency) material.dispose();
       }
     },
     update(elapsedSeconds: number): void {
@@ -1756,14 +1796,16 @@ export function createRepresentativeGraphicsRoom(
         }
       }
 
-      const scrapperDrift = Math.sin(elapsedSeconds * 0.9) * 0.18;
-      encounter.root.position.x = 5.75 + scrapperDrift;
-      encounter.root.rotation.z = -0.08 + Math.sin(elapsedSeconds * 1.3) * 0.025;
-      encounter.damagedArm.rotation.z = -0.48 + Math.sin(elapsedSeconds * 2.1) * 0.08;
-      encounter.loosePlate.rotation.z = 0.22 + Math.sin(elapsedSeconds * 4.2) * 0.08;
       const hostilePulse = 0.82 + 0.18 * Math.sin(elapsedSeconds * 6.2);
-      encounter.sensor.scaling.x = 1.35 * hostilePulse;
-      encounter.sensor.scaling.y = 0.65 * hostilePulse;
+      if (!proceduralScrapperReleased) {
+        const scrapperDrift = Math.sin(elapsedSeconds * 0.9) * 0.18;
+        encounter.root.position.x = 5.75 + scrapperDrift;
+        encounter.root.rotation.z = -0.08 + Math.sin(elapsedSeconds * 1.3) * 0.025;
+        encounter.damagedArm.rotation.z = -0.48 + Math.sin(elapsedSeconds * 2.1) * 0.08;
+        encounter.loosePlate.rotation.z = 0.22 + Math.sin(elapsedSeconds * 4.2) * 0.08;
+        encounter.sensor.scaling.x = 1.35 * hostilePulse;
+        encounter.sensor.scaling.y = 0.65 * hostilePulse;
+      }
       encounter.warningRing.scaling.setAll(0.94 + hostilePulse * 0.08);
       encounter.warningRing.visibility = 0.32 + hostilePulse * 0.28;
 
@@ -1793,13 +1835,15 @@ export function createRepresentativeGraphicsRoom(
 
       const dx = meshes.player.position.x - lastPlayerX;
       lastPlayerX = meshes.player.position.x;
-      const moving = Math.abs(dx) > 0.0015;
-      const gait = moving ? Math.sin(elapsedSeconds * 10.5) * 0.38 : Math.sin(elapsedSeconds * 2.2) * 0.035;
-      if (leftArm) leftArm.rotation.z = gait;
-      if (rightArm) rightArm.rotation.z = -gait * 0.8;
-      if (leftLeg) leftLeg.rotation.z = -gait * 0.72;
-      if (rightLeg) rightLeg.rotation.z = gait * 0.72;
-      if (fabricTab) fabricTab.rotation.z = -0.18 - Math.min(0.32, Math.abs(dx) * 12);
+      if (!proceduralWayfarerReleased) {
+        const moving = Math.abs(dx) > 0.0015;
+        const gait = moving ? Math.sin(elapsedSeconds * 10.5) * 0.38 : Math.sin(elapsedSeconds * 2.2) * 0.035;
+        if (leftArm) leftArm.rotation.z = gait;
+        if (rightArm) rightArm.rotation.z = -gait * 0.8;
+        if (leftLeg) leftLeg.rotation.z = -gait * 0.72;
+        if (rightLeg) rightLeg.rotation.z = gait * 0.72;
+        if (fabricTab) fabricTab.rotation.z = -0.18 - Math.min(0.32, Math.abs(dx) * 12);
+      }
     },
     stats: (): GraphicsRoomStats => {
       const preset = GRAPHICS_PRESETS[presetName];

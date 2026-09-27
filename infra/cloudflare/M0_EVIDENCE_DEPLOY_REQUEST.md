@@ -1,24 +1,23 @@
 # M0 Evidence Deployment Request
 
-**Request:** 23  
-**Requested from baseline:** `59e02e9b3daa056e1da47e8160a1998c763237dc`  
-**Purpose:** Publish M0.12 Pass 10 with the authored damaged Scrapper replacement.
+**Request:** 24  
+**Requested from baseline:** `aec8329d9793ccda9c44646fde6c9d62c2442e8a`  
+**Purpose:** Publish M0.12 Pass 11 presentation material-budget consolidation.
+
+Pass 10 proved both authored character/enemy GLBs live, but its deployed smoke reported 40 scene materials. This pass restores the earlier M0 material discipline before adding the third authored set-dress slot.
 
 Changes:
 
-- adds `/assets/visual/enemies/scrapper-damaged-m0.glb`;
-- assigns the typed `scrapper-damaged` slot;
-- loads the binary GLB before shader warmup;
-- disables the procedural Scrapper body after successful import;
-- retains the existing threat ring as gameplay-readable VFX;
-- applies presentation-only idle drift, damaged-arm motion, loose-plate wobble and hostile-eye pulse to authored nodes;
-- requires authored Scrapper mesh landmarks;
-- requires `data-resonance-authored-scrapper="authored"` in deployed smoke;
-- records explicit asset provenance and `shippingArt: false`.
+- remap imported Mara/Scrapper materials onto the existing room presentation palette;
+- dispose replaced imported materials;
+- release hidden procedural Wayfarer fallback meshes/materials after successful authored load;
+- release hidden procedural Scrapper body meshes/materials after successful authored load;
+- retain the Scrapper threat ring on the shared hostile palette;
+- reuse existing room materials for wreck-state effects;
+- stop updating released fallback presentation meshes;
+- fail deployed smoke when the loaded scene exceeds 24 materials.
 
-Mara Venn remains authored from Pass 9. Both models are M0 authored placeholders, not final production art.
-
-No movement, collision, target selection, Resonance-force, progression, combat, AI or deterministic replay semantics are changed.
+No authored Wayfarer/Scrapper geometry is removed. No movement, collision, targeting, Resonance-force, combat, AI, progression or deterministic replay semantics are changed.
 
 Physical and blind-human acceptance remain deferred. No owner-run testing is requested.
 

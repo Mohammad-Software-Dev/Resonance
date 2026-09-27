@@ -201,6 +201,11 @@ try {
   ) {
     throw new Error("Performance export is missing full-window raw telemetry arrays");
   }
+  if (performance.graphics?.materials > 24) {
+    throw new Error(
+      `M0 presentation material budget exceeded: ${performance.graphics.materials} > 24`,
+    );
+  }
 
   report.root = {
     status: rootResponse.status(),
@@ -226,6 +231,8 @@ try {
     performanceCpuFrameP95Ms: frameSummary.cpuFrameP95Ms,
     performanceGpuFrameP95Ms: frameSummary.gpuFrameP95Ms,
     performanceDrawCallsRange: [frameSummary.drawCallsMin, frameSummary.drawCallsMax],
+    materials: performance.graphics?.materials ?? null,
+    textures: performance.graphics?.textures ?? null,
     diagnosticsText: await root.locator("#diagnostics").textContent(),
     pageErrors: rootErrors,
     consoleErrors: rootConsoleErrors,
