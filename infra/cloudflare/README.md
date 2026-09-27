@@ -29,8 +29,15 @@ For a brand-new Worker, the token must be able to create the Worker in the selec
 
 ### Deployment
 
+A deployment can be initiated in either of two deliberate ways:
+
+- manually run **Deploy M0 Evidence Build** from `main`; or
+- update `M0_EVIDENCE_DEPLOY_REQUEST.md` through a reviewed PR and merge it to `main`.
+
+The request-file path exists so automation clients that cannot call GitHub's workflow-dispatch API can still initiate a traceable evidence deployment without adding a broad deploy-on-every-push policy.
+
 1. Merge only code that has passed the ordinary CI gate.
-2. In GitHub Actions, run **Deploy M0 Evidence Build** from `main`.
+2. Initiate one of the two deployment methods above.
 3. The workflow records the checked-out commit SHA and injects it into the Vite build as `VITE_BUILD_ID`.
 4. The workflow reruns typecheck, unit tests, deterministic replay checks, production build and bundle budget before publishing.
 5. Copy the deployed `workers.dev` URL from the Wrangler step.
