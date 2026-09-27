@@ -10,6 +10,10 @@ export const REQUIRED_VISUAL_LANDMARKS = [
   "world-sign-relay",
   "story-prop-cargo-stack",
   "repel-impact-shockwave",
+  "scrapper-damaged-torso",
+  "scrapper-hostile-eye",
+  "scrapper-loose-forearm-plate",
+  "scrapper-threat-ring",
 ] as const;
 
 export interface VisualLandmarkAudit {
