@@ -1,17 +1,19 @@
 # M0 Evidence Deployment Request
 
-**Request:** 20  
-**Requested from baseline:** `a8284de3c2b27caf895da9bc69e95913a37b3f41`  
-**Purpose:** Publish M0.12 Pass 7 animated wreck-state atmosphere.
+**Request:** 21  
+**Requested from baseline:** `a53b793e0fe2b859f4ba2e0172dc458491dcfcfc`  
+**Purpose:** Publish M0.12 Pass 8 authored visual-asset pipeline.
 
-This presentation-only candidate adds:
+This candidate establishes the production art replacement seam:
 
-- electrical sparks from a visibly broken conduit;
-- a moving hanging cable and fault light;
-- an atmosphere-leak vapor plume;
-- drifting lightweight wreck debris in the deeper presentation plane;
-- preset-aware particle rates;
-- required visual landmarks for the new wreck-state cues.
+- `@babylonjs/loaders` pinned to 9.27.1;
+- typed Wayfarer / Scrapper / set-dressing GLB slots;
+- canonical `/assets/visual/` runtime root;
+- GLB URL validation and fail-safe procedural fallback;
+- runtime asset-mode telemetry;
+- deployed-smoke validation of the asset-mode contract.
+
+No authored production GLB is claimed yet. Current slots remain explicitly in procedural fallback mode until reviewed art exists.
 
 No movement, collision, targeting, Resonance force, combat, AI, progression or deterministic replay semantics are changed.
 
