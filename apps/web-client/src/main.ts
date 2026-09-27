@@ -9,6 +9,7 @@ import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
 import { CreateLines } from "@babylonjs/core/Meshes/Builders/linesBuilder";
 import { CreateCapsule } from "@babylonjs/core/Meshes/Builders/capsuleBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
+import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import { Scene } from "@babylonjs/core/scene";
 import {
   M0_ATTRACT_CONFIG,
@@ -57,7 +58,11 @@ import {
   nextGraphicsPreset,
 } from "./graphics/presets";
 import { parseBackendPreference } from "./graphics/backend-preference";
-import { authoredVisualAssetMode } from "./graphics/authored-visual-assets";
+import {
+  AUTHORED_VISUAL_ASSETS,
+  authoredVisualAssetMode,
+  loadAuthoredVisualAsset,
+} from "./graphics/authored-visual-assets";
 import { auditVisualLandmarks } from "./graphics/visual-landmarks";
 import { resonanceInteractionPresentation } from "./graphics/interaction-presentation";
 import { objectiveStagePresentation } from "./graphics/objective-presentation";
@@ -106,6 +111,7 @@ document.body.dataset.resonanceBoot = "dom-ready";
 document.body.dataset.resonanceBuildId = import.meta.env.VITE_BUILD_ID ?? "dev";
 document.body.dataset.resonanceBackendPreference = backendPreference;
 document.body.dataset.resonanceAuthoredVisualAssets = authoredVisualAssetMode();
+document.body.dataset.resonanceAuthoredWayfarer = "loading";
 
 async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
   if (backendPreference !== "webgl2" && "gpu" in navigator) {
@@ -332,6 +338,39 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
   },
   initialGraphicsPreset(backend),
 );
+
+const wayfarerVisualSpec = AUTHORED_VISUAL_ASSETS.find(
+  (spec) => spec.slot === "wayfarer-player",
+);
+if (!wayfarerVisualSpec) {
+  throw new Error("Authored visual slot wayfarer-player is missing");
+}
+const wayfarerVisualResult = await loadAuthoredVisualAsset(scene, wayfarerVisualSpec);
+let authoredWayfarerRoot: AbstractMesh | null = null;
+if (wayfarerVisualResult.status === "authored") {
+  authoredWayfarerRoot =
+    wayfarerVisualResult.meshes.find((mesh) => mesh.parent === null)
+    ?? wayfarerVisualResult.meshes[0]
+    ?? null;
+  if (!authoredWayfarerRoot) {
+    throw new Error("Authored Wayfarer GLB loaded without a root mesh");
+  }
+  authoredWayfarerRoot.position.copyFrom(playerMesh.position);
+  authoredWayfarerRoot.scaling.setAll(0.82);
+  for (const mesh of wayfarerVisualResult.meshes) {
+    mesh.isPickable = false;
+    graphicsRoom.shadowGenerator.addShadowCaster(mesh);
+  }
+  graphicsRoom.setProceduralWayfarerEnabled(false);
+  document.body.dataset.resonanceAuthoredWayfarer = "authored";
+} else {
+  document.body.dataset.resonanceAuthoredWayfarer = "fallback";
+  console.warn(
+    "Authored Wayfarer failed to load; procedural fallback remains active.",
+    wayfarerVisualResult.reason,
+  );
+}
+
 const visualLandmarkAudit = auditVisualLandmarks(scene.meshes.map((mesh) => mesh.name));
 document.body.dataset.resonanceVisualLandmarks = visualLandmarkAudit.ready
   ? "ready"
@@ -936,6 +975,15 @@ engine.runRenderLoop(() => {
   const state = simulation.getWayfarer(PLAYER_ID);
   if (state) {
     playerMesh.position.set(state.position.x, state.position.y, state.position.z);
+    if (authoredWayfarerRoot) {
+      authoredWayfarerRoot.position.set(
+        state.position.x,
+        state.position.y,
+        state.position.z,
+      );
+      authoredWayfarerRoot.scaling.x = Math.abs(authoredWayfarerRoot.scaling.x)
+        * state.facing;
+    }
     renderScarProgress(scarProgress.update({
       positionX: state.position.x,
       attractActive: attractRuntime.ticksActive > 0 || lastAttractEvent !== null,
