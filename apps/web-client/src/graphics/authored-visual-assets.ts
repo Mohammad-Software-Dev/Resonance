@@ -28,7 +28,7 @@ export const AUTHORED_VISUAL_ASSETS: readonly AuthoredVisualAssetSpec[] = [
   },
   {
     slot: "scrapper-damaged",
-    url: null,
+    url: "/assets/visual/enemies/scrapper-damaged-m0.glb",
     fallback: "procedural",
   },
   {
