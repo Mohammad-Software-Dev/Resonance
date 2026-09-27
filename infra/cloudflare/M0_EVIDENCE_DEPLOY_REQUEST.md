@@ -1,17 +1,19 @@
 # M0 Evidence Deployment Request
 
-**Request:** 18  
-**Requested from baseline:** `87f9fed298efb87b62dcb0c5f496b9058d817c85`  
-**Purpose:** Publish M0.12 Pass 5 ability impact and objective choreography.
+**Request:** 19  
+**Requested from baseline:** `03469295d0a2d48f47af94911eccadbce535a4f2`  
+**Purpose:** Publish M0.12 Pass 6 living encounter presence.
 
-This presentation-only candidate adds:
+This presentation-only candidate adds the canonical WS01 damaged Scrapper as a recognizable encounter vignette:
 
-- an expanding world-space Repel shockwave;
-- objective-stage event callouts;
-- visual-landmark enforcement for the Repel impact surface;
-- deployed-smoke coverage for objective event presence and blind-mode concealment.
+- articulated maintenance-construct silhouette;
+- hostile sensor eye;
+- damaged arm and loosened forearm plate;
+- subtle idle/patrol motion;
+- world-space threat ring;
+- visual-landmark enforcement for the encounter.
 
-No target selection, movement, force, collision, course thresholds or deterministic replay semantics are changed.
+No combat simulation, AI authority, health, damage, collision, target selection, movement, Resonance force, progression threshold or deterministic replay semantics are changed.
 
 Physical and blind-human acceptance remain deferred. No owner-run testing is requested.
 
