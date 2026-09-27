@@ -115,6 +115,7 @@ describe("M0 evidence preflight", () => {
     expect(summary.blind.testerCount).toBe(5);
     expect(summary.blind.voluntaryReplay.majorityMet).toBe(true);
     expect(summary.blockers).toContain("No WebGL2 performance capture found.");
+    expect(summary.blockers).toContain("No Firefox physical performance capture found.");
   });
 
   it("rejects blind reports from a different deployed build", () => {
