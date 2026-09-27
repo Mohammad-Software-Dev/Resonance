@@ -1,8 +1,10 @@
 # M0 Evidence Deployment Request
 
-**Request:** 1  
-**Requested from baseline:** `4bde22f6eed51cbb23f91b568f4b4d539d6c8589`  
-**Purpose:** Publish the first externally reachable M0 acceptance build for physical Tier-M capture and blind movement testing.
+**Request:** 2  
+**Requested from baseline:** `5d8311efdf194d5e10263199fcafc551ef669f1e`  
+**Purpose:** Retry the first externally reachable M0 acceptance build after aligning the deployment replay gate with normal CI.
+
+Request 1 reached the deployment workflow but stopped before build/deploy because `pnpm test:replay` had no generated `m0-canonical.json`. The workflow now generates that artifact immediately after canonical fingerprint verification, matching the normal CI sequence.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
 
