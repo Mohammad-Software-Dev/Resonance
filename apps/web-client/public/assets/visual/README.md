@@ -11,7 +11,12 @@ Expected format:
 
 Current typed slots are defined in `src/graphics/authored-visual-assets.ts`.
 
-The first assigned runtime slot is now `wayfarer-player`, backed by `characters/wayfarer-mara-m0.glb`. It is an **authored M0 placeholder**, not shipping art: its purpose is to prove that a real binary character asset can replace procedural geometry without touching deterministic gameplay.
+Assigned M0 runtime slots now include:
+
+- `wayfarer-player` → `characters/wayfarer-mara-m0.glb`;
+- `scrapper-damaged` → `enemies/scrapper-damaged-m0.glb`.
+
+Both are **authored M0 placeholders**, not shipping art. Their purpose is to prove that real binary character/enemy assets can replace procedural geometry without touching deterministic gameplay.
 
 Unassigned slots remain `null` and retain the procedural fallback. A failed authored-asset load must also fall back rather than breaking gameplay boot.
 

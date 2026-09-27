@@ -112,6 +112,7 @@ document.body.dataset.resonanceBuildId = import.meta.env.VITE_BUILD_ID ?? "dev";
 document.body.dataset.resonanceBackendPreference = backendPreference;
 document.body.dataset.resonanceAuthoredVisualAssets = authoredVisualAssetMode();
 document.body.dataset.resonanceAuthoredWayfarer = "loading";
+document.body.dataset.resonanceAuthoredScrapper = "loading";
 
 async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
   if (backendPreference !== "webgl2" && "gpu" in navigator) {
@@ -368,6 +369,50 @@ if (wayfarerVisualResult.status === "authored") {
   console.warn(
     "Authored Wayfarer failed to load; procedural fallback remains active.",
     wayfarerVisualResult.reason,
+  );
+}
+
+const scrapperVisualSpec = AUTHORED_VISUAL_ASSETS.find(
+  (spec) => spec.slot === "scrapper-damaged",
+);
+if (!scrapperVisualSpec) {
+  throw new Error("Authored visual slot scrapper-damaged is missing");
+}
+const scrapperVisualResult = await loadAuthoredVisualAsset(scene, scrapperVisualSpec);
+let authoredScrapperRoot: AbstractMesh | null = null;
+let authoredScrapperEye: AbstractMesh | null = null;
+let authoredScrapperDamagedArm: AbstractMesh | null = null;
+let authoredScrapperLoosePlate: AbstractMesh | null = null;
+if (scrapperVisualResult.status === "authored") {
+  authoredScrapperRoot =
+    scrapperVisualResult.meshes.find((mesh) => mesh.parent === null)
+    ?? scrapperVisualResult.meshes[0]
+    ?? null;
+  if (!authoredScrapperRoot) {
+    throw new Error("Authored Scrapper GLB loaded without a root mesh");
+  }
+  authoredScrapperRoot.position.set(5.75, 0.93, 0.25);
+  authoredScrapperRoot.rotation.z = -0.08;
+  authoredScrapperEye =
+    scrapperVisualResult.meshes.find((mesh) => mesh.name === "Scrapper_HostileEye")
+    ?? null;
+  authoredScrapperDamagedArm =
+    scrapperVisualResult.meshes.find((mesh) => mesh.name === "Scrapper_DamagedArm")
+    ?? null;
+  authoredScrapperLoosePlate =
+    scrapperVisualResult.meshes.find((mesh) => mesh.name === "Scrapper_LooseForearmPlate")
+    ?? null;
+  for (const mesh of scrapperVisualResult.meshes) {
+    mesh.isPickable = false;
+    graphicsRoom.shadowGenerator.addShadowCaster(mesh);
+  }
+  graphicsRoom.setProceduralScrapperEnabled(false);
+  document.body.dataset.resonanceAuthoredScrapper = "authored";
+} else {
+  document.body.dataset.resonanceAuthoredScrapper = "fallback";
+  console.warn(
+    "Authored Scrapper failed to load; procedural fallback remains active.",
+    scrapperVisualResult.reason,
   );
 }
 
@@ -1093,6 +1138,26 @@ engine.runRenderLoop(() => {
     const repelFlash = now < repelFlashUntilMs && id === repelFlashTargetId;
     const scale = repelFlash ? 0.76 : active ? 0.7 : selected ? 0.59 : 0.5;
     mesh.scaling.setAll(scale);
+  }
+
+  if (authoredScrapperRoot) {
+    const elapsedSeconds = now / 1000;
+    const scrapperDrift = Math.sin(elapsedSeconds * 0.9) * 0.18;
+    authoredScrapperRoot.position.x = 5.75 + scrapperDrift;
+    authoredScrapperRoot.rotation.z = -0.08 + Math.sin(elapsedSeconds * 1.3) * 0.025;
+    if (authoredScrapperDamagedArm) {
+      authoredScrapperDamagedArm.rotation.z =
+        -0.48 + Math.sin(elapsedSeconds * 2.1) * 0.08;
+    }
+    if (authoredScrapperLoosePlate) {
+      authoredScrapperLoosePlate.rotation.z =
+        0.22 + Math.sin(elapsedSeconds * 4.2) * 0.08;
+    }
+    if (authoredScrapperEye) {
+      const hostilePulse = 0.82 + 0.18 * Math.sin(elapsedSeconds * 6.2);
+      authoredScrapperEye.scaling.x = 1.35 * hostilePulse;
+      authoredScrapperEye.scaling.y = 0.65 * hostilePulse;
+    }
   }
 
   graphicsRoom.update(now / 1000);

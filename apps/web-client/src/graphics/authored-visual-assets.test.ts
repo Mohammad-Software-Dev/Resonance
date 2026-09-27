@@ -12,6 +12,9 @@ describe("authored visual asset contract", () => {
     expect(
       AUTHORED_VISUAL_ASSETS.find((spec) => spec.slot === "wayfarer-player")?.url,
     ).toBe("/assets/visual/characters/wayfarer-mara-m0.glb");
+    expect(
+      AUTHORED_VISUAL_ASSETS.find((spec) => spec.slot === "scrapper-damaged")?.url,
+    ).toBe("/assets/visual/enemies/scrapper-damaged-m0.glb");
     expect(AUTHORED_VISUAL_ASSETS.every((spec) => spec.fallback === "procedural")).toBe(true);
   });
 

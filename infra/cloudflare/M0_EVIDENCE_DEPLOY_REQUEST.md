@@ -1,24 +1,22 @@
 # M0 Evidence Deployment Request
 
-**Request:** 22  
-**Requested from baseline:** `34240545de717e621537109c74ce7fcab29fdd4e`  
-**Purpose:** Publish M0.12 Pass 9 with the first actual authored runtime character replacement.
-
-This candidate uses the Pass 8 GLB boundary rather than extending the procedural character indefinitely.
+**Request:** 23  
+**Requested from baseline:** `59e02e9b3daa056e1da47e8160a1998c763237dc`  
+**Purpose:** Publish M0.12 Pass 10 with the authored damaged Scrapper replacement.
 
 Changes:
 
-- adds `/assets/visual/characters/wayfarer-mara-m0.glb`;
-- assigns it to the typed `wayfarer-player` slot;
-- loads the binary GLB through Babylon's glTF loader before shader warmup;
-- mirrors deterministic player position/facing into the authored presentation root;
-- disables the procedural Wayfarer presentation only after successful authored load;
-- keeps procedural fallback code for fault tolerance;
-- requires authored Mara mesh landmarks in the visual audit;
-- requires `data-resonance-authored-wayfarer="authored"` in deployed smoke;
+- adds `/assets/visual/enemies/scrapper-damaged-m0.glb`;
+- assigns the typed `scrapper-damaged` slot;
+- loads the binary GLB before shader warmup;
+- disables the procedural Scrapper body after successful import;
+- retains the existing threat ring as gameplay-readable VFX;
+- applies presentation-only idle drift, damaged-arm motion, loose-plate wobble and hostile-eye pulse to authored nodes;
+- requires authored Scrapper mesh landmarks;
+- requires `data-resonance-authored-scrapper="authored"` in deployed smoke;
 - records explicit asset provenance and `shippingArt: false`.
 
-This is an authored M0 placeholder, not final character art. It proves the production runtime asset replacement path and moves the prototype away from code-generated primitives.
+Mara Venn remains authored from Pass 9. Both models are M0 authored placeholders, not final production art.
 
 No movement, collision, target selection, Resonance-force, progression, combat, AI or deterministic replay semantics are changed.
 

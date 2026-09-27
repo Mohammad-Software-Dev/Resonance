@@ -212,3 +212,26 @@ The deterministic simulation still moves the original invisible player presentat
 Fail-safe behavior remains available in code, but this Pass 9 deployment is automation-green only when the authored Mara GLB actually loads. Deployed smoke requires both `data-resonance-authored-wayfarer="authored"` and authored mesh landmarks such as `Mara_Helmet` and `Mara_GauntletEmitter`.
 
 This asset is deliberately a pipeline/recognizability step, not a claim of final character quality, rigging, skinning or animation.
+
+
+## Pass 10 — authored hostile replacement
+
+The tenth M0.12 pass replaces the procedural body of the WS01 damaged Scrapper with a second binary GLB:
+
+- `/assets/visual/enemies/scrapper-damaged-m0.glb`;
+- slot: `scrapper-damaged`;
+- status: authored M0 placeholder, **not shipping art**;
+- provenance: `scrapper-damaged-m0.asset.json`.
+
+The authored body keeps the recognizable maintenance-construct language established in Pass 6: industrial shell, dark joints, single hostile sensor, asymmetrically damaged arm and loose forearm plate.
+
+The existing procedural threat ring remains as gameplay-readable VFX rather than being baked into the model. Presentation-only idle drift, damaged-arm motion, loose-plate wobble and hostile-eye pulse are applied to the authored mesh nodes.
+
+No combat body, hitbox, health, attack, AI, pathing or deterministic gameplay authority is introduced. The enemy remains a visual vignette.
+
+Deployment is considered automation-green only when both authored subjects load:
+
+- `data-resonance-authored-wayfarer="authored"`;
+- `data-resonance-authored-scrapper="authored"`.
+
+The landmark audit additionally requires `Scrapper_Torso`, `Scrapper_HostileEye` and `Scrapper_LooseForearmPlate`.
