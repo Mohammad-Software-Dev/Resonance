@@ -72,7 +72,7 @@ function pbr(
   material.metallic = metallic;
   material.roughness = roughness;
   material.emissiveColor = emissive;
-  material.environmentIntensity = 0.85;
+  material.environmentIntensity = 0.38;
   return material;
 }
 
@@ -189,6 +189,201 @@ function addIndustrialBackdrop(
   return { distantMeshes, emissiveMeshes };
 }
 
+
+function addWayfarerScarSet(
+  scene: Scene,
+  hull: PBRMaterial,
+  ceramic: PBRMaterial,
+  emergency: PBRMaterial,
+  resonance: PBRMaterial,
+): {
+  readonly distantMeshes: Mesh[];
+  readonly emergencyLights: Mesh[];
+  readonly relayRings: Mesh[];
+} {
+  const distantMeshes: Mesh[] = [];
+  const emergencyLights: Mesh[] = [];
+  const relayRings: Mesh[] = [];
+
+  // Broken transit hull: layered ribs and torn deck sections sit behind the gameplay plane.
+  for (const segment of [
+    { name: "scar-hull-left", x: -6.8, y: 2.2, width: 3.3, height: 0.42, rotation: -0.09 },
+    { name: "scar-hull-mid", x: -1.8, y: 4.95, width: 4.8, height: 0.34, rotation: 0.05 },
+    { name: "scar-hull-right", x: 5.0, y: 5.55, width: 5.3, height: 0.38, rotation: -0.05 },
+    { name: "scar-deck-left", x: -5.3, y: 0.58, width: 4.0, height: 0.28, rotation: 0.03 },
+    { name: "scar-deck-right", x: 4.5, y: 0.72, width: 4.8, height: 0.26, rotation: -0.04 },
+  ]) {
+    const mesh = CreateBox(
+      segment.name,
+      { width: segment.width, height: segment.height, depth: 0.46 },
+      scene,
+    );
+    mesh.position.set(segment.x, segment.y, 2.2);
+    mesh.rotation.z = segment.rotation;
+    mesh.material = hull;
+    distantMeshes.push(mesh);
+  }
+
+  for (const rib of [
+    { x: -7.2, y: 3.25, h: 5.1, r: 0.16 },
+    { x: -4.8, y: 3.55, h: 4.7, r: -0.12 },
+    { x: -0.2, y: 3.75, h: 5.0, r: 0.11 },
+    { x: 3.35, y: 3.55, h: 4.9, r: -0.12 },
+    { x: 6.65, y: 3.2, h: 5.0, r: 0.15 },
+  ]) {
+    const mesh = CreateBox(
+      `scar-rib-${rib.x.toFixed(2)}`,
+      { width: 0.3, height: rib.h, depth: 0.38 },
+      scene,
+    );
+    mesh.position.set(rib.x, rib.y, 2.35);
+    mesh.rotation.z = rib.r;
+    mesh.material = ceramic;
+    distantMeshes.push(mesh);
+  }
+
+  // Cargo and maintenance pods communicate scale and the wreck's former function.
+  for (const cargo of [
+    { x: -6.2, y: 0.55, w: 0.9, h: 0.72 },
+    { x: -5.25, y: 0.48, w: 0.72, h: 0.58 },
+    { x: 3.0, y: 0.52, w: 0.82, h: 0.68 },
+  ]) {
+    const crate = CreateBox(
+      `scar-cargo-${cargo.x.toFixed(2)}`,
+      { width: cargo.w, height: cargo.h, depth: 0.7 },
+      scene,
+    );
+    crate.position.set(cargo.x, cargo.y, 1.35);
+    crate.material = hull;
+    distantMeshes.push(crate);
+
+    const latch = CreateBox(
+      `scar-cargo-latch-${cargo.x.toFixed(2)}`,
+      { width: cargo.w * 0.58, height: 0.06, depth: 0.04 },
+      scene,
+    );
+    latch.position.set(cargo.x, cargo.y + 0.08, 0.98);
+    latch.material = emergency;
+    distantMeshes.push(latch);
+    emergencyLights.push(latch);
+  }
+
+  // Repeating emergency lamps create a readable route toward the relay.
+  for (const x of [-6.7, -3.7, -0.7, 2.3, 5.3]) {
+    const lamp = CreateBox(
+      `scar-emergency-lamp-${x}`,
+      { width: 0.52, height: 0.08, depth: 0.08 },
+      scene,
+    );
+    lamp.position.set(x, 5.85, 1.72);
+    lamp.material = emergency;
+    distantMeshes.push(lamp);
+    emergencyLights.push(lamp);
+  }
+
+  // Destination landmark: a damaged emergency relay frame at the far right.
+  for (const postX of [6.6, 7.55]) {
+    const post = CreateBox(
+      `scar-relay-post-${postX}`,
+      { width: 0.2, height: 3.0, depth: 0.44 },
+      scene,
+    );
+    post.position.set(postX, 2.1, 1.55);
+    post.material = ceramic;
+    distantMeshes.push(post);
+  }
+  const relayCap = CreateBox(
+    "scar-relay-cap",
+    { width: 1.18, height: 0.18, depth: 0.44 },
+    scene,
+  );
+  relayCap.position.set(7.08, 3.55, 1.55);
+  relayCap.material = ceramic;
+  distantMeshes.push(relayCap);
+
+  for (const diameter of [0.92, 1.3]) {
+    const ring = CreateTorus(
+      `scar-relay-ring-${diameter}`,
+      { diameter, thickness: diameter === 0.92 ? 0.07 : 0.035, tessellation: 36 },
+      scene,
+    );
+    ring.position.set(7.08, 2.55, 1.25);
+    ring.rotation.x = Math.PI / 2;
+    ring.material = resonance;
+    relayRings.push(ring);
+  }
+
+  const relayCore = CreateSphere(
+    "scar-relay-core",
+    { diameter: 0.24, segments: 12 },
+    scene,
+  );
+  relayCore.position.set(7.08, 2.55, 1.2);
+  relayCore.material = resonance;
+  relayRings.push(relayCore);
+
+  // Sparse distant stars: points, not a bright white background.
+  for (let index = 0; index < 22; index += 1) {
+    const star = CreateSphere(
+      `scar-star-${index}`,
+      { diameter: 0.018 + (index % 3) * 0.008, segments: 6 },
+      scene,
+    );
+    const x = -8.5 + ((index * 37) % 170) / 10;
+    const y = 0.8 + ((index * 53) % 62) / 10;
+    star.position.set(x, y, 9 + (index % 4) * 0.25);
+    star.material = resonance;
+    distantMeshes.push(star);
+  }
+
+  return { distantMeshes, emergencyLights, relayRings };
+}
+
+function decorateResonanceTargets(
+  scene: Scene,
+  targets: readonly Mesh[],
+  material: NodeMaterial,
+): Mesh[] {
+  const rings: Mesh[] = [];
+  for (let index = 0; index < targets.length; index += 1) {
+    const target = targets[index];
+    if (!target) continue;
+    target.scaling.setAll(0.5);
+
+    const outer = CreateTorus(
+      `anchor-ring-outer-${index}`,
+      { diameter: 1.45, thickness: 0.075, tessellation: 28 },
+      scene,
+    );
+    outer.parent = target;
+    outer.position.set(0, 0, 0);
+    outer.rotation.x = Math.PI / 2;
+    outer.material = material;
+
+    const inner = CreateTorus(
+      `anchor-ring-inner-${index}`,
+      { diameter: 1.05, thickness: 0.038, tessellation: 24 },
+      scene,
+    );
+    inner.parent = target;
+    inner.position.set(0, 0, 0);
+    inner.rotation.x = Math.PI / 2;
+    inner.material = material;
+
+    const spine = CreateBox(
+      `anchor-spine-${index}`,
+      { width: 0.08, height: 1.05, depth: 0.08 },
+      scene,
+    );
+    spine.parent = target;
+    spine.position.set(0, 0, 0);
+    spine.material = material;
+
+    rings.push(outer, inner, spine);
+  }
+  return rings;
+}
+
 function addGasGiantVista(scene: Scene): Mesh[] {
   const planetMaterial = new StandardMaterial("gas-giant-material", scene);
   planetMaterial.diffuseColor = new Color3(0.32, 0.18, 0.12);
@@ -278,7 +473,94 @@ function addWayfarerSilhouette(
   emitter.position.set(0, 0.08, 0.12);
   emitter.material = accent;
 
-  return [player, head, visor, pack, emitter];
+  const chest = CreateBox(
+    "wayfarer-chest-plate",
+    { width: 0.58, height: 0.72, depth: 0.22 },
+    scene,
+  );
+  chest.parent = player;
+  chest.position.set(0, 0.1, -0.22);
+  chest.material = suit;
+
+  const leftArm = CreateBox(
+    "wayfarer-left-arm",
+    { width: 0.16, height: 0.58, depth: 0.18 },
+    scene,
+  );
+  leftArm.parent = player;
+  leftArm.position.set(-0.38, 0.08, -0.02);
+  leftArm.material = suit;
+
+  const rightArm = CreateBox(
+    "wayfarer-right-arm",
+    { width: 0.18, height: 0.58, depth: 0.2 },
+    scene,
+  );
+  rightArm.parent = player;
+  rightArm.position.set(0.39, 0.08, -0.02);
+  rightArm.material = suit;
+
+  const leftLeg = CreateBox(
+    "wayfarer-left-leg",
+    { width: 0.2, height: 0.66, depth: 0.22 },
+    scene,
+  );
+  leftLeg.parent = player;
+  leftLeg.position.set(-0.15, -0.66, 0);
+  leftLeg.material = suit;
+
+  const rightLeg = CreateBox(
+    "wayfarer-right-leg",
+    { width: 0.2, height: 0.66, depth: 0.22 },
+    scene,
+  );
+  rightLeg.parent = player;
+  rightLeg.position.set(0.15, -0.66, 0);
+  rightLeg.material = suit;
+
+  const gauntlet = CreateBox(
+    "wayfarer-resonance-gauntlet",
+    { width: 0.24, height: 0.22, depth: 0.26 },
+    scene,
+  );
+  gauntlet.parent = rightArm;
+  gauntlet.position.set(0.03, -0.23, -0.07);
+  gauntlet.material = accent;
+
+  const shoulderMark = CreateBox(
+    "wayfarer-shoulder-mark",
+    { width: 0.24, height: 0.09, depth: 0.04 },
+    scene,
+  );
+  shoulderMark.parent = leftArm;
+  shoulderMark.position.set(0, 0.2, -0.12);
+  shoulderMark.material = accent;
+
+  const fabricTab = CreateBox(
+    "wayfarer-fabric-tab",
+    { width: 0.08, height: 0.55, depth: 0.04 },
+    scene,
+  );
+  fabricTab.parent = player;
+  fabricTab.position.set(-0.29, -0.12, 0.13);
+  fabricTab.rotation.z = -0.18;
+  fabricTab.material = accent;
+
+  return [
+    player,
+    head,
+    visor,
+    pack,
+    emitter,
+    chest,
+    leftArm,
+    rightArm,
+    leftLeg,
+    rightLeg,
+    gauntlet,
+    shoulderMark,
+    fabricTab,
+  ];
 }
 
 export function createRepresentativeGraphicsRoom(
@@ -295,7 +577,7 @@ export function createRepresentativeGraphicsRoom(
   if (ambient) {
     ambient.diffuse = new Color3(0.32, 0.43, 0.55);
     ambient.groundColor = new Color3(0.025, 0.03, 0.045);
-    ambient.intensity = 0.42;
+    ambient.intensity = 0.28;
   }
 
   scene.environmentTexture = CubeTexture.CreateFromPrefilteredData(
@@ -307,29 +589,29 @@ export function createRepresentativeGraphicsRoom(
     "orbital-dark-metal",
     scene,
     new Color3(0.055, 0.075, 0.1),
-    0.82,
     0.42,
+    0.58,
   );
   const paintedMetal = pbr(
     "orbital-painted-metal",
     scene,
     new Color3(0.105, 0.16, 0.19),
+    0.28,
     0.58,
-    0.48,
   );
   const floorMaterial = pbr(
     "orbital-floor",
     scene,
     new Color3(0.075, 0.095, 0.11),
-    0.74,
-    0.34,
+    0.22,
+    0.5,
   );
   const hazardMaterial = pbr(
     "orbital-hazard",
     scene,
     new Color3(0.34, 0.17, 0.055),
-    0.45,
-    0.42,
+    0.16,
+    0.55,
   );
   const emissive = pbr(
     "orbital-emissive",
@@ -339,6 +621,30 @@ export function createRepresentativeGraphicsRoom(
     0.28,
     new Color3(0.08, 0.72, 0.9),
   );
+  const hullCeramic = pbr(
+    "scar-hull-ceramic",
+    scene,
+    new Color3(0.12, 0.15, 0.16),
+    0.16,
+    0.72,
+  );
+  const emergency = pbr(
+    "scar-emergency",
+    scene,
+    new Color3(0.19, 0.075, 0.025),
+    0.05,
+    0.5,
+    new Color3(0.95, 0.24, 0.055),
+  );
+  const relayMaterial = pbr(
+    "scar-relay-emissive",
+    scene,
+    new Color3(0.018, 0.12, 0.12),
+    0.08,
+    0.3,
+    new Color3(0.08, 0.88, 0.72),
+  );
+
   const suit = pbr(
     "wayfarer-suit",
     scene,
@@ -373,18 +679,38 @@ export function createRepresentativeGraphicsRoom(
   for (const target of meshes.targets) target.material = resonanceMaterial;
 
   const backdrop = addIndustrialBackdrop(scene, darkMetal, paintedMetal, emissive);
+  const scar = addWayfarerScarSet(
+    scene,
+    darkMetal,
+    hullCeramic,
+    emergency,
+    relayMaterial,
+  );
   const vista = addGasGiantVista(scene);
   const wayfarerMeshes = addWayfarerSilhouette(scene, meshes.player, suit, suitAccent);
+  const anchorRings = decorateResonanceTargets(scene, meshes.targets, resonanceMaterial);
+
+  const leftArm = scene.getMeshByName("wayfarer-left-arm") as Mesh | null;
+  const rightArm = scene.getMeshByName("wayfarer-right-arm") as Mesh | null;
+  const leftLeg = scene.getMeshByName("wayfarer-left-leg") as Mesh | null;
+  const rightLeg = scene.getMeshByName("wayfarer-right-leg") as Mesh | null;
+  const fabricTab = scene.getMeshByName("wayfarer-fabric-tab") as Mesh | null;
+  let lastPlayerX = meshes.player.position.x;
 
   scene.skipPointerMovePicking = true;
   for (const mesh of scene.meshes) mesh.isPickable = false;
-  for (const mesh of [...backdrop.distantMeshes, ...vista]) mesh.freezeWorldMatrix();
+  for (const mesh of [...backdrop.distantMeshes, ...scar.distantMeshes, ...vista]) {
+    mesh.freezeWorldMatrix();
+  }
   for (const material of [
     darkMetal,
     paintedMetal,
     floorMaterial,
     hazardMaterial,
     emissive,
+    hullCeramic,
+    emergency,
+    relayMaterial,
     suit,
     suitAccent,
   ]) {
@@ -398,7 +724,7 @@ export function createRepresentativeGraphicsRoom(
   );
   keyLight.position.set(5.5, 9.5, -5);
   keyLight.diffuse = new Color3(0.78, 0.9, 1);
-  keyLight.intensity = 2.15;
+  keyLight.intensity = 1.15;
   keyLight.shadowMinZ = 1;
   keyLight.shadowMaxZ = 28;
 
@@ -466,9 +792,10 @@ export function createRepresentativeGraphicsRoom(
     glow.intensity = preset.glowIntensity;
     scene.fogDensity = preset.fogDensity;
     scene.environmentIntensity = preset.environmentIntensity;
-    for (const mesh of [...backdrop.distantMeshes, ...vista]) {
+    for (const mesh of [...backdrop.distantMeshes, ...scar.distantMeshes, ...vista]) {
       mesh.setEnabled(preset.distantDetail);
     }
+    for (const mesh of scar.relayRings) mesh.setEnabled(true);
   }
 
   applyPreset(initialPreset);
@@ -496,6 +823,35 @@ export function createRepresentativeGraphicsRoom(
         if (!mesh) continue;
         mesh.scaling.y = 0.85 + 0.15 * Math.sin(elapsedSeconds * 1.4 + i * 0.7);
       }
+
+      for (let i = 0; i < scar.emergencyLights.length; i += 1) {
+        const lamp = scar.emergencyLights[i];
+        if (!lamp) continue;
+        const flash = 0.86 + 0.14 * Math.sin(elapsedSeconds * 3.8 + i * 0.9);
+        lamp.scaling.x = flash;
+      }
+
+      for (let i = 0; i < scar.relayRings.length; i += 1) {
+        const ring = scar.relayRings[i];
+        if (!ring) continue;
+        ring.rotation.z = elapsedSeconds * (i % 2 === 0 ? 0.18 : -0.13);
+      }
+
+      for (let i = 0; i < anchorRings.length; i += 1) {
+        const ring = anchorRings[i];
+        if (!ring || !ring.name.includes("ring")) continue;
+        ring.rotation.z = elapsedSeconds * (i % 2 === 0 ? 0.42 : -0.31);
+      }
+
+      const dx = meshes.player.position.x - lastPlayerX;
+      lastPlayerX = meshes.player.position.x;
+      const moving = Math.abs(dx) > 0.0015;
+      const gait = moving ? Math.sin(elapsedSeconds * 10.5) * 0.38 : Math.sin(elapsedSeconds * 2.2) * 0.035;
+      if (leftArm) leftArm.rotation.z = gait;
+      if (rightArm) rightArm.rotation.z = -gait * 0.8;
+      if (leftLeg) leftLeg.rotation.z = -gait * 0.72;
+      if (rightLeg) rightLeg.rotation.z = gait * 0.72;
+      if (fabricTab) fabricTab.rotation.z = -0.18 - Math.min(0.32, Math.abs(dx) * 12);
     },
     stats: (): GraphicsRoomStats => {
       const preset = GRAPHICS_PRESETS[presetName];
