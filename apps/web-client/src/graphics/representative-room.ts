@@ -768,6 +768,200 @@ function addWorldStoryLayer(
   return { staticMeshes, animatedMeshes };
 }
 
+function addDamagedScrapperVignette(
+  scene: Scene,
+): {
+  root: Mesh;
+  sensor: Mesh;
+  damagedArm: Mesh;
+  loosePlate: Mesh;
+  warningRing: Mesh;
+  meshes: Mesh[];
+} {
+  const shell = semanticMaterial(
+    "scrapper-shell",
+    scene,
+    new Color3(0.17, 0.2, 0.21),
+    new Color3(0.012, 0.016, 0.018),
+  );
+  const joint = semanticMaterial(
+    "scrapper-joint",
+    scene,
+    new Color3(0.055, 0.07, 0.075),
+  );
+  const hostile = semanticMaterial(
+    "scrapper-hostile-sensor",
+    scene,
+    new Color3(0.28, 0.055, 0.025),
+    new Color3(0.92, 0.12, 0.025),
+  );
+  const damaged = semanticMaterial(
+    "scrapper-damage",
+    scene,
+    new Color3(0.34, 0.13, 0.025),
+    new Color3(0.55, 0.08, 0.01),
+  );
+
+  const root = CreateBox(
+    "scrapper-damaged-torso",
+    { width: 0.74, height: 0.7, depth: 0.5 },
+    scene,
+  );
+  root.position.set(5.75, 0.93, 0.25);
+  root.rotation.z = -0.08;
+  root.material = shell;
+
+  const head = CreateCylinder(
+    "scrapper-head",
+    { height: 0.34, diameter: 0.46, tessellation: 18 },
+    scene,
+  );
+  head.parent = root;
+  head.position.set(0.04, 0.56, -0.02);
+  head.rotation.z = Math.PI / 2;
+  head.material = joint;
+
+  const sensor = CreateSphere(
+    "scrapper-hostile-eye",
+    { diameter: 0.17, segments: 10 },
+    scene,
+  );
+  sensor.parent = head;
+  sensor.position.set(0, -0.19, -0.08);
+  sensor.scaling.set(1.35, 0.65, 0.72);
+  sensor.material = hostile;
+
+  const chest = CreateBox(
+    "scrapper-chest-panel",
+    { width: 0.52, height: 0.28, depth: 0.08 },
+    scene,
+  );
+  chest.parent = root;
+  chest.position.set(0, 0.06, -0.29);
+  chest.material = joint;
+
+  const pack = CreateBox(
+    "scrapper-maintenance-pack",
+    { width: 0.42, height: 0.5, depth: 0.24 },
+    scene,
+  );
+  pack.parent = root;
+  pack.position.set(0, 0.05, 0.31);
+  pack.material = shell;
+
+  const leftArm = CreateBox(
+    "scrapper-left-arm",
+    { width: 0.17, height: 0.72, depth: 0.19 },
+    scene,
+  );
+  leftArm.parent = root;
+  leftArm.position.set(-0.48, -0.02, 0);
+  leftArm.rotation.z = 0.2;
+  leftArm.material = shell;
+
+  const damagedArm = CreateBox(
+    "scrapper-damaged-arm",
+    { width: 0.17, height: 0.66, depth: 0.19 },
+    scene,
+  );
+  damagedArm.parent = root;
+  damagedArm.position.set(0.49, -0.04, 0);
+  damagedArm.rotation.z = -0.48;
+  damagedArm.material = damaged;
+
+  const loosePlate = CreateBox(
+    "scrapper-loose-forearm-plate",
+    { width: 0.28, height: 0.42, depth: 0.08 },
+    scene,
+  );
+  loosePlate.parent = damagedArm;
+  loosePlate.position.set(0.1, -0.22, -0.14);
+  loosePlate.rotation.z = 0.22;
+  loosePlate.material = damaged;
+
+  const hip = CreateBox(
+    "scrapper-hip",
+    { width: 0.56, height: 0.18, depth: 0.34 },
+    scene,
+  );
+  hip.parent = root;
+  hip.position.set(0, -0.43, 0.02);
+  hip.material = joint;
+
+  const leftLeg = CreateBox(
+    "scrapper-left-leg",
+    { width: 0.2, height: 0.64, depth: 0.22 },
+    scene,
+  );
+  leftLeg.parent = root;
+  leftLeg.position.set(-0.22, -0.82, 0);
+  leftLeg.rotation.z = -0.08;
+  leftLeg.material = shell;
+
+  const rightLeg = CreateBox(
+    "scrapper-right-leg",
+    { width: 0.2, height: 0.64, depth: 0.22 },
+    scene,
+  );
+  rightLeg.parent = root;
+  rightLeg.position.set(0.22, -0.82, 0);
+  rightLeg.rotation.z = 0.12;
+  rightLeg.material = shell;
+
+  for (const [name, x] of [
+    ["scrapper-left-foot", -0.22],
+    ["scrapper-right-foot", 0.22],
+  ] as const) {
+    const foot = CreateBox(
+      name,
+      { width: 0.28, height: 0.14, depth: 0.38 },
+      scene,
+    );
+    foot.parent = root;
+    foot.position.set(x, -1.16, -0.07);
+    foot.material = joint;
+  }
+
+  const antenna = CreateCylinder(
+    "scrapper-antenna",
+    { height: 0.46, diameter: 0.055, tessellation: 10 },
+    scene,
+  );
+  antenna.parent = root;
+  antenna.position.set(-0.16, 0.91, 0.08);
+  antenna.rotation.z = -0.22;
+  antenna.material = joint;
+
+  const warningRing = CreateTorus(
+    "scrapper-threat-ring",
+    { diameter: 1.85, thickness: 0.035, tessellation: 48 },
+    scene,
+  );
+  warningRing.position.set(5.75, 0.045, 0.32);
+  warningRing.rotation.x = Math.PI / 2;
+  warningRing.material = hostile;
+
+  for (const material of [shell, joint, hostile, damaged]) material.freeze();
+
+  const meshes = [
+    root,
+    head,
+    sensor,
+    chest,
+    pack,
+    leftArm,
+    damagedArm,
+    loosePlate,
+    hip,
+    leftLeg,
+    rightLeg,
+    antenna,
+    warningRing,
+  ];
+
+  return { root, sensor, damagedArm, loosePlate, warningRing, meshes };
+}
+
 function addGasGiantVista(scene: Scene): Mesh[] {
   const planetMaterial = new StandardMaterial("gas-giant-material", scene);
   const gasGiantTexture = createGasGiantTexture(scene);
@@ -1211,6 +1405,7 @@ export function createRepresentativeGraphicsRoom(
     emergency,
     relayMaterial,
   );
+  const encounter = addDamagedScrapperVignette(scene);
 
   const leftArm = scene.getMeshByName("wayfarer-left-arm") as Mesh | null;
   const rightArm = scene.getMeshByName("wayfarer-right-arm") as Mesh | null;
@@ -1275,6 +1470,7 @@ export function createRepresentativeGraphicsRoom(
     meshes.platform,
     meshes.attractPillar,
     ...wayfarerMeshes.slice(1),
+    ...encounter.meshes,
   ]) {
     shadowGenerator.addShadowCaster(caster);
   }
@@ -1379,6 +1575,17 @@ export function createRepresentativeGraphicsRoom(
           mesh.scaling.y = relayActivated ? 1.08 + 0.05 * storyPulse : storyPulse;
         }
       }
+
+      const scrapperDrift = Math.sin(elapsedSeconds * 0.9) * 0.18;
+      encounter.root.position.x = 5.75 + scrapperDrift;
+      encounter.root.rotation.z = -0.08 + Math.sin(elapsedSeconds * 1.3) * 0.025;
+      encounter.damagedArm.rotation.z = -0.48 + Math.sin(elapsedSeconds * 2.1) * 0.08;
+      encounter.loosePlate.rotation.z = 0.22 + Math.sin(elapsedSeconds * 4.2) * 0.08;
+      const hostilePulse = 0.82 + 0.18 * Math.sin(elapsedSeconds * 6.2);
+      encounter.sensor.scaling.x = 1.35 * hostilePulse;
+      encounter.sensor.scaling.y = 0.65 * hostilePulse;
+      encounter.warningRing.scaling.setAll(0.94 + hostilePulse * 0.08);
+      encounter.warningRing.visibility = 0.32 + hostilePulse * 0.28;
 
       for (let i = 0; i < scar.relayRings.length; i += 1) {
         const ring = scar.relayRings[i];
