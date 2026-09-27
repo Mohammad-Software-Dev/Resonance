@@ -58,6 +58,7 @@ export interface RepresentativeGraphicsRoom {
   applyPreset(name: GraphicsPresetName): void;
   applyRenderScale(scale: number): void;
   setRelayActivated(active: boolean): void;
+  setProceduralWayfarerEnabled(enabled: boolean): void;
   update(elapsedSeconds: number): void;
   stats(): GraphicsRoomStats;
 }
@@ -1692,6 +1693,10 @@ export function createRepresentativeGraphicsRoom(
     applyRenderScale,
     setRelayActivated(active: boolean): void {
       relayActivated = active;
+    },
+    setProceduralWayfarerEnabled(enabled: boolean): void {
+      meshes.player.isVisible = enabled;
+      for (const mesh of wayfarerMeshes.slice(1)) mesh.setEnabled(enabled);
     },
     update(elapsedSeconds: number): void {
       const pulse = 0.5 + 0.5 * Math.sin(elapsedSeconds * 3.1);
