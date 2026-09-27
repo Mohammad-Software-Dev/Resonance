@@ -29,7 +29,7 @@ const M0_ENVIRONMENT_URL =
   "/assets/environment/resonance-m0-orbital.env";
 
 export interface RepresentativeRoomMeshes {
-  readonly ground: Mesh;
+  readonly grounds: readonly Mesh[];
   readonly leftWall: Mesh;
   readonly rightWall: Mesh;
   readonly slope: Mesh;
@@ -544,16 +544,22 @@ function addGameplayReadabilityLayer(
   const staticMeshes: Mesh[] = [];
   const dynamicMeshes: Mesh[] = [];
 
-  const deckLip = CreateBox(
-    "gameplay-deck-edge",
-    { width: 15.7, height: 0.07, depth: 2.05 },
-    scene,
-  );
-  deckLip.position.set(0, 0.035, -0.03);
-  deckLip.material = deckAccent;
-  staticMeshes.push(deckLip);
+  for (const [name, x, width] of [
+    ["left", -5.65, 4.7],
+    ["center", -0.25, 2.7],
+    ["right", 5.1, 5.8],
+  ] as const) {
+    const deckLip = CreateBox(
+      `gameplay-deck-edge-${name}`,
+      { width: width - 0.08, height: 0.07, depth: 2.05 },
+      scene,
+    );
+    deckLip.position.set(x, 0.035, -0.03);
+    deckLip.material = deckAccent;
+    staticMeshes.push(deckLip);
+  }
 
-  for (const x of [-6.8, -5.2, -3.6, -0.8, 1.8, 3.4]) {
+  for (const x of [-6.8, -5.2, -3.6, -0.8, 0.5, 2.7, 4.3, 6.2]) {
     const marker = CreateBox(
       `deck-route-marker-${x}`,
       { width: 0.68, height: 0.035, depth: 2.08 },
@@ -562,6 +568,20 @@ function addGameplayReadabilityLayer(
     marker.position.set(x, 0.075, 0);
     marker.material = deckAccent;
     staticMeshes.push(marker);
+  }
+
+  for (const gap of [
+    { name: "left", x: -2.45, width: 1.7 },
+    { name: "right", x: 1.65, width: 1.1 },
+  ] as const) {
+    const field = CreateBox(
+      `scar-gap-field-${gap.name}`,
+      { width: gap.width, height: 0.08, depth: 1.85 },
+      scene,
+    );
+    field.position.set(gap.x, -0.72, 0.08);
+    field.material = hazardAccent;
+    staticMeshes.push(field);
   }
 
   for (let index = -2; index <= 2; index += 1) {
@@ -1508,14 +1528,14 @@ export function createRepresentativeGraphicsRoom(
   moverPattern.uScale = 3;
   gameplayMover.diffuseTexture = moverPattern;
 
-  meshes.ground.material = gameplayDeck;
+  for (const ground of meshes.grounds) ground.material = gameplayDeck;
   meshes.leftWall.material = gameplayWall;
   meshes.rightWall.material = gameplayWall;
   meshes.slope.material = gameplayHazard;
   meshes.attractPillar.material = gameplayMover;
   meshes.platform.material = gameplayMover;
 
-  meshes.ground.receiveShadows = true;
+  for (const ground of meshes.grounds) ground.receiveShadows = true;
   meshes.leftWall.receiveShadows = true;
   meshes.rightWall.receiveShadows = true;
   meshes.slope.receiveShadows = true;
