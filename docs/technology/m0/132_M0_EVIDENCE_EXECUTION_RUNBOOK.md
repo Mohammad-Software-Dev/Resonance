@@ -60,7 +60,8 @@ For the Tier M approval device:
 6. include jump, evade, moving anchor, Attract and Repel;
 7. press P to export the performance JSON;
 8. retain the raw JSON unchanged;
-9. repeat for WebGPU and WebGL2 fallback.
+9. repeat using `?backend=webgpu` and `?backend=webgl2` so each backend is explicit and reproducible;
+10. confirm exported `backend` and `backendPreference` match the requested route.
 
 Also complete:
 

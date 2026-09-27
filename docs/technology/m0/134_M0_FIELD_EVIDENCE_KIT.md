@@ -7,13 +7,23 @@
 
 Use only the current evidence candidate recorded in `131_M0_SIGNOFF_EVIDENCE_GATE.md` and `133_M0_DEPLOYED_SMOKE_EVIDENCE.md`.
 
-Public route:
+Public route (ordinary automatic backend selection):
 
 `https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev`
+
+Required WebGPU capture route:
+
+`https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev/?backend=webgpu`
+
+Required WebGL2 capture route:
+
+`https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev/?backend=webgl2`
 
 Blind route:
 
 `https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev/?blind=1`
+
+The explicit backend routes are evidence controls. `backend=webgpu` requires WebGPU and fails visibly instead of silently falling back. `backend=webgl2` skips the WebGPU attempt entirely, making the fallback capture reproducible on the same physical machine.
 
 After any gameplay, rendering, performance-instrumentation or blind-harness change, redeploy and use the new exact build SHA for all newly collected evidence.
 
@@ -62,14 +72,16 @@ Required conditions are defined in `127_M0_BROWSER_PERFORMANCE_PASS.md`.
 
 For each WebGPU and WebGL2 capture:
 
-1. use 1920x1080 and Medium preset for Tier M approval;
-2. close unrelated GPU-heavy applications where practical;
-3. allow startup and shader warmup to complete;
-4. press X to reset the capture window;
-5. traverse for at least 120 seconds;
-6. include jump, evade, moving anchor, Attract and Repel;
-7. press P;
-8. move the unchanged JSON into the matching private evidence folder.
+1. use the explicit backend URL above and confirm diagnostics show the same active/requested backend;
+2. use 1920x1080 and Medium preset for Tier M approval;
+3. close unrelated GPU-heavy applications where practical;
+4. allow startup and shader warmup to complete;
+5. press X to reset the capture window;
+6. traverse for at least 120 seconds;
+7. include jump, evade, moving anchor, Attract and Repel;
+8. press P;
+9. verify the JSON `backend` and `backendPreference` match the requested route;
+10. move the unchanged JSON into the matching private evidence folder.
 
 The current capture artifact records full-window:
 
