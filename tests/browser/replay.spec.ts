@@ -16,7 +16,7 @@ test("canonical M0 replay matches Node in the browser runtime", async ({
 
   const runMatrix = browserName === "chromium";
   let watchdog: ReturnType<typeof setTimeout> | undefined;
-  const result = await Promise.race([
+  const resultJson = await Promise.race([
     page.evaluate(async ({ replay, renderCadenceMatrix }) => {
       const verify = window.__RESONANCE_VERIFY_REPLAY__;
       if (!verify) throw new Error("Browser replay verifier was not installed.");
@@ -30,7 +30,8 @@ test("canonical M0 replay matches Node in the browser runtime", async ({
     }),
   ]).finally(() => {
     if (watchdog) clearTimeout(watchdog);
-  }) as {
+  });
+  const result = JSON.parse(resultJson) as {
     direct: { ok: boolean; finalHash: string; divergence: unknown };
     matrix: Array<{
       renderFps: number;
