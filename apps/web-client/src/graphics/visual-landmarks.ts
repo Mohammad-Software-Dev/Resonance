@@ -9,6 +9,7 @@ export const REQUIRED_VISUAL_LANDMARKS = [
   "world-sign-transit",
   "world-sign-relay",
   "story-prop-cargo-stack",
+  "repel-impact-shockwave",
 ] as const;
 
 export interface VisualLandmarkAudit {
