@@ -152,6 +152,29 @@ try {
     throw new Error(`Expected game-style camera staging, got: ${cameraStaging}`);
   }
   await root.waitForFunction(
+    () => ["idle", "run", "air", "evade", "attract", "repel"].includes(
+      document.body.dataset.resonanceWayfarerMotion ?? "",
+    ),
+    undefined,
+    { timeout: 15_000 },
+  );
+  const initialWayfarerMotion = await root.locator("body").getAttribute(
+    "data-resonance-wayfarer-motion",
+  );
+  await root.keyboard.down("d");
+  await root.waitForFunction(
+    () => document.body.dataset.resonanceWayfarerMotion === "run",
+    undefined,
+    { timeout: 5_000 },
+  );
+  await root.keyboard.up("d");
+  const wayfarerMotion = await root.locator("body").getAttribute(
+    "data-resonance-wayfarer-motion",
+  );
+  if (wayfarerMotion !== "run") {
+    throw new Error(`State-driven Wayfarer run presentation did not activate: ${wayfarerMotion}`);
+  }
+  await root.waitForFunction(
     () => ["idle", "locked", "attract", "repel"].includes(
       document.body.dataset.resonanceInteractionState ?? "",
     ),
@@ -236,6 +259,8 @@ try {
     visualLandmarks,
     traversalCourse,
     cameraStaging,
+    initialWayfarerMotion,
+    wayfarerMotion,
     authoredVisualAssets,
     authoredWayfarer,
     authoredScrapper,
