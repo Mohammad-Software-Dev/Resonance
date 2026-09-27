@@ -90,7 +90,7 @@ try {
     if (!response.ok()) rootHttpFailures.push({ url: response.url(), status: response.status() });
   });
 
-  const rootResponse = await gotoWithRetry(root, `${baseUrl}/`);
+  const rootResponse = await gotoWithRetry(root, `${baseUrl}/?backend=webgl2`);
   const webgl2Available = await root.evaluate(() => {
     const canvas = document.createElement("canvas");
     return Boolean(canvas.getContext("webgl2"));
@@ -103,6 +103,12 @@ try {
     undefined,
     { timeout: 120_000 },
   );
+  const rootBackendPreference = await root.locator("body").getAttribute(
+    "data-resonance-backend-preference",
+  );
+  if (rootBackendPreference !== "webgl2") {
+    throw new Error(`Forced WebGL2 preference was not retained: ${rootBackendPreference}`);
+  }
   await root.waitForFunction(
     () => document.querySelector("#diagnostics")?.textContent?.includes("RESONANCE M0.9"),
     undefined,
@@ -118,6 +124,11 @@ try {
   }
   if (performance.buildId !== expectedBuildId) {
     throw new Error(`Performance buildId mismatch: ${performance.buildId} != ${expectedBuildId}`);
+  }
+  if (performance.backend !== "webgl2" || performance.backendPreference !== "webgl2") {
+    throw new Error(
+      `Forced WebGL2 export mismatch: backend=${performance.backend}, requested=${performance.backendPreference}`,
+    );
   }
   const frameSummary = performance.frameSummary;
   if (
@@ -145,6 +156,8 @@ try {
     webgl2Available,
     diagnosticsPresent: true,
     bootPhase: await root.locator("body").getAttribute("data-resonance-boot"),
+    backendPreference: rootBackendPreference,
+    activeBackend: performance.backend,
     buildIdMarker: await root.locator("body").getAttribute("data-resonance-build-id"),
     shaderWarmupMs: await root.locator("body").getAttribute("data-resonance-shader-warmup-ms"),
     performanceSchema: performance.schema,
@@ -172,9 +185,15 @@ try {
     if (!response.ok()) blindHttpFailures.push({ url: response.url(), status: response.status() });
   });
 
-  const blindResponse = await gotoWithRetry(blind, `${baseUrl}/?blind=1`);
+  const blindResponse = await gotoWithRetry(blind, `${baseUrl}/?blind=1&backend=webgl2`);
   await blind.waitForSelector("body.blind-test", { timeout: 30_000 });
   await blind.waitForSelector("#blind-test-prompt", { timeout: 30_000 });
+  const blindBackendPreference = await blind.locator("body").getAttribute(
+    "data-resonance-backend-preference",
+  );
+  if (blindBackendPreference !== "webgl2") {
+    throw new Error(`Blind route forced WebGL2 preference mismatch: ${blindBackendPreference}`);
+  }
   const prompt = (await blind.locator("#blind-test-prompt").textContent()) ?? "";
   if (!prompt.includes("BLIND MOVEMENT TEST")) {
     throw new Error("Blind-test prompt did not initialize");
@@ -207,6 +226,7 @@ try {
     promptPresent: true,
     diagnosticsHidden: true,
     questionnairePresent: true,
+    backendPreference: blindBackendPreference,
     blindSchema: blindReport.schema,
     blindBuildId: blindReport.buildId,
     pageErrors: blindErrors,
