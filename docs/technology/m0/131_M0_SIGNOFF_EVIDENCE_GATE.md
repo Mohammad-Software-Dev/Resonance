@@ -17,7 +17,7 @@ The engineering implementation through M0.11 is merged.
 | M0.9 browser performance instrumentation/pass | `b44d4a0006170f7e30e73ad22ebe7bfa50b77105` | IMPLEMENTED |
 | M0.10 deterministic replay/test harness | PR #9, squash `a2dced350f6d9d32863d8284213657ce62dad2d3`; final PR CI run 149 passed verify + Chromium + Firefox + WebKit | IMPLEMENTED / AUTOMATED GATE GREEN |
 | M0.11 blind movement test harness | PR #10, squash `da925b3dc49cd33c82f33156a460d7c2934ff774`; final PR CI run 159 passed | IMPLEMENTED / AUTOMATED GATE GREEN |
-| Deployed M0 evidence candidate | `07c914155c74814a036cecf302b847792852b66c`; Deploy M0 Evidence Build run `36317954991`; retained smoke artifact `10931008938` | DEPLOYED / AUTOMATED SMOKE GREEN |
+| Deployed M0 evidence candidate | `6704d3741d3c3fc3324804f29f0f63e84e457953`; Deploy M0 Evidence Build run `36318558242`; retained smoke artifact `10932015114` | DEPLOYED / AUTOMATED SMOKE GREEN |
 
 These results prove that the test infrastructure and current automated regression gates work. They do **not** satisfy the physical-performance or blind-human acceptance requirements below.
 
@@ -54,7 +54,7 @@ M0.11 remains **NOT HUMAN-SIGNED-OFF** until genuinely blind tester evidence exi
 
 Required evidence:
 
-- [x] `Deploy M0 Evidence Build` published commit `07c914155c74814a036cecf302b847792852b66c` from `main` at `https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev`; automated Chromium smoke verified forced `?backend=webgl2`, `?blind=1&backend=webgl2`, exact build IDs, requested/active backend identity, and full-window physical-capture telemetry on that exact build. See `133_M0_DEPLOYED_SMOKE_EVIDENCE.md`.
+- [x] `Deploy M0 Evidence Build` published commit `6704d3741d3c3fc3324804f29f0f63e84e457953` from `main` at `https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev`; automated Chromium smoke verified forced `?backend=webgl2`, `?blind=1&backend=webgl2`, exact build IDs, requested/active backend identity, full-window physical-capture telemetry, and the high-refresh-safe capture build on that exact commit. See `133_M0_DEPLOYED_SMOKE_EVIDENCE.md`.
 - [ ] The physical pre-tester smoke from `132_M0_EVIDENCE_EXECUTION_RUNBOOK.md` is completed on the intended test machine.
 - [ ] At least five testers who did not build the movement system and were not coached through the course complete the M0 course.
 - [ ] A questionnaire-completed local report is retained for each qualifying tester.
