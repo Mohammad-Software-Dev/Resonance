@@ -540,8 +540,8 @@ function addGasGiantVista(scene: Scene): Mesh[] {
 function addWayfarerSilhouette(
   scene: Scene,
   player: Mesh,
-  suit: PBRMaterial,
-  accent: PBRMaterial,
+  suit: StandardMaterial,
+  accent: StandardMaterial,
 ): Mesh[] {
   player.material = suit;
   player.scaling.set(0.88, 1, 0.78);
@@ -709,20 +709,6 @@ export function createRepresentativeGraphicsRoom(
     0.28,
     0.58,
   );
-  const floorMaterial = pbr(
-    "orbital-floor",
-    scene,
-    new Color3(0.075, 0.095, 0.11),
-    0.22,
-    0.5,
-  );
-  const hazardMaterial = pbr(
-    "orbital-hazard",
-    scene,
-    new Color3(0.34, 0.17, 0.055),
-    0.16,
-    0.55,
-  );
   const emissive = pbr(
     "orbital-emissive",
     scene,
@@ -867,8 +853,6 @@ export function createRepresentativeGraphicsRoom(
   for (const material of [
     darkMetal,
     paintedMetal,
-    floorMaterial,
-    hazardMaterial,
     emissive,
     hullCeramic,
     emergency,
