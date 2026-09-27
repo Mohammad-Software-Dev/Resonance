@@ -15,6 +15,7 @@ interface PerformanceCapture {
   readonly buildId: string;
   readonly userAgent: string;
   readonly backend: Backend;
+  readonly backendPreference: "auto" | Backend;
   readonly graphics: {
     readonly preset: string;
     readonly activeMeshes: number;
@@ -56,6 +57,7 @@ export interface PerformanceEvaluation {
   readonly averageFrameMs: number;
   readonly gates: {
     readonly buildId: GateState;
+    readonly backendSelection: GateState;
     readonly duration120s: GateState;
     readonly sustained60Hz: GateState;
     readonly frameP50: GateState;
@@ -126,6 +128,13 @@ export function parsePerformanceCapture(value: unknown): PerformanceCapture {
   if (value.backend !== "webgpu" && value.backend !== "webgl2") {
     throw new Error("backend must be webgpu or webgl2");
   }
+  if (
+    value.backendPreference !== "auto"
+    && value.backendPreference !== "webgpu"
+    && value.backendPreference !== "webgl2"
+  ) {
+    throw new Error("backendPreference must be auto, webgpu or webgl2");
+  }
   if (!isRecord(value.graphics)) throw new Error("graphics must be an object");
   if (typeof value.graphics.preset !== "string") throw new Error("graphics.preset must be a string");
   if (!isRecord(value.performance)) throw new Error("performance must be an object");
@@ -135,6 +144,7 @@ export function parsePerformanceCapture(value: unknown): PerformanceCapture {
     buildId: value.buildId,
     userAgent: value.userAgent,
     backend: value.backend,
+    backendPreference: value.backendPreference,
     graphics: {
       preset: value.graphics.preset,
       activeMeshes: finiteNumber(value.graphics.activeMeshes, "graphics.activeMeshes"),
@@ -174,6 +184,7 @@ export function evaluatePerformanceCapture(
     averageFrameMs,
     gates: {
       buildId: gate(capture.buildId === expectedBuildId),
+      backendSelection: gate(capture.backendPreference === capture.backend),
       duration120s: gate(summary.captureDurationMs >= 120_000),
       sustained60Hz: gate(averageFrameMs <= 16.67),
       frameP50: gate(summary.frameP50Ms <= 16.0),
