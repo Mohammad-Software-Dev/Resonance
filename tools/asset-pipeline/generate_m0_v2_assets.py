@@ -120,7 +120,8 @@ shell, joint, damage = [], [], []
 
 body = trimesh.creation.icosphere(1, 0.55)
 body.apply_scale([1.25, 0.7, 0.62])
-shell.extend([body, baked(trimesh.creation.box([0.92, 0.54, 0.20]), tf((0, 0.02, 0.34)))])
+add(scene, "Scrapper_Torso", [body], ss)
+shell.append(baked(trimesh.creation.box([0.92, 0.54, 0.20]), tf((0, 0.02, 0.34))))
 joint.extend([
     baked(trimesh.creation.box([0.72, 0.40, 0.18]), tf((0, -0.02, -0.24))),
     baked(trimesh.creation.cylinder(0.16, 0.22, sections=8), tf((0, 0, 0.53))),
@@ -152,23 +153,24 @@ resonance_material = mat("Scar_Resonance", [45, 205, 210, 255], 0, 0.35, [0.08, 
 damage_material = mat("Scar_Damage", [125, 68, 34, 255], 0.15, 0.85)
 scene = trimesh.Scene()
 shell, ceramic, resonance, damage = [], [], [], []
+transit_bulkhead, cargo_cluster, service_spine = [], [], []
 
 for x in (-7.25, -4.55):
-    shell.append(baked(trimesh.creation.box([0.34, 0.56, 3.25]), tf((x, 1.22, 2.05))))
+    transit_bulkhead.append(baked(trimesh.creation.box([0.34, 0.56, 3.25]), tf((x, 1.22, 2.05))))
     ceramic.append(baked(trimesh.creation.box([0.14, 0.60, 2.65]), tf((x, 1.25, 2.10))))
 ceramic.append(baked(trimesh.creation.box([3.15, 0.60, 0.34]), tf((-5.9, 1.22, 3.68))))
 
-shell.extend([
+transit_bulkhead.extend([
     baked(trimesh.creation.box([0.24, 0.42, 2.65]), tf((-6.65, 1.15, 2.10), rot=[(0.20, [0, 1, 0])])),
     baked(trimesh.creation.box([0.20, 0.42, 2.45]), tf((-5.30, 1.10, 2.00), rot=[(-0.18, [0, 1, 0])])),
 ])
 
 for x, z, length in [(-3.7, 5.20, 3.6), (0.2, 5.55, 3.4), (4.0, 5.10, 2.9)]:
-    shell.append(baked(trimesh.creation.box([length, 0.32, 0.22]), tf((x, 1.72, z))))
+    service_spine.append(baked(trimesh.creation.box([length, 0.32, 0.22]), tf((x, 1.72, z))))
     resonance.append(baked(trimesh.creation.box([length * 0.72, 0.05, 0.05]), tf((x, 1.90, z - 0.04))))
 
 for x, z, scale in [(-6.35, 0.52, 1), (-5.60, 0.42, 0.78), (2.9, 0.48, 0.92)]:
-    shell.append(baked(trimesh.creation.box([0.78 * scale, 0.70, 0.72 * scale]), tf((x, 1.20, z))))
+    cargo_cluster.append(baked(trimesh.creation.box([0.78 * scale, 0.70, 0.72 * scale]), tf((x, 1.20, z))))
     damage.append(baked(trimesh.creation.box([0.62 * scale, 0.74, 0.08]), tf((x, 1.22, z + 0.10))))
 
 for x in (6.55, 7.55):
@@ -181,6 +183,9 @@ for side in (-1, 1):
 for x, z, rotation in [(-2.7, 3.65, 0.12), (-1.1, 4.25, -0.20), (2.0, 4.15, 0.23), (4.8, 3.75, -0.15)]:
     damage.append(baked(trimesh.creation.box([1.15, 0.16, 0.38]), tf((x, 2.10, z), rot=[(rotation, [0, 0, 1])])))
 
+add(scene, "Scar_TransitBulkhead", transit_bulkhead, shell_material)
+add(scene, "Scar_CargoCluster", cargo_cluster, shell_material)
+add(scene, "Scar_ServiceSpine", service_spine, shell_material)
 add(scene, "Scar_ShellAssembly", shell, shell_material)
 add(scene, "Scar_CeramicAssembly", ceramic, ceramic_material)
 add(scene, "Scar_ResonanceAssembly", resonance, resonance_material)
