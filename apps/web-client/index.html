@@ -1,5 +1,34 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Resonance — M0</title></head>
-<body><canvas id="game"></canvas><div id="diagnostics"></div><script type="module" src="/src/main.ts"></script></body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Resonance — Wayfarer Scar</title>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="game-hud" aria-hidden="true">
+    <div class="hud-location">
+      <span class="hud-kicker">THE MERIDIAN</span>
+      <strong>WAYFARER SCAR</strong>
+      <span>Wreck Transit 07 · emergency deck</span>
+    </div>
+    <div class="hud-objective">
+      <span class="hud-kicker">OBJECTIVE</span>
+      <strong>Reach the emergency relay</strong>
+      <span>Use Resonance anchors to cross the fractured hull.</span>
+    </div>
+    <div class="hud-controls">
+      <span><kbd>A</kbd><kbd>D</kbd> move</span>
+      <span><kbd>Space</kbd> jump</span>
+      <span><kbd>Shift</kbd> evade</span>
+      <span><kbd>E</kbd> attract</span>
+      <span><kbd>Q</kbd> repel</span>
+    </div>
+  </div>
+
+  <div id="diagnostics"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
 </html>
