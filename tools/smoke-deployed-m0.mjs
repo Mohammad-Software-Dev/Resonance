@@ -121,6 +121,12 @@ try {
   if (authoredWayfarer !== "authored") {
     throw new Error(`Authored Wayfarer GLB did not load: ${authoredWayfarer}`);
   }
+  const authoredScrapper = await root.locator("body").getAttribute(
+    "data-resonance-authored-scrapper",
+  );
+  if (authoredScrapper !== "authored") {
+    throw new Error(`Authored Scrapper GLB did not load: ${authoredScrapper}`);
+  }
   const visualLandmarks = await root.locator("body").getAttribute(
     "data-resonance-visual-landmarks",
   );
@@ -207,6 +213,7 @@ try {
     visualLandmarks,
     authoredVisualAssets,
     authoredWayfarer,
+    authoredScrapper,
     interactionState,
     interactionHudVisible: true,
     objectiveStage,
