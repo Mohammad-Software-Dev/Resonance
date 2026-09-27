@@ -54,6 +54,7 @@ import {
   initialGraphicsPreset,
   nextGraphicsPreset,
 } from "./graphics/presets";
+import { parseBackendPreference } from "./graphics/backend-preference";
 import {
   BrowserPerformanceMonitor,
   warmCriticalShaders,
@@ -73,27 +74,46 @@ function requireElement<T extends Element>(selector: string): T {
 
 const canvas = requireElement<HTMLCanvasElement>("#game");
 const diagnostics = requireElement<HTMLDivElement>("#diagnostics");
+const backendPreference = parseBackendPreference(location.search);
 document.body.dataset.resonanceBoot = "dom-ready";
 document.body.dataset.resonanceBuildId = import.meta.env.VITE_BUILD_ID ?? "dev";
+document.body.dataset.resonanceBackendPreference = backendPreference;
 
 async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
-  if ("gpu" in navigator) {
+  if (backendPreference !== "webgl2" && "gpu" in navigator) {
     try {
       const { WebGPUEngine } = await import("@babylonjs/core/Engines/webgpuEngine");
       const engine = new WebGPUEngine(canvas, { antialias: true });
       await engine.initAsync();
       return { engine, backend: "webgpu" };
     } catch (error) {
+      if (backendPreference === "webgpu") {
+        throw new Error("WebGPU was explicitly required for this evidence run but failed to initialize.", {
+          cause: error,
+        });
+      }
       console.warn("WebGPU initialization failed; falling back to WebGL2.", error);
     }
+  } else if (backendPreference === "webgpu") {
+    throw new Error("WebGPU was explicitly required for this evidence run but navigator.gpu is unavailable.");
   }
+
   return {
     engine: new Engine(canvas, true, { preserveDrawingBuffer: false, stencil: true }),
     backend: "webgl2",
   };
 }
 
-const { engine, backend } = await createEngine();
+let engineResult: { engine: AbstractEngine; backend: Backend };
+try {
+  engineResult = await createEngine();
+} catch (error) {
+  document.body.dataset.resonanceBoot = "backend-error";
+  const detail = error instanceof Error ? error.message : String(error);
+  diagnostics.textContent = `RESONANCE M0 — BACKEND SELECTION FAILED\n${detail}`;
+  throw error;
+}
+const { engine, backend } = engineResult;
 document.body.dataset.resonanceBoot = `engine-ready:${backend}`;
 const scene = new Scene(engine);
 scene.clearColor.set(0.018, 0.027, 0.045, 1);
@@ -530,6 +550,7 @@ function exportPerformanceCapture(): void {
     capturedAt: new Date().toISOString(),
     userAgent: navigator.userAgent,
     backend,
+    backendPreference,
     cameraMode,
     graphics: graphicsRoom.stats(),
     dynamicResolution: dynamicResolution.snapshot(),
@@ -835,7 +856,7 @@ engine.runRenderLoop(() => {
     "Replay: F9 start from neutral state | F10 export deterministic replay",
     "Aim: mouse or gamepad right stick; facing is keyboard fallback",
     "Arrival experiment: 1 pass-through | 2 soft-capture | 3 radius-blend",
-    `backend: ${backend} | fps: ${fps.toFixed(1)} | camera: ${cameraMode}`,
+    `backend: ${backend} | requested: ${backendPreference} | fps: ${fps.toFixed(1)} | camera: ${cameraMode}`,
     `graphics: ${graphicsStats.preset} | render scale: ${graphicsStats.renderScale.toFixed(2)} | dynamic: ${dynamicStats.enabled ? "on" : "off"}`,
     `frame: cpu ${performanceStats.cpuFrameMs.toFixed(2)} ms | render ${performanceStats.renderMs.toFixed(2)} ms | gpu ${performanceStats.gpuFrameMs === null ? "n/a" : performanceStats.gpuFrameMs.toFixed(2) + " ms"}`,
     `draw calls: ${performanceStats.drawCalls} | active-mesh eval: ${performanceStats.activeMeshesEvaluationMs.toFixed(2)} ms | particles: ${performanceStats.particlesRenderMs.toFixed(2)} ms`,
