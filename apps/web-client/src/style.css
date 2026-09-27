@@ -95,6 +95,12 @@ body {
   padding: 8px 10px;
 }
 
+.blind-questionnaire-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 body.blind-test #diagnostics {
   display: none;
 }
