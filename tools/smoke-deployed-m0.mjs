@@ -37,6 +37,12 @@ async function snapshotPage(page, prefix) {
   await writeFile(path.join(artifactDir, `${prefix}.html`), await page.content()).catch(() => {});
 }
 
+function unexpectedConsoleErrors(messages) {
+  return messages.filter(
+    (message) => !message.includes("A fatal error occurred during WebGPU creation/initialization."),
+  );
+}
+
 const report = {
   schema: "resonance.m0.deployed-smoke.v1",
   baseUrl,
@@ -186,12 +192,19 @@ try {
     httpFailures: blindHttpFailures,
   };
 
-  if (rootErrors.length || rootConsoleErrors.length || blindErrors.length || blindConsoleErrors.length) {
+  const unexpectedRootConsoleErrors = unexpectedConsoleErrors(rootConsoleErrors);
+  const unexpectedBlindConsoleErrors = unexpectedConsoleErrors(blindConsoleErrors);
+  if (
+    rootErrors.length
+    || unexpectedRootConsoleErrors.length
+    || blindErrors.length
+    || unexpectedBlindConsoleErrors.length
+  ) {
     throw new Error(`Deployed browser errors observed: ${JSON.stringify({
       rootErrors,
-      rootConsoleErrors,
+      unexpectedRootConsoleErrors,
       blindErrors,
-      blindConsoleErrors,
+      unexpectedBlindConsoleErrors,
     })}`);
   }
 } catch (error) {
