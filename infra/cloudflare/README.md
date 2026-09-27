@@ -27,7 +27,9 @@ Do not commit either value.
 
 The deployment workflow validates both secrets before dependency installation or evidence-build work. If either is absent, it fails immediately with the missing secret name and does not spend CI time rebuilding an undeployable artifact.
 
-The workflow also checks whether the Cloudflare account already owns a `workers.dev` account subdomain. Existing subdomains are preserved. If none exists, the workflow creates `resonance-mohammad-dev` through Cloudflare's Workers Subdomain API before deploying the project Worker.
+The Cloudflare account was onboarded once during M0 evidence deployment request #4. Its established account namespace is `resonance-mohammad-dev.workers.dev`. Routine deployments do not mutate that account-level setting again; they deploy the project Worker at `https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev`.
+
+If the repository is ever moved to a different Cloudflare account, register a workers.dev account subdomain for that account and update the evidence URL in the workflow before requesting a deployment.
 
 For a brand-new Worker, the token must be able to create the Worker in the selected Cloudflare account. After the Worker exists, reduce the token to the minimum permissions needed to deploy it.
 
