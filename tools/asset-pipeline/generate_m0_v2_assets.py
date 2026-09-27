@@ -13,6 +13,11 @@ ENVIRONMENT = os.path.join(ROOT, "environment")
 for directory in (CHARACTERS, ENEMIES, ENVIRONMENT):
     os.makedirs(directory, exist_ok=True)
 
+# Authoring code below uses X = horizontal, Y = depth and Z = vertical.
+# glTF/Babylon uses Y-up. Rotate -90 degrees around X so authored +Z becomes
+# runtime +Y and authored +Y becomes runtime -Z (toward the side-view camera).
+AUTHORING_TO_RUNTIME = rotation_matrix(-np.pi / 2, [1, 0, 0])
+
 
 def mat(name, color, metal=0, rough=0.65, em=None):
     material = PBRMaterial(
@@ -46,6 +51,8 @@ def baked(mesh, transform):
 
 def add(scene, name, parts, material):
     mesh = trimesh.util.concatenate(parts) if len(parts) > 1 else parts[0]
+    mesh = mesh.copy()
+    mesh.apply_transform(AUTHORING_TO_RUNTIME)
     mesh.visual = trimesh.visual.TextureVisuals(material=material)
     scene.add_geometry(mesh, node_name=name, geom_name=name)
 
