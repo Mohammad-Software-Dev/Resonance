@@ -57,6 +57,7 @@ import {
   nextGraphicsPreset,
 } from "./graphics/presets";
 import { parseBackendPreference } from "./graphics/backend-preference";
+import { authoredVisualAssetMode } from "./graphics/authored-visual-assets";
 import { auditVisualLandmarks } from "./graphics/visual-landmarks";
 import { resonanceInteractionPresentation } from "./graphics/interaction-presentation";
 import { objectiveStagePresentation } from "./graphics/objective-presentation";
@@ -104,6 +105,7 @@ document.body.classList.toggle("debug", query.get("debug") === "1");
 document.body.dataset.resonanceBoot = "dom-ready";
 document.body.dataset.resonanceBuildId = import.meta.env.VITE_BUILD_ID ?? "dev";
 document.body.dataset.resonanceBackendPreference = backendPreference;
+document.body.dataset.resonanceAuthoredVisualAssets = authoredVisualAssetMode();
 
 async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
   if (backendPreference !== "webgl2" && "gpu" in navigator) {

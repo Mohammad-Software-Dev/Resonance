@@ -163,3 +163,22 @@ Presentation additions:
 - visual-landmark enforcement for the major wreck-state cues.
 
 All effects are presentation-only. They do not create colliders, forces, damage, navigation state, AI state or deterministic simulation input. The damage layer exists to communicate place, danger and motion while keeping the gameplay plane readable.
+
+
+## Pass 8 — authored visual asset boundary
+
+The eighth M0.12 pass stops treating code-generated meshes as the long-term art path.
+
+Infrastructure added:
+
+- Babylon glTF loader package pinned to the same engine version;
+- typed runtime visual slots for the Wayfarer, damaged Scrapper and Wayfarer Scar set dressing;
+- canonical `/assets/visual/` runtime root for authored `.glb` assets;
+- URL/format validation;
+- fail-safe procedural fallback when a slot is unassigned, invalid or fails to load;
+- runtime `data-resonance-authored-visual-assets` state;
+- deployed-smoke verification that the authored/fallback asset mode is always published.
+
+Current slot URLs intentionally remain unassigned until actual reviewed art exists. This pass does **not** relabel the procedural M0 geometry as production art. It creates the replacement seam so real Blender/Babylon-authored assets can be introduced without changing collision, movement or deterministic gameplay code.
+
+The next visual milestone should replace at least one major procedural subject through this path rather than adding more permanent code-generated geometry.
