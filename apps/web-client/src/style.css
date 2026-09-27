@@ -37,12 +37,6 @@ body {
   background: linear-gradient(135deg, #041117c9, #07141aa8);
   box-shadow: 0 12px 40px #0008;
   backdrop-filter: blur(8px);
-  opacity: 0;
-  transition: opacity 120ms ease;
-}
-
-body.debug #diagnostics {
-  opacity: 1;
 }
 
 .hud-location {
@@ -131,6 +125,12 @@ body.debug #diagnostics {
   pointer-events: none;
   text-shadow: 0 1px 5px #000;
   backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+body.debug #diagnostics {
+  opacity: 1;
 }
 
 @media (max-width: 760px) {
