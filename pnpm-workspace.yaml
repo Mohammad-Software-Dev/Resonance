@@ -7,3 +7,4 @@ packages:
 # Each true entry is explicitly reviewed and allowed to execute lifecycle scripts.
 allowBuilds:
   esbuild: true
+  workerd: true
