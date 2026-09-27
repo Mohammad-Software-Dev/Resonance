@@ -51,6 +51,17 @@ export class InputLatch {
   pressRepel(): void { this.repelPressed = true; }
   setTarget(targetId: number): void { this.targetId = targetId === 0 ? 0 : asTargetId(targetId); }
 
+  clear(): void {
+    this.moveX = quantizeAxis(0);
+    this.moveY = quantizeAxis(0);
+    this.jumpHeld = false;
+    this.jumpPressed = false;
+    this.evadePressed = false;
+    this.attractPressed = false;
+    this.repelPressed = false;
+    this.targetId = 0;
+  }
+
   consume(tick: Tick): SimInput {
     const input: SimInput = {
       tick,
