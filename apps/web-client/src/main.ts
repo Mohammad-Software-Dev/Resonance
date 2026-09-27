@@ -58,6 +58,7 @@ import {
 } from "./graphics/presets";
 import { parseBackendPreference } from "./graphics/backend-preference";
 import { auditVisualLandmarks } from "./graphics/visual-landmarks";
+import { resonanceInteractionPresentation } from "./graphics/interaction-presentation";
 import {
   cameraSmoothingFactor,
   presentationCameraGoal,
@@ -89,6 +90,9 @@ const objectiveTitle = requireElement<HTMLElement>("#hud-objective-title");
 const objectiveDetail = requireElement<HTMLElement>("#hud-objective-detail");
 const objectiveProgress = requireElement<HTMLElement>("#hud-progress");
 const sliceComplete = requireElement<HTMLElement>("#slice-complete");
+const resonanceHud = requireElement<HTMLElement>("#hud-resonance");
+const resonanceHudTitle = requireElement<HTMLElement>("#hud-resonance-title");
+const resonanceHudDetail = requireElement<HTMLElement>("#hud-resonance-detail");
 const backendPreference = parseBackendPreference(location.search);
 const query = new URLSearchParams(location.search);
 document.body.classList.toggle("debug", query.get("debug") === "1");
@@ -253,6 +257,18 @@ for (const [guid, mesh] of [
 ] as const) {
   const target = targetRegistry.getByGuid(guid);
   if (target) targetMeshes.set(Number(target.id), mesh);
+}
+
+const targetLabelsByMeshName: Readonly<Record<string, string>> = {
+  "anchor-a": "OVERHEAD ANCHOR",
+  "anchor-b": "BREACH ANCHOR",
+  "anchor-moving": "MOVING ANCHOR",
+  "anchor-low-repel": "LOW REPEL NODE",
+  "anchor-wall-repel": "RELAY NODE",
+};
+const targetLabels = new Map<number, string>();
+for (const [id, mesh] of targetMeshes) {
+  targetLabels.set(id, targetLabelsByMeshName[mesh.name] ?? "RESONANCE ANCHOR");
 }
 
 const feedbackSeed = [
@@ -906,6 +922,28 @@ engine.runRenderLoop(() => {
     ? repelFlashTargetId
     : activeAttractTargetId;
   const visualTarget = visualTargetId === 0 ? undefined : targetMeshes.get(visualTargetId);
+
+  const interactionTargetId = activeAttractTargetId !== 0
+    ? activeAttractTargetId
+    : Number(selectedTargetId);
+  const interactionPresentation = resonanceInteractionPresentation({
+    selectedTargetId: Number(selectedTargetId),
+    attractTargetId: activeAttractTargetId,
+    repelActive: (state?.repelRecoveryTicksRemaining ?? 0) > 0 || now < repelFlashUntilMs,
+    targetLabel: interactionTargetId === 0
+      ? null
+      : targetLabels.get(interactionTargetId) ?? null,
+  });
+  if (resonanceHud.dataset.mode !== interactionPresentation.mode) {
+    resonanceHud.dataset.mode = interactionPresentation.mode;
+  }
+  if (resonanceHudTitle.textContent !== interactionPresentation.title) {
+    resonanceHudTitle.textContent = interactionPresentation.title;
+  }
+  if (resonanceHudDetail.textContent !== interactionPresentation.detail) {
+    resonanceHudDetail.textContent = interactionPresentation.detail;
+  }
+  document.body.dataset.resonanceInteractionState = interactionPresentation.mode;
 
   if (state && visualTarget) {
     const start = new Vector3(state.position.x, state.position.y + 0.15, -0.42);
