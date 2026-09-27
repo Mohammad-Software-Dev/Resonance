@@ -11,6 +11,8 @@ import { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTextur
 import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
+import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
+import { CreatePlane } from "@babylonjs/core/Meshes/Builders/planeBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { CreateTorus } from "@babylonjs/core/Meshes/Builders/torusBuilder";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
@@ -87,6 +89,43 @@ function semanticMaterial(
   material.diffuseColor = diffuse;
   material.emissiveColor = emissive;
   material.specularColor = new Color3(0.03, 0.04, 0.05);
+  return material;
+}
+
+function createSignMaterial(
+  name: string,
+  scene: Scene,
+  kicker: string,
+  label: string,
+  accent: string,
+): StandardMaterial {
+  const texture = new DynamicTexture(
+    `${name}-texture`,
+    { width: 512, height: 160 },
+    scene,
+    false,
+  );
+  const context = texture.getContext();
+  context.fillStyle = "#061017";
+  context.fillRect(0, 0, 512, 160);
+  context.fillStyle = accent;
+  context.fillRect(0, 0, 12, 160);
+  context.fillRect(28, 118, 456, 3);
+  context.font = "700 28px sans-serif";
+  context.textAlign = "left";
+  context.fillText(kicker, 34, 48);
+  context.fillStyle = "#e7f4f2";
+  context.font = "800 52px sans-serif";
+  context.fillText(label, 34, 104);
+  texture.hasAlpha = false;
+  texture.update();
+
+  const material = new StandardMaterial(name, scene);
+  material.diffuseTexture = texture;
+  material.emissiveTexture = texture;
+  material.emissiveColor = new Color3(0.42, 0.46, 0.45);
+  material.specularColor = Color3.Black();
+  material.backFaceCulling = false;
   return material;
 }
 
