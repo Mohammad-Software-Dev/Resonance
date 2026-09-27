@@ -128,6 +128,85 @@ function createSignMaterial(
   return material;
 }
 
+type SurfacePattern = "deck" | "wall" | "hazard" | "mover";
+
+function createSurfacePatternTexture(
+  name: string,
+  scene: Scene,
+  pattern: SurfacePattern,
+): DynamicTexture {
+  const texture = new DynamicTexture(
+    name,
+    { width: 256, height: 256 },
+    scene,
+    false,
+  );
+  const context = texture.getContext();
+  context.fillStyle = "#eeeeee";
+  context.fillRect(0, 0, 256, 256);
+
+  if (pattern === "deck" || pattern === "wall") {
+    context.fillStyle = pattern === "deck" ? "#a8b0b2" : "#8c9498";
+    for (const offset of [0, 64, 128, 192, 252]) {
+      context.fillRect(offset, 0, 4, 256);
+      context.fillRect(0, offset, 256, 4);
+    }
+    context.fillStyle = "#cfd5d5";
+    for (const x of [18, 82, 146, 210]) {
+      for (const y of [18, 82, 146, 210]) {
+        context.fillRect(x, y, 5, 5);
+      }
+    }
+  } else if (pattern === "hazard") {
+    for (let index = 0; index < 8; index += 1) {
+      context.fillStyle = index % 2 === 0 ? "#ffffff" : "#343434";
+      context.fillRect(index * 32, 0, 32, 256);
+    }
+  } else {
+    context.fillStyle = "#aeb8b7";
+    for (const y of [22, 96, 170, 244]) {
+      context.fillRect(0, y, 256, 10);
+    }
+    context.fillStyle = "#d9eeee";
+    for (const x of [26, 72, 118, 164, 210]) {
+      context.fillRect(x, 48, 22, 160);
+    }
+  }
+
+  texture.update();
+  return texture;
+}
+
+function createGasGiantTexture(scene: Scene): DynamicTexture {
+  const texture = new DynamicTexture(
+    "gas-giant-bands-texture",
+    { width: 512, height: 256 },
+    scene,
+    false,
+  );
+  const context = texture.getContext();
+  const bands = [
+    "#41271f",
+    "#704638",
+    "#a27458",
+    "#c3a07e",
+    "#6d463a",
+    "#8e6650",
+    "#d0ae87",
+    "#5d3930",
+  ];
+  for (let index = 0; index < bands.length; index += 1) {
+    context.fillStyle = bands[index] ?? "#6d463a";
+    context.fillRect(0, index * 32, 512, 34);
+  }
+  context.fillStyle = "#d7b48a";
+  context.fillRect(302, 72, 96, 20);
+  context.fillStyle = "#7f4e3c";
+  context.fillRect(326, 77, 48, 10);
+  texture.update();
+  return texture;
+}
+
 function createParticleTexture(scene: Scene): DynamicTexture {
   const texture = new DynamicTexture(
     "resonance-particle-texture",
@@ -691,8 +770,11 @@ function addWorldStoryLayer(
 
 function addGasGiantVista(scene: Scene): Mesh[] {
   const planetMaterial = new StandardMaterial("gas-giant-material", scene);
-  planetMaterial.diffuseColor = new Color3(0.32, 0.18, 0.12);
-  planetMaterial.emissiveColor = new Color3(0.12, 0.055, 0.035);
+  const gasGiantTexture = createGasGiantTexture(scene);
+  planetMaterial.diffuseColor = Color3.White();
+  planetMaterial.diffuseTexture = gasGiantTexture;
+  planetMaterial.emissiveTexture = gasGiantTexture;
+  planetMaterial.emissiveColor = new Color3(0.1, 0.055, 0.04);
   planetMaterial.specularColor = Color3.Black();
 
   const atmosphereMaterial = new StandardMaterial("gas-giant-atmosphere", scene);
@@ -1051,6 +1133,40 @@ export function createRepresentativeGraphicsRoom(
     new Color3(0.02, 0.18, 0.2),
     new Color3(0.04, 0.72, 0.88),
   );
+
+  const deckPattern = createSurfacePatternTexture(
+    "gameplay-deck-pattern",
+    scene,
+    "deck",
+  );
+  deckPattern.uScale = 8;
+  deckPattern.vScale = 2;
+  gameplayDeck.diffuseTexture = deckPattern;
+
+  const wallPattern = createSurfacePatternTexture(
+    "gameplay-wall-pattern",
+    scene,
+    "wall",
+  );
+  wallPattern.uScale = 2;
+  wallPattern.vScale = 6;
+  gameplayWall.diffuseTexture = wallPattern;
+
+  const hazardPattern = createSurfacePatternTexture(
+    "gameplay-hazard-pattern",
+    scene,
+    "hazard",
+  );
+  hazardPattern.uScale = 5;
+  gameplayHazard.diffuseTexture = hazardPattern;
+
+  const moverPattern = createSurfacePatternTexture(
+    "gameplay-mover-pattern",
+    scene,
+    "mover",
+  );
+  moverPattern.uScale = 3;
+  gameplayMover.diffuseTexture = moverPattern;
 
   meshes.ground.material = gameplayDeck;
   meshes.leftWall.material = gameplayWall;
