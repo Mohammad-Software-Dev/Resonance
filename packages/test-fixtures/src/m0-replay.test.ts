@@ -60,6 +60,35 @@ describe("M0 replay harness", () => {
     }
   });
 
+  it("actually traverses the authored v2 breaches and exercises Resonance", async () => {
+    const artifact = await generateCanonicalM0Replay("test");
+    const runtime = await M0ReplayRuntime.create(artifact);
+    let sawFirstBreach = false;
+    let sawRightDeck = false;
+    let sawAttract = false;
+    let sawRepel = false;
+    let maxX = Number.NEGATIVE_INFINITY;
+
+    try {
+      for (let tick = 1; tick <= artifact.inputs.length; tick += 1) {
+        const step = runtime.step(canonicalM0Input(tick));
+        const x = Number(step.telemetry.positionX);
+        maxX = Math.max(maxX, x);
+        if (x > -3.3 && x < -1.6) sawFirstBreach = true;
+        if (x > 2.2) sawRightDeck = true;
+        if (Number(step.telemetry.attractTargetId) !== 0) sawAttract = true;
+        if (Number(step.telemetry.repelUses) > 0) sawRepel = true;
+      }
+    } finally {
+      runtime.free();
+    }
+
+    expect(sawFirstBreach).toBe(true);
+    expect(sawRightDeck, `canonical max x was ${maxX}`).toBe(true);
+    expect(sawAttract).toBe(true);
+    expect(sawRepel).toBe(true);
+  });
+
   it("matches at every approved render cadence", async () => {
     const artifact = await generateCanonicalM0Replay("test");
     const results = await verifyM0ReplayRenderMatrix(artifact);
