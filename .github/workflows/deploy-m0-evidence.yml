@@ -2,6 +2,10 @@ name: Deploy M0 Evidence Build
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "infra/cloudflare/M0_EVIDENCE_DEPLOY_REQUEST.md"
 
 permissions:
   contents: read
