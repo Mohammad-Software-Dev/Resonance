@@ -1,6 +1,6 @@
 # M0 Signoff Evidence Gate
 
-**Status:** BLOCKED on physical and human evidence  
+**Status:** BLOCKED / EVIDENCE DEFERRED during M0.12 visual-readability recovery  
 **Milestone:** M0 final acceptance / M1 entry gate  
 **Repository baseline:** `da925b3dc49cd33c82f33156a460d7c2934ff774` (M0.11 merged)  
 **Purpose:** Keep implemented engineering evidence separate from acceptance evidence that must come from real hardware and real blind testers.
@@ -20,6 +20,12 @@ The engineering implementation through M0.11 is merged.
 | Deployed M0 evidence candidate | `6704d3741d3c3fc3324804f29f0f63e84e457953`; Deploy M0 Evidence Build run `36318558242`; retained smoke artifact `10932015114` | DEPLOYED / AUTOMATED SMOKE GREEN |
 
 These results prove that the test infrastructure and current automated regression gates work. They do **not** satisfy the physical-performance or blind-human acceptance requirements below.
+
+## M0.12 owner-review disposition
+
+Owner review of the deployed room found the prototype too visually abstract to read as a game: movement was visible, but the player, objects and environment were not sufficiently recognizable. Physical-performance collection and blind-human sessions are therefore intentionally **deferred, not passed or waived**, while `135_M0_VISUAL_READABILITY_RECOVERY.md` is implemented.
+
+No additional owner-run testing should be requested during M0.12. The acceptance gates below remain authoritative and must be resumed against a future materially more representative deployed build before M0 can be signed off.
 
 ## Gate A — M0.9 physical performance evidence
 
@@ -92,7 +98,7 @@ M1 may begin only when:
 
 Until then, the repository state is:
 
-> **M0 engineering implementation through M0.11 is complete, but M0 acceptance is blocked. Do not claim M0 signoff or M1 readiness yet.**
+> **M0 engineering implementation through M0.11 is complete; M0.12 visual-readability recovery is in progress; physical/human acceptance is deferred and M0/M1 signoff is not claimed.**
 
 ## Signoff record
 
