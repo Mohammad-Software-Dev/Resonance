@@ -1,21 +1,26 @@
 # M0 Evidence Deployment Request
 
-**Request:** 21  
-**Requested from baseline:** `a53b793e0fe2b859f4ba2e0172dc458491dcfcfc`  
-**Purpose:** Publish M0.12 Pass 8 authored visual-asset pipeline.
+**Request:** 22  
+**Requested from baseline:** `34240545de717e621537109c74ce7fcab29fdd4e`  
+**Purpose:** Publish M0.12 Pass 9 with the first actual authored runtime character replacement.
 
-This candidate establishes the production art replacement seam:
+This candidate uses the Pass 8 GLB boundary rather than extending the procedural character indefinitely.
 
-- `@babylonjs/loaders` pinned to 9.27.1;
-- typed Wayfarer / Scrapper / set-dressing GLB slots;
-- canonical `/assets/visual/` runtime root;
-- GLB URL validation and fail-safe procedural fallback;
-- runtime asset-mode telemetry;
-- deployed-smoke validation of the asset-mode contract.
+Changes:
 
-No authored production GLB is claimed yet. Current slots remain explicitly in procedural fallback mode until reviewed art exists.
+- adds `/assets/visual/characters/wayfarer-mara-m0.glb`;
+- assigns it to the typed `wayfarer-player` slot;
+- loads the binary GLB through Babylon's glTF loader before shader warmup;
+- mirrors deterministic player position/facing into the authored presentation root;
+- disables the procedural Wayfarer presentation only after successful authored load;
+- keeps procedural fallback code for fault tolerance;
+- requires authored Mara mesh landmarks in the visual audit;
+- requires `data-resonance-authored-wayfarer="authored"` in deployed smoke;
+- records explicit asset provenance and `shippingArt: false`.
 
-No movement, collision, targeting, Resonance force, combat, AI, progression or deterministic replay semantics are changed.
+This is an authored M0 placeholder, not final character art. It proves the production runtime asset replacement path and moves the prototype away from code-generated primitives.
+
+No movement, collision, target selection, Resonance-force, progression, combat, AI or deterministic replay semantics are changed.
 
 Physical and blind-human acceptance remain deferred. No owner-run testing is requested.
 
