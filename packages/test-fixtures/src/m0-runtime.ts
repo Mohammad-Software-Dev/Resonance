@@ -40,7 +40,7 @@ import {
 import { TargetRegistry } from "@resonance/targeting";
 
 export const M0_REPLAY_FIXTURE_ID = "m0-representative-course";
-export const M0_REPLAY_FIXTURE_VERSION = 1;
+export const M0_REPLAY_FIXTURE_VERSION = 2;
 export const M0_REPLAY_CHECKPOINT_INTERVAL = 30;
 export const M0_REPLAY_DURATION_TICKS = 360;
 export const M0_PLAYER_ID = asEntityId(1);
@@ -52,6 +52,8 @@ const RIGHT_WALL_ID = asEntityId(102);
 const SLOPE_ID = asEntityId(103);
 const PLATFORM_ID = asEntityId(104);
 const ATTRACT_PILLAR_ID = asEntityId(105);
+const MID_FLOOR_ID = asEntityId(106);
+const RIGHT_FLOOR_ID = asEntityId(107);
 
 export interface M0ReplayStepSnapshot {
   readonly tick: number;
@@ -158,7 +160,21 @@ export class M0ReplayRuntime {
     }
 
     const physics = await RapierCharacterWorld.create();
-    physics.addStaticBox(FLOOR_ID, { x: 0, y: -0.25, z: 0 }, { x: 8, y: 0.25, z: 1 });
+    physics.addStaticBox(
+      FLOOR_ID,
+      { x: -5.65, y: -0.25, z: 0 },
+      { x: 2.35, y: 0.25, z: 1 },
+    );
+    physics.addStaticBox(
+      MID_FLOOR_ID,
+      { x: -0.25, y: -0.25, z: 0 },
+      { x: 1.35, y: 0.25, z: 1 },
+    );
+    physics.addStaticBox(
+      RIGHT_FLOOR_ID,
+      { x: 5.1, y: -0.25, z: 0 },
+      { x: 2.9, y: 0.25, z: 1 },
+    );
     physics.addStaticBox(LEFT_WALL_ID, { x: -8, y: 2, z: 0 }, { x: 0.15, y: 2, z: 1 });
     physics.addStaticBox(RIGHT_WALL_ID, { x: 8, y: 2, z: 0 }, { x: 0.15, y: 2, z: 1 });
     physics.addStaticBox(
