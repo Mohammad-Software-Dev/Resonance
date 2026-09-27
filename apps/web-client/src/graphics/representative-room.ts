@@ -207,9 +207,12 @@ function createGasGiantTexture(scene: Scene): DynamicTexture {
   return texture;
 }
 
-function createParticleTexture(scene: Scene): DynamicTexture {
+function createParticleTexture(
+  scene: Scene,
+  name = "resonance-particle-texture",
+): DynamicTexture {
   const texture = new DynamicTexture(
-    "resonance-particle-texture",
+    name,
     { width: 64, height: 64 },
     scene,
     false,
@@ -962,6 +965,151 @@ function addDamagedScrapperVignette(
   return { root, sensor, damagedArm, loosePlate, warningRing, meshes };
 }
 
+function addWreckDamageLayer(
+  scene: Scene,
+): {
+  animatedMeshes: Mesh[];
+  particleSystems: ParticleSystem[];
+} {
+  const damagedMetal = semanticMaterial(
+    "wreck-damaged-metal",
+    scene,
+    new Color3(0.08, 0.09, 0.095),
+  );
+  const fault = semanticMaterial(
+    "wreck-fault-emissive",
+    scene,
+    new Color3(0.25, 0.055, 0.018),
+    new Color3(0.95, 0.16, 0.025),
+  );
+  const leak = semanticMaterial(
+    "wreck-leak-emissive",
+    scene,
+    new Color3(0.08, 0.14, 0.16),
+    new Color3(0.28, 0.62, 0.72),
+  );
+
+  const animatedMeshes: Mesh[] = [];
+
+  const brokenConduit = CreateCylinder(
+    "wreck-broken-conduit",
+    { height: 1.55, diameter: 0.14, tessellation: 12 },
+    scene,
+  );
+  brokenConduit.position.set(-1.25, 5.55, 1.45);
+  brokenConduit.rotation.z = 0.62;
+  brokenConduit.material = damagedMetal;
+  animatedMeshes.push(brokenConduit);
+
+  const sparkSource = CreateSphere(
+    "wreck-spark-source",
+    { diameter: 0.18, segments: 8 },
+    scene,
+  );
+  sparkSource.position.set(-0.73, 5.11, 1.41);
+  sparkSource.material = fault;
+  animatedMeshes.push(sparkSource);
+
+  const hangingCable = CreateCylinder(
+    "wreck-hanging-cable",
+    { height: 2.1, diameter: 0.065, tessellation: 10 },
+    scene,
+  );
+  hangingCable.position.set(2.15, 5.35, 1.5);
+  hangingCable.rotation.z = 0.12;
+  hangingCable.material = damagedMetal;
+  animatedMeshes.push(hangingCable);
+
+  const cableLamp = CreateSphere(
+    "wreck-fault-light",
+    { diameter: 0.21, segments: 10 },
+    scene,
+  );
+  cableLamp.parent = hangingCable;
+  cableLamp.position.set(0, -1.08, 0);
+  cableLamp.material = fault;
+  animatedMeshes.push(cableLamp);
+
+  const leakVent = CreateCylinder(
+    "wreck-air-leak-vent",
+    { height: 0.48, diameter: 0.22, tessellation: 12 },
+    scene,
+  );
+  leakVent.position.set(-7.18, 2.72, 1.25);
+  leakVent.rotation.z = Math.PI / 2;
+  leakVent.material = leak;
+  animatedMeshes.push(leakVent);
+
+  for (let index = 0; index < 5; index += 1) {
+    const debris = CreateBox(
+      `wreck-drifting-debris-${index}`,
+      {
+        width: 0.18 + index * 0.035,
+        height: 0.08 + (index % 2) * 0.06,
+        depth: 0.12,
+      },
+      scene,
+    );
+    debris.position.set(
+      -3.4 + index * 1.42,
+      3.0 + (index % 3) * 0.72,
+      2.45 + (index % 2) * 0.38,
+    );
+    debris.rotation.z = index * 0.34;
+    debris.material = damagedMetal;
+    animatedMeshes.push(debris);
+  }
+
+  const sparks = new ParticleSystem("wreck-electric-sparks", 72, scene);
+  sparks.particleTexture = createParticleTexture(scene, "wreck-spark-particle-texture");
+  sparks.emitter = new Vector3(-0.73, 5.11, 1.41);
+  sparks.minEmitBox = new Vector3(-0.03, -0.03, -0.03);
+  sparks.maxEmitBox = new Vector3(0.03, 0.03, 0.03);
+  sparks.color1 = new Color4(1, 0.58, 0.18, 0.95);
+  sparks.color2 = new Color4(1, 0.9, 0.55, 0.82);
+  sparks.colorDead = new Color4(0.28, 0.04, 0.01, 0);
+  sparks.minSize = 0.025;
+  sparks.maxSize = 0.065;
+  sparks.minLifeTime = 0.18;
+  sparks.maxLifeTime = 0.62;
+  sparks.direction1 = new Vector3(-0.6, -1.15, -0.12);
+  sparks.direction2 = new Vector3(0.8, -0.25, 0.12);
+  sparks.minEmitPower = 0.4;
+  sparks.maxEmitPower = 1.25;
+  sparks.emitRate = 16;
+  sparks.updateSpeed = 0.016;
+  sparks.blendMode = ParticleSystem.BLENDMODE_ADD;
+  sparks.start();
+
+  const airLeak = new ParticleSystem("wreck-air-leak", 110, scene);
+  airLeak.particleTexture = createParticleTexture(scene, "wreck-air-leak-particle-texture");
+  airLeak.emitter = new Vector3(-7.02, 2.72, 1.25);
+  airLeak.minEmitBox = new Vector3(-0.02, -0.08, -0.08);
+  airLeak.maxEmitBox = new Vector3(0.02, 0.08, 0.08);
+  airLeak.color1 = new Color4(0.62, 0.86, 0.9, 0.18);
+  airLeak.color2 = new Color4(0.78, 0.94, 1, 0.11);
+  airLeak.colorDead = new Color4(0.42, 0.64, 0.7, 0);
+  airLeak.minSize = 0.08;
+  airLeak.maxSize = 0.22;
+  airLeak.minLifeTime = 0.65;
+  airLeak.maxLifeTime = 1.45;
+  airLeak.direction1 = new Vector3(0.65, -0.08, -0.05);
+  airLeak.direction2 = new Vector3(1.25, 0.18, 0.08);
+  airLeak.minEmitPower = 0.35;
+  airLeak.maxEmitPower = 0.8;
+  airLeak.emitRate = 22;
+  airLeak.updateSpeed = 0.018;
+  airLeak.blendMode = ParticleSystem.BLENDMODE_STANDARD;
+  airLeak.start();
+
+  for (const material of [damagedMetal, fault, leak]) material.freeze();
+
+  return {
+    animatedMeshes,
+    particleSystems: [sparks, airLeak],
+  };
+}
+
 function addGasGiantVista(scene: Scene): Mesh[] {
   const planetMaterial = new StandardMaterial("gas-giant-material", scene);
   const gasGiantTexture = createGasGiantTexture(scene);
@@ -1406,6 +1554,7 @@ export function createRepresentativeGraphicsRoom(
     relayMaterial,
   );
   const encounter = addDamagedScrapperVignette(scene);
+  const wreckDamage = addWreckDamageLayer(scene);
 
   const leftArm = scene.getMeshByName("wayfarer-left-arm") as Mesh | null;
   const rightArm = scene.getMeshByName("wayfarer-right-arm") as Mesh | null;
@@ -1471,6 +1620,7 @@ export function createRepresentativeGraphicsRoom(
     meshes.attractPillar,
     ...wayfarerMeshes.slice(1),
     ...encounter.meshes,
+    ...wreckDamage.animatedMeshes.filter((mesh) => !mesh.name.includes("debris")),
   ]) {
     shadowGenerator.addShadowCaster(caster);
   }
@@ -1519,6 +1669,8 @@ export function createRepresentativeGraphicsRoom(
     shadowGenerator.getShadowMap()?.resize(preset.shadowMapSize);
     keyLight.shadowEnabled = preset.shadowEnabled;
     particles.emitRate = preset.particleEmitRate;
+    wreckDamage.particleSystems[0]!.emitRate = preset.distantDetail ? 16 : 8;
+    wreckDamage.particleSystems[1]!.emitRate = preset.distantDetail ? 22 : 10;
     glow.intensity = preset.glowIntensity;
     scene.fogDensity = preset.fogDensity;
     scene.environmentIntensity = preset.environmentIntensity;
@@ -1573,6 +1725,22 @@ export function createRepresentativeGraphicsRoom(
           mesh.scaling.setAll(relayActivated ? 1.08 + 0.07 * storyPulse : storyPulse);
         } else {
           mesh.scaling.y = relayActivated ? 1.08 + 0.05 * storyPulse : storyPulse;
+        }
+      }
+
+      for (let i = 0; i < wreckDamage.animatedMeshes.length; i += 1) {
+        const mesh = wreckDamage.animatedMeshes[i];
+        if (!mesh) continue;
+        if (mesh.name === "wreck-hanging-cable") {
+          mesh.rotation.z = 0.12 + Math.sin(elapsedSeconds * 0.72) * 0.055;
+        } else if (mesh.name === "wreck-fault-light" || mesh.name === "wreck-spark-source") {
+          const flicker = 0.72 + 0.28 * Math.sin(elapsedSeconds * 11.5 + i);
+          mesh.scaling.setAll(flicker);
+        } else if (mesh.name.startsWith("wreck-drifting-debris-")) {
+          const drift = 0.045 + i * 0.008;
+          mesh.rotation.z += drift * 0.016;
+          mesh.position.y += Math.sin(elapsedSeconds * 0.65 + i) * 0.00045;
+          mesh.position.x += Math.cos(elapsedSeconds * 0.42 + i * 0.7) * 0.00035;
         }
       }
 
