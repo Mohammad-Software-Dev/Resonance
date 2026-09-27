@@ -1,0 +1,18 @@
+{
+  "schema": "resonance.visual-asset.v1",
+  "slot": "wayfarer-scar-setdress",
+  "runtime": "/assets/visual/environment/wayfarer-scar-setdress-m0-v2.glb",
+  "milestone": "M0.14",
+  "status": "authored-placeholder-v2",
+  "shippingArt": false,
+  "purpose": "Second authored Wayfarer Scar setdress pass with layered transit bulkheads, service spines, cargo, damage plates and a stronger Relay destination frame.",
+  "artDirection": [
+    "orbital industrial transit infrastructure",
+    "layered ceramic bulkheads",
+    "maintenance cargo cluster",
+    "conductive service spine",
+    "localized damage accents",
+    "clear Relay destination architecture"
+  ],
+  "generator": "tools/asset-pipeline/generate_m0_v2_assets.py"
+}
