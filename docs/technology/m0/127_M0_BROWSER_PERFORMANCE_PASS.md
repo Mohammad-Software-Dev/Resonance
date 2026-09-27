@@ -142,7 +142,7 @@ Reference capture conditions:
 - WebGPU capture uses `?backend=webgpu` so silent fallback cannot contaminate the run;
 - WebGL2 capture uses `?backend=webgl2` so the same WebGPU-capable machine can exercise fallback deterministically;
 - 1920x1080 display;
-- Medium preset;
+- Medium preset for the WebGPU approval run;
 - WebGPU primary run;
 - WebGL2 fallback run;
 - 10 seconds discarded for startup/warmup;
@@ -167,7 +167,7 @@ Target gates:
 | Runtime shader compile | 0 ms during warmed representative traversal |
 | Heap trend | no repeatable unbounded growth over a 5-minute loop |
 
-If Medium requires sustained adaptive scaling below 0.75 on Tier M, treat that as a performance failure rather than a successful dynamic-resolution save.
+The Tier M WebGPU approval capture must use Medium. If Medium requires sustained adaptive scaling below 0.75 on Tier M, treat that as a performance failure rather than a successful dynamic-resolution save. The WebGL2 fallback may use the lower fallback preset policy described below.
 
 ## WebGL2 fallback gate
 
@@ -203,7 +203,7 @@ CI does **not** prove:
 
 ## Physical capture artifact
 
-The client keeps an allocation-stable ring containing the latest two minutes of frame cadence and render-scale samples.
+The client keeps an allocation-stable ring sized to retain a full two-minute capture even on high-refresh displays (up to 1000 samples/second), rather than assuming a 60 Hz display.
 
 - P exports a JSON capture.
 - X resets the capture window.
