@@ -154,8 +154,8 @@ document.body.dataset.resonanceBoot = `engine-ready:${backend}`;
 const scene = new Scene(engine);
 scene.clearColor.set(0.018, 0.027, 0.045, 1);
 
-const camera = new FreeCamera("m0-camera", new Vector3(-2.2, 3.0, -10.9), scene);
-camera.setTarget(new Vector3(-2.2, 1.55, 0));
+const camera = new FreeCamera("m0-camera", new Vector3(-4.8, 2.72, -8.55), scene);
+camera.setTarget(new Vector3(-4.8, 1.45, 0));
 camera.fov = 0.52;
 camera.minZ = 0.1;
 camera.maxZ = 80;
@@ -498,6 +498,7 @@ if (!visualLandmarkAudit.ready) {
   );
 }
 document.body.dataset.resonanceTraversalCourse = "v2";
+document.body.dataset.resonanceCameraStaging = "follow-focus-v1";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
@@ -1108,10 +1109,15 @@ engine.runRenderLoop(() => {
       repelUses: repelRuntime.uses,
     }));
 
+    const cameraFocusTarget = selectedTargetId === 0
+      ? null
+      : targetMeshes.get(Number(selectedTargetId))?.position.x ?? null;
     const cameraGoal = presentationCameraGoal({
       playerX: state.position.x,
       playerY: state.position.y,
       velocityX: state.velocity.x,
+      focusX: cameraFocusTarget,
+      stage: scarProgress.snapshot().stage,
     });
     const cameraEase = cameraSmoothingFactor(frameSeconds);
     camera.position.x += (cameraGoal.x - camera.position.x) * cameraEase;
