@@ -16,8 +16,11 @@
     </div>
     <div class="hud-objective">
       <span class="hud-kicker">OBJECTIVE</span>
-      <strong>Reach the emergency relay</strong>
-      <span>Use Resonance anchors to cross the fractured hull.</span>
+      <strong id="hud-objective-title">Move through the breach</strong>
+      <span id="hud-objective-detail">Get clear of the wrecked arrival bay.</span>
+      <div id="hud-progress" class="hud-progress" aria-hidden="true">
+        <i></i><i></i><i></i><i></i>
+      </div>
     </div>
     <div class="hud-controls">
       <span><kbd>A</kbd><kbd>D</kbd> move</span>
@@ -26,6 +29,12 @@
       <span><kbd>E</kbd> attract</span>
       <span><kbd>Q</kbd> repel</span>
     </div>
+  </div>
+
+  <div id="slice-complete" class="slice-complete" aria-hidden="true">
+    <span class="hud-kicker">WAYFARER SCAR</span>
+    <strong>RELAY STABILIZED</strong>
+    <span>Transit Wreck 07 · signal restored</span>
   </div>
 
   <div id="diagnostics"></div>
