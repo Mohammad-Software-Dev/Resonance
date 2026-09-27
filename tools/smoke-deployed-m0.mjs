@@ -51,6 +51,14 @@ let browser;
 let context;
 let root;
 let blind;
+const rootErrors = [];
+const rootConsoleErrors = [];
+const rootRequestFailures = [];
+const rootHttpFailures = [];
+const blindErrors = [];
+const blindConsoleErrors = [];
+const blindRequestFailures = [];
+const blindHttpFailures = [];
 
 try {
   browser = await chromium.launch({
@@ -65,11 +73,15 @@ try {
   context = await browser.newContext({ acceptDownloads: true });
 
   root = await context.newPage();
-  const rootErrors = [];
-  const rootConsoleErrors = [];
   root.on("pageerror", (error) => rootErrors.push(String(error)));
   root.on("console", (message) => {
     if (message.type() === "error") rootConsoleErrors.push(message.text());
+  });
+  root.on("requestfailed", (request) => {
+    rootRequestFailures.push({ url: request.url(), error: request.failure()?.errorText ?? "unknown" });
+  });
+  root.on("response", (response) => {
+    if (!response.ok()) rootHttpFailures.push({ url: response.url(), status: response.status() });
   });
 
   const rootResponse = await gotoWithRetry(root, `${baseUrl}/`);
@@ -81,9 +93,14 @@ try {
 
   await root.waitForSelector("#game", { state: "attached", timeout: 30_000 });
   await root.waitForFunction(
+    () => document.body.dataset.resonanceBoot === "ready",
+    undefined,
+    { timeout: 120_000 },
+  );
+  await root.waitForFunction(
     () => document.querySelector("#diagnostics")?.textContent?.includes("RESONANCE M0.9"),
     undefined,
-    { timeout: 30_000 },
+    { timeout: 15_000 },
   );
   await snapshotPage(root, "root");
 
@@ -102,19 +119,28 @@ try {
     title: await root.title(),
     webgl2Available,
     diagnosticsPresent: true,
+    bootPhase: await root.locator("body").getAttribute("data-resonance-boot"),
+    buildIdMarker: await root.locator("body").getAttribute("data-resonance-build-id"),
+    shaderWarmupMs: await root.locator("body").getAttribute("data-resonance-shader-warmup-ms"),
     performanceSchema: performance.schema,
     performanceBuildId: performance.buildId,
     diagnosticsText: await root.locator("#diagnostics").textContent(),
     pageErrors: rootErrors,
     consoleErrors: rootConsoleErrors,
+    requestFailures: rootRequestFailures,
+    httpFailures: rootHttpFailures,
   };
 
   blind = await context.newPage();
-  const blindErrors = [];
-  const blindConsoleErrors = [];
   blind.on("pageerror", (error) => blindErrors.push(String(error)));
   blind.on("console", (message) => {
     if (message.type() === "error") blindConsoleErrors.push(message.text());
+  });
+  blind.on("requestfailed", (request) => {
+    blindRequestFailures.push({ url: request.url(), error: request.failure()?.errorText ?? "unknown" });
+  });
+  blind.on("response", (response) => {
+    if (!response.ok()) blindHttpFailures.push({ url: response.url(), status: response.status() });
   });
 
   const blindResponse = await gotoWithRetry(blind, `${baseUrl}/?blind=1`);
@@ -156,6 +182,8 @@ try {
     blindBuildId: blindReport.buildId,
     pageErrors: blindErrors,
     consoleErrors: blindConsoleErrors,
+    requestFailures: blindRequestFailures,
+    httpFailures: blindHttpFailures,
   };
 
   if (rootErrors.length || rootConsoleErrors.length || blindErrors.length || blindConsoleErrors.length) {
@@ -174,8 +202,15 @@ try {
   if (root) {
     report.root = {
       ...report.root,
+      bootPhase: await root.locator("body").getAttribute("data-resonance-boot").catch(() => null),
+      buildIdMarker: await root.locator("body").getAttribute("data-resonance-build-id").catch(() => null),
+      shaderWarmupMs: await root.locator("body").getAttribute("data-resonance-shader-warmup-ms").catch(() => null),
       diagnosticsText: await root.locator("#diagnostics").textContent().catch(() => null),
       bodyClass: await root.locator("body").getAttribute("class").catch(() => null),
+      pageErrors: rootErrors,
+      consoleErrors: rootConsoleErrors,
+      requestFailures: rootRequestFailures,
+      httpFailures: rootHttpFailures,
     };
     await snapshotPage(root, "root-failure");
   }
