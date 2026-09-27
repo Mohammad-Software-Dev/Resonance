@@ -116,6 +116,7 @@ document.body.dataset.resonanceAuthoredVisualAssets = authoredVisualAssetMode();
 document.body.dataset.resonanceAuthoredWayfarer = "loading";
 document.body.dataset.resonanceAuthoredScrapper = "loading";
 document.body.dataset.resonanceWayfarerMotion = "loading";
+document.body.dataset.resonanceVisualIdentity = "loading";
 
 async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
   if (backendPreference !== "webgl2" && "gpu" in navigator) {
@@ -384,7 +385,7 @@ let authoredWayfarerEmitter: AbstractMesh | null = null;
 let authoredWayfarerRootBaseRotationZ = 0;
 let authoredWayfarerHelmetBaseRotationZ = 0;
 let authoredWayfarerEmitterBaseScale = new Vector3(1, 1, 1);
-const AUTHORED_WAYFARER_SCALE = 0.82;
+const AUTHORED_WAYFARER_SCALE = 0.68;
 if (wayfarerVisualResult.status === "authored") {
   authoredWayfarerRoot =
     wayfarerVisualResult.meshes.find((mesh) => mesh.parent === null)
@@ -503,6 +504,13 @@ if (setdressVisualResult.status === "authored") {
     setdressVisualResult.reason,
   );
 }
+
+document.body.dataset.resonanceVisualIdentity =
+  wayfarerVisualResult.status === "authored"
+  && scrapperVisualResult.status === "authored"
+  && setdressVisualResult.status === "authored"
+    ? "authored-v2"
+    : "fallback";
 
 const visualLandmarkAudit = auditVisualLandmarks(scene.meshes.map((mesh) => mesh.name));
 document.body.dataset.resonanceVisualLandmarks = visualLandmarkAudit.ready
@@ -1259,7 +1267,7 @@ engine.runRenderLoop(() => {
     const selected = id === Number(selectedTargetId);
     const active = id === activeAttractTargetId;
     const repelFlash = now < repelFlashUntilMs && id === repelFlashTargetId;
-    const scale = repelFlash ? 0.76 : active ? 0.7 : selected ? 0.59 : 0.5;
+    const scale = repelFlash ? 0.65 : active ? 0.6 : selected ? 0.52 : 0.44;
     mesh.scaling.setAll(scale);
   }
 
