@@ -320,3 +320,43 @@ Automation now requires:
 - the <=24 material gate.
 
 No gameplay semantics are changed. Physical/human acceptance remains deferred and no owner-run testing is requested.
+
+
+## Pass 14 — game-style camera staging
+
+The fourteenth M0.12 pass changes how the existing authored content is presented on screen rather than adding more geometry.
+
+Presentation changes:
+
+- the perspective camera moves from the room-wide engineering framing to a closer gameplay distance;
+- horizontal room bounds now allow the camera to follow the Wayfarer across the full three-deck traversal instead of clamping near the room center;
+- velocity look-ahead remains restrained so precision movement is not obscured;
+- the currently selected Resonance target contributes a bounded framing bias, keeping the player and relevant anchor in the same composition;
+- Relay/complete stages add a modest forward objective bias;
+- vertical tracking is slightly stronger during aerial traversal;
+- smoothing remains frame-time clamped so long browser frames cannot cause a camera snap.
+
+The camera remains presentation-only. It does not feed targeting, movement, collision, replay hashes or progression.
+
+Automation publishes and requires `data-resonance-camera-staging="follow-focus-v1"`. Unit tests cover look-ahead, target focus, Relay bias, authored room bounds, closer framing and long-frame smoothing.
+
+## M0.12 implementation completion boundary
+
+With Passes 1–14, the recovery milestone now has:
+
+- semantic gameplay-plane readability;
+- recognizable world signage and objective language;
+- authored material treatment;
+- explicit Resonance interaction feedback;
+- objective/action choreography;
+- hostile encounter presence;
+- animated wreck atmosphere;
+- a typed authored GLB pipeline;
+- authored Wayfarer, Scrapper and environment set dressing;
+- a real broken-deck traversal course mirrored by deterministic replay fixture v2;
+- enforced material budget;
+- game-style local camera staging.
+
+M0.12 may be marked **implementation complete** once Pass 14 passes the full CI/browser matrix and deployed smoke on the exact merged commit.
+
+This is not M0 acceptance. Physical Tier-M performance and blind-human evidence remain deferred and incomplete. No owner-run testing is requested at this boundary.

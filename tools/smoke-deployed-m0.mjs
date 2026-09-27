@@ -145,6 +145,12 @@ try {
   if (traversalCourse !== "v2") {
     throw new Error(`Expected broken-deck traversal course v2, got: ${traversalCourse}`);
   }
+  const cameraStaging = await root.locator("body").getAttribute(
+    "data-resonance-camera-staging",
+  );
+  if (cameraStaging !== "follow-focus-v1") {
+    throw new Error(`Expected game-style camera staging, got: ${cameraStaging}`);
+  }
   await root.waitForFunction(
     () => ["idle", "locked", "attract", "repel"].includes(
       document.body.dataset.resonanceInteractionState ?? "",
@@ -229,6 +235,7 @@ try {
     activeBackend: performance.backend,
     visualLandmarks,
     traversalCourse,
+    cameraStaging,
     authoredVisualAssets,
     authoredWayfarer,
     authoredScrapper,

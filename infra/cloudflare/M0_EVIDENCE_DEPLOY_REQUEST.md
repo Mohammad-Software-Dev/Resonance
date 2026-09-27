@@ -1,24 +1,25 @@
 # M0 Evidence Deployment Request
 
-**Request:** 26  
-**Requested from baseline:** `5f83cc3abaa32b6ae1f3738adda9f3f99c8bdac8`  
-**Purpose:** Publish M0.12 Pass 13 authored Wayfarer Scar set dressing.
+**Request:** 27  
+**Requested from baseline:** `8a93f02a609fa57fa491476c520e66491d465abe`  
+**Purpose:** Publish M0.12 Pass 14 game-style camera staging and close the implementation recovery milestone.
 
-Pass 12 established the real three-deck traversal topology and retained the material budget at 22/24. Pass 13 now assigns the third authored visual slot rather than adding more procedural presentation.
+Pass 13 completed the three authored visual slots while keeping the loaded scene at 22/24 materials. Pass 14 improves presentation of those assets rather than adding more scene content.
 
 Changes:
 
-- assign `wayfarer-scar-setdress` to `/assets/visual/environment/wayfarer-scar-setdress-m0.glb`;
-- add explicit asset provenance metadata;
-- load the GLB through the existing authored visual boundary;
-- remap/dispose imported materials onto the shared room palette;
-- dispose the superseded procedural bulkhead/cargo/conduit meshes after successful load;
-- require authored environment landmarks in the visual audit;
-- require `data-resonance-authored-setdress="authored"` in deployed smoke;
-- preserve authored Mara/Scrapper checks, traversal course v2 and the <=24 material gate.
+- move the perspective camera from room-wide engineering framing to a closer gameplay distance;
+- follow the Wayfarer across the full three-deck authored route;
+- preserve restrained velocity look-ahead;
+- add bounded composition bias toward the currently selected Resonance target;
+- add modest Relay/complete objective bias;
+- strengthen aerial vertical tracking;
+- retain frame-time-clamped smoothing;
+- publish and smoke-test `data-resonance-camera-staging="follow-focus-v1"`;
+- preserve traversal course v2, all three authored asset checks and the <=24 material gate.
 
-No Rapier collision, movement, target selection, Resonance-force, combat, AI, progression or deterministic replay semantics are changed.
+No movement, collision, targeting, Resonance-force, combat, AI, progression or deterministic replay semantics are changed.
 
-Physical and blind-human acceptance remain deferred. No owner-run testing is requested.
+If deployment #27 is green, M0.12 visual-readability recovery is **implementation complete**. M0 physical and blind-human acceptance remain deferred/incomplete; no owner-run testing is requested.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
