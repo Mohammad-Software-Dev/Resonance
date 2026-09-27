@@ -48,29 +48,40 @@ function target(value: number): TargetId | 0 {
 }
 
 export function canonicalM0Input(tick: number): SimInput {
-  const jumpHeld = (tick >= 38 && tick < 51) || (tick >= 250 && tick < 260);
-  const attractPressed = tick >= 105 && tick < 176;
-  const repelPressed = tick === 176 || tick === 276;
-  const targetId = attractPressed || tick === 176
-    ? target(4)
-    : tick === 276
-      ? target(3)
-      : 0;
+  const jumpHeld =
+    (tick >= 34 && tick < 49)
+    || (tick >= 88 && tick < 101)
+    || (tick >= 286 && tick < 298);
+  const attractPressed = tick >= 96 && tick < 151;
+  const repelPressed = tick === 156 || tick === 276;
+
+  // v2 mirrors the authored Wayfarer Scar route:
+  // - target 1 is the forward/high anchor used to cross toward the right deck;
+  // - target 4 is the low rear anchor, so Repel launches the player onward;
+  // - target 3 remains the moving-platform anchor for late-course recovery coverage.
+  const targetId = attractPressed
+    ? target(1)
+    : tick === 156
+      ? target(4)
+      : tick === 276
+        ? target(3)
+        : 0;
 
   let moveX = 0;
-  if (tick < 95) moveX = 0.85;
-  else if (tick < 176) moveX = tick < 140 ? 0.3 : -0.2;
-  else if (tick < 235) moveX = -0.55;
-  else if (tick < 300) moveX = 0.7;
-  else moveX = -0.35;
+  if (tick < 96) moveX = 1;
+  else if (tick < 151) moveX = 0.55;
+  else if (tick < 230) moveX = 0.9;
+  else if (tick < 276) moveX = -0.65;
+  else if (tick < 315) moveX = -0.35;
+  else moveX = 0.5;
 
   return {
     tick: asTick(tick),
     moveX: quantizeAxis(moveX),
     moveY: quantizeAxis(0),
-    jumpPressed: tick === 38 || tick === 250,
+    jumpPressed: tick === 34 || tick === 88 || tick === 286,
     jumpHeld,
-    evadePressed: tick === 72 || tick === 318,
+    evadePressed: tick === 68 || tick === 322,
     attractPressed,
     repelPressed,
     targetId,
