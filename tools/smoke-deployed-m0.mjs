@@ -109,6 +109,12 @@ try {
   if (rootBackendPreference !== "webgl2") {
     throw new Error(`Forced WebGL2 preference was not retained: ${rootBackendPreference}`);
   }
+  const visualLandmarks = await root.locator("body").getAttribute(
+    "data-resonance-visual-landmarks",
+  );
+  if (visualLandmarks !== "ready") {
+    throw new Error(`Recognizable-game visual landmark audit failed: ${visualLandmarks}`);
+  }
   await root.waitForFunction(
     () => document.querySelector("#diagnostics")?.textContent?.includes("RESONANCE M0.9"),
     undefined,
@@ -158,6 +164,7 @@ try {
     bootPhase: await root.locator("body").getAttribute("data-resonance-boot"),
     backendPreference: rootBackendPreference,
     activeBackend: performance.backend,
+    visualLandmarks,
     buildIdMarker: await root.locator("body").getAttribute("data-resonance-build-id"),
     shaderWarmupMs: await root.locator("body").getAttribute("data-resonance-shader-warmup-ms"),
     performanceSchema: performance.schema,
