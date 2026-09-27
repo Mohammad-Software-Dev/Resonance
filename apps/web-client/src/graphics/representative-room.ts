@@ -158,16 +158,22 @@ function createSurfacePatternTexture(
     false,
   );
   const context = texture.getContext();
-  context.fillStyle = "#eeeeee";
+  context.fillStyle = pattern === "deck"
+    ? "#60686b"
+    : pattern === "wall"
+      ? "#4c555a"
+      : pattern === "hazard"
+        ? "#4a3328"
+        : "#566267";
   context.fillRect(0, 0, 256, 256);
 
   if (pattern === "deck" || pattern === "wall") {
-    context.fillStyle = pattern === "deck" ? "#a8b0b2" : "#8c9498";
+    context.fillStyle = pattern === "deck" ? "#343b3e" : "#2f363a";
     for (const offset of [0, 64, 128, 192, 252]) {
       context.fillRect(offset, 0, 4, 256);
       context.fillRect(0, offset, 256, 4);
     }
-    context.fillStyle = "#cfd5d5";
+    context.fillStyle = "#899296";
     for (const x of [18, 82, 146, 210]) {
       for (const y of [18, 82, 146, 210]) {
         context.fillRect(x, y, 5, 5);
@@ -175,15 +181,15 @@ function createSurfacePatternTexture(
     }
   } else if (pattern === "hazard") {
     for (let index = 0; index < 8; index += 1) {
-      context.fillStyle = index % 2 === 0 ? "#ffffff" : "#343434";
+      context.fillStyle = index % 2 === 0 ? "#a85a24" : "#24282a";
       context.fillRect(index * 32, 0, 32, 256);
     }
   } else {
-    context.fillStyle = "#aeb8b7";
+    context.fillStyle = "#435055";
     for (const y of [22, 96, 170, 244]) {
       context.fillRect(0, y, 256, 10);
     }
-    context.fillStyle = "#d9eeee";
+    context.fillStyle = "#718589";
     for (const x of [26, 72, 118, 164, 210]) {
       context.fillRect(x, 48, 22, 160);
     }
@@ -537,7 +543,9 @@ function decorateResonanceTargets(
 function addGameplayReadabilityLayer(
   scene: Scene,
   meshes: RepresentativeRoomMeshes,
+  deckStructure: StandardMaterial,
   deckAccent: StandardMaterial,
+  hazardBase: StandardMaterial,
   hazardAccent: StandardMaterial,
   movingAccent: StandardMaterial,
   anchorAccent: StandardMaterial,
@@ -552,21 +560,21 @@ function addGameplayReadabilityLayer(
   ] as const) {
     const deckLip = CreateBox(
       `gameplay-deck-edge-${name}`,
-      { width: width - 0.08, height: 0.07, depth: 2.05 },
+      { width: width - 0.08, height: 0.08, depth: 0.22 },
       scene,
     );
-    deckLip.position.set(x, 0.035, -0.03);
-    deckLip.material = deckAccent;
+    deckLip.position.set(x, 0.015, -0.91);
+    deckLip.material = deckStructure;
     staticMeshes.push(deckLip);
   }
 
   for (const x of [-6.8, -5.2, -3.6, -0.8, 0.5, 2.7, 4.3, 6.2]) {
     const marker = CreateBox(
       `deck-route-marker-${x}`,
-      { width: 0.68, height: 0.035, depth: 2.08 },
+      { width: 0.34, height: 0.035, depth: 0.1 },
       scene,
     );
-    marker.position.set(x, 0.075, 0);
+    marker.position.set(x, 0.078, -1.035);
     marker.material = deckAccent;
     staticMeshes.push(marker);
   }
@@ -581,7 +589,7 @@ function addGameplayReadabilityLayer(
       scene,
     );
     field.position.set(gap.x, -0.72, 0.08);
-    field.material = hazardAccent;
+    field.material = hazardBase;
     staticMeshes.push(field);
   }
 
@@ -663,7 +671,7 @@ function addGameplayReadabilityLayer(
 
   const playerMarker = CreateTorus(
     "wayfarer-ground-marker",
-    { diameter: 1.05, thickness: 0.035, tessellation: 40 },
+    { diameter: 0.88, thickness: 0.024, tessellation: 40 },
     scene,
   );
   playerMarker.parent = meshes.player;
@@ -1449,13 +1457,13 @@ export function createRepresentativeGraphicsRoom(
   const gameplayDeck = semanticMaterial(
     "gameplay-deck",
     scene,
-    new Color3(0.08, 0.13, 0.17),
-    new Color3(0.015, 0.035, 0.045),
+    new Color3(0.115, 0.125, 0.135),
+    new Color3(0.004, 0.006, 0.008),
   );
   const gameplayWall = semanticMaterial(
     "gameplay-wall",
     scene,
-    new Color3(0.055, 0.085, 0.11),
+    new Color3(0.055, 0.065, 0.075),
   );
   const gameplayHazard = semanticMaterial(
     "gameplay-hazard",
@@ -1466,14 +1474,14 @@ export function createRepresentativeGraphicsRoom(
   const gameplayMover = semanticMaterial(
     "gameplay-mover",
     scene,
-    new Color3(0.11, 0.24, 0.25),
-    new Color3(0.015, 0.12, 0.13),
+    new Color3(0.11, 0.15, 0.16),
+    new Color3(0.006, 0.025, 0.028),
   );
   const deckAccent = semanticMaterial(
     "gameplay-route-accent",
     scene,
-    new Color3(0.03, 0.28, 0.28),
-    new Color3(0.02, 0.34, 0.34),
+    new Color3(0.025, 0.2, 0.21),
+    new Color3(0.015, 0.24, 0.25),
   );
   const hazardAccent = semanticMaterial(
     "gameplay-hazard-accent",
@@ -1566,7 +1574,9 @@ export function createRepresentativeGraphicsRoom(
   const readability = addGameplayReadabilityLayer(
     scene,
     meshes,
+    gameplayDeck,
     deckAccent,
+    gameplayHazard,
     hazardAccent,
     gameplayMover,
     anchorAccent,
@@ -1637,6 +1647,19 @@ export function createRepresentativeGraphicsRoom(
   keyLight.intensity = 1.15;
   keyLight.shadowMinZ = 1;
   keyLight.shadowMaxZ = 28;
+
+  scene.imageProcessingConfiguration.contrast = 1.12;
+  scene.imageProcessingConfiguration.exposure = 1.02;
+
+  const rimLight = new DirectionalLight(
+    "orbital-rim",
+    new Vector3(0.52, -0.38, -0.62),
+    scene,
+  );
+  rimLight.position.set(-6.5, 5.2, 4.5);
+  rimLight.diffuse = new Color3(1, 0.48, 0.24);
+  rimLight.specular = new Color3(0.4, 0.16, 0.06);
+  rimLight.intensity = 0.28;
 
   const shadowGenerator = new ShadowGenerator(
     GRAPHICS_PRESETS[initialPreset].shadowMapSize,
