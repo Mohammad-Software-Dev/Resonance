@@ -22,7 +22,8 @@
     "blind-test:report": "pnpm --filter @resonance/blind-test-report report",
     "deploy:m0:evidence": "wrangler deploy --config infra/cloudflare/wrangler.m0.jsonc",
     "deploy:m0:evidence:dry-run": "wrangler deploy --dry-run --config infra/cloudflare/wrangler.m0.jsonc",
-    "smoke:m0:evidence": "node tools/smoke-deployed-m0.mjs"
+    "smoke:m0:evidence": "node tools/smoke-deployed-m0.mjs",
+    "evidence:preflight": "pnpm --filter @resonance/evidence-preflight preflight"
   },
   "devDependencies": {
     "@types/node": "24.10.0",
