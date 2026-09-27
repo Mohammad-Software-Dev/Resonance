@@ -54,6 +54,7 @@ export interface AuthoredPresentationPalette {
   readonly dark: Material;
   readonly shell: Material;
   readonly ceramic: Material;
+  readonly wayfarerCeramic: Material;
   readonly resonance: Material;
   readonly hostile: Material;
   readonly damage: Material;
@@ -229,6 +230,77 @@ function createGasGiantTexture(scene: Scene): DynamicTexture {
   return texture;
 }
 
+function createSpaceBackdropTexture(scene: Scene): DynamicTexture {
+  const texture = new DynamicTexture(
+    "space-backdrop-texture",
+    { width: 1024, height: 512 },
+    scene,
+    false,
+  );
+  const context = texture.getContext();
+
+  const background = context.createLinearGradient(0, 0, 0, 512);
+  background.addColorStop(0, "#07101a");
+  background.addColorStop(0.45, "#030912");
+  background.addColorStop(1, "#010306");
+  context.fillStyle = background;
+  context.fillRect(0, 0, 1024, 512);
+
+  const coolDust = context.createRadialGradient(650, 190, 12, 650, 190, 320);
+  coolDust.addColorStop(0, "rgba(25,82,102,0.18)");
+  coolDust.addColorStop(0.45, "rgba(13,43,62,0.08)");
+  coolDust.addColorStop(1, "rgba(0,0,0,0)");
+  context.fillStyle = coolDust;
+  context.fillRect(240, 0, 784, 512);
+
+  const warmDust = context.createRadialGradient(870, 320, 8, 870, 320, 190);
+  warmDust.addColorStop(0, "rgba(126,62,38,0.09)");
+  warmDust.addColorStop(1, "rgba(0,0,0,0)");
+  context.fillStyle = warmDust;
+  context.fillRect(600, 80, 424, 432);
+
+  for (let index = 0; index < 96; index += 1) {
+    const x = (index * 137 + 53) % 1019;
+    const y = (index * 83 + 31) % 503;
+    const size = index % 17 === 0 ? 2.2 : index % 5 === 0 ? 1.35 : 0.75;
+    const alpha = index % 17 === 0 ? 0.8 : 0.35 + (index % 7) * 0.055;
+    context.fillStyle = index % 13 === 0
+      ? `rgba(137,220,231,${alpha})`
+      : `rgba(215,229,232,${alpha})`;
+    context.beginPath();
+    context.arc(x, y, size, 0, Math.PI * 2);
+    context.fill();
+  }
+
+  texture.hasAlpha = false;
+  texture.update();
+  return texture;
+}
+
+function addSpaceBackdrop(scene: Scene): { mesh: Mesh; material: StandardMaterial } {
+  const texture = createSpaceBackdropTexture(scene);
+  const material = new StandardMaterial("space-backdrop-material", scene);
+  material.diffuseTexture = texture;
+  material.emissiveTexture = texture;
+  material.emissiveColor = new Color3(0.68, 0.72, 0.78);
+  material.specularColor = Color3.Black();
+  material.disableLighting = true;
+  material.backFaceCulling = false;
+
+  const mesh = CreatePlane(
+    "space-backdrop",
+    { width: 34, height: 16, sideOrientation: Mesh.DOUBLESIDE },
+    scene,
+  );
+  mesh.position.set(0, 4.8, 21.5);
+  mesh.material = material;
+  mesh.isPickable = false;
+  mesh.freezeWorldMatrix();
+  material.freeze();
+
+  return { mesh, material };
+}
+
 function createParticleTexture(
   scene: Scene,
   name = "resonance-particle-texture",
@@ -303,7 +375,7 @@ function addIndustrialBackdrop(
   for (const y of [1.1, 3.1, 5.1, 7.1]) {
     const conduit = CreateBox(
       `service-conduit-${y}`,
-      { width: 18, height: 0.1, depth: 0.12 },
+      { width: 17, height: 0.055, depth: 0.1 },
       scene,
     );
     conduit.position.set(0, y, 4.05);
@@ -1186,16 +1258,16 @@ function addGasGiantVista(scene: Scene): Mesh[] {
 
   const planet = CreateSphere(
     "gas-giant",
-    { diameter: 13.4, segments: 32 },
+    { diameter: 7.8, segments: 32 },
     scene,
   );
-  planet.position.set(1.2, 5.35, 14.5);
-  planet.scaling.y = 0.88;
+  planet.position.set(3.3, 4.7, 15.5);
+  planet.scaling.y = 0.9;
   planet.material = planetMaterial;
 
   const atmosphere = CreateSphere(
     "gas-giant-atmosphere",
-    { diameter: 13.75, segments: 24 },
+    { diameter: 8.12, segments: 24 },
     scene,
   );
   atmosphere.position.copyFrom(planet.position);
@@ -1204,7 +1276,7 @@ function addGasGiantVista(scene: Scene): Mesh[] {
 
   const limb = CreateTorus(
     "gas-giant-limb-band",
-    { diameter: 10.9, thickness: 0.08, tessellation: 64 },
+    { diameter: 6.45, thickness: 0.065, tessellation: 64 },
     scene,
   );
   limb.position.copyFrom(planet.position);
@@ -1451,10 +1523,10 @@ export function createRepresentativeGraphicsRoom(
   const emissive = pbr(
     "orbital-emissive",
     scene,
-    new Color3(0.015, 0.08, 0.095),
+    new Color3(0.02, 0.06, 0.075),
     0.18,
-    0.28,
-    new Color3(0.08, 0.72, 0.9),
+    0.34,
+    new Color3(0.025, 0.24, 0.31),
   );
   const hullCeramic = pbr(
     "scar-hull-ceramic",
@@ -1478,6 +1550,14 @@ export function createRepresentativeGraphicsRoom(
     0.08,
     0.3,
     new Color3(0.08, 0.88, 0.72),
+  );
+  const wayfarerCeramic = pbr(
+    "wayfarer-authored-ceramic",
+    scene,
+    new Color3(0.42, 0.45, 0.44),
+    0.08,
+    0.5,
+    new Color3(0.008, 0.014, 0.016),
   );
 
   const gameplayDeck = semanticMaterial(
@@ -1586,6 +1666,7 @@ export function createRepresentativeGraphicsRoom(
   const resonanceMaterial = createResonanceNodeMaterial(scene);
   for (const target of meshes.targets) target.material = resonanceMaterial;
 
+  const spaceBackdrop = addSpaceBackdrop(scene);
   const backdrop = addIndustrialBackdrop(scene, darkMetal, paintedMetal, emissive);
   const scar = addWayfarerScarSet(
     scene,
@@ -1650,6 +1731,7 @@ export function createRepresentativeGraphicsRoom(
     hullCeramic,
     emergency,
     relayMaterial,
+    wayfarerCeramic,
     gameplayDeck,
     gameplayWall,
     gameplayHazard,
@@ -1756,6 +1838,7 @@ export function createRepresentativeGraphicsRoom(
     glow.intensity = preset.glowIntensity;
     scene.fogDensity = preset.fogDensity;
     scene.environmentIntensity = preset.environmentIntensity;
+    spaceBackdrop.mesh.setEnabled(true);
     for (const mesh of [...backdrop.distantMeshes, ...vista]) {
       mesh.setEnabled(true);
     }
@@ -1775,6 +1858,7 @@ export function createRepresentativeGraphicsRoom(
       dark: darkMetal,
       shell: paintedMetal,
       ceramic: hullCeramic,
+      wayfarerCeramic,
       resonance: relayMaterial,
       hostile: emergency,
       damage: hazardAccent,
