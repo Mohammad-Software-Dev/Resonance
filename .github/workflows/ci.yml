@@ -22,6 +22,8 @@ jobs:
           node-version: 24.21.0
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm typecheck
+      - name: Validate deployed-smoke script syntax
+        run: node --check tools/smoke-deployed-m0.mjs
       - run: pnpm test
       - name: Verify canonical replay fingerprint
         run: |
