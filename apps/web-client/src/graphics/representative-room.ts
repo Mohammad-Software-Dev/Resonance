@@ -3,6 +3,7 @@ import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
+import type { Material } from "@babylonjs/core/Materials/material";
 import { NodeMaterial } from "@babylonjs/core/Materials/Node/nodeMaterial";
 import { PBRMaterial } from "@babylonjs/core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
@@ -49,10 +50,20 @@ export interface GraphicsRoomStats {
   readonly textures: number;
 }
 
+export interface AuthoredPresentationPalette {
+  readonly dark: Material;
+  readonly shell: Material;
+  readonly ceramic: Material;
+  readonly resonance: Material;
+  readonly hostile: Material;
+  readonly damage: Material;
+}
+
 export interface RepresentativeGraphicsRoom {
   readonly keyLight: DirectionalLight;
   readonly shadowGenerator: ShadowGenerator;
   readonly resonanceMaterial: NodeMaterial;
+  readonly authoredPalette: AuthoredPresentationPalette;
   getPreset(): GraphicsPresetName;
   getRenderScale(): number;
   applyPreset(name: GraphicsPresetName): void;
@@ -60,6 +71,8 @@ export interface RepresentativeGraphicsRoom {
   setRelayActivated(active: boolean): void;
   setProceduralWayfarerEnabled(enabled: boolean): void;
   setProceduralScrapperEnabled(enabled: boolean): void;
+  releaseProceduralWayfarerFallback(): void;
+  releaseProceduralScrapperFallback(): void;
   update(elapsedSeconds: number): void;
   stats(): GraphicsRoomStats;
 }
@@ -969,28 +982,13 @@ function addDamagedScrapperVignette(
 
 function addWreckDamageLayer(
   scene: Scene,
+  damagedMetal: Material,
+  fault: Material,
+  leak: Material,
 ): {
   animatedMeshes: Mesh[];
   particleSystems: ParticleSystem[];
 } {
-  const damagedMetal = semanticMaterial(
-    "wreck-damaged-metal",
-    scene,
-    new Color3(0.08, 0.09, 0.095),
-  );
-  const fault = semanticMaterial(
-    "wreck-fault-emissive",
-    scene,
-    new Color3(0.25, 0.055, 0.018),
-    new Color3(0.95, 0.16, 0.025),
-  );
-  const leak = semanticMaterial(
-    "wreck-leak-emissive",
-    scene,
-    new Color3(0.08, 0.14, 0.16),
-    new Color3(0.28, 0.62, 0.72),
-  );
-
   const animatedMeshes: Mesh[] = [];
 
   const brokenConduit = CreateCylinder(
@@ -1103,8 +1101,6 @@ function addWreckDamageLayer(
   airLeak.updateSpeed = 0.018;
   airLeak.blendMode = ParticleSystem.BLENDMODE_STANDARD;
   airLeak.start();
-
-  for (const material of [damagedMetal, fault, leak]) material.freeze();
 
   return {
     animatedMeshes,
@@ -1556,7 +1552,12 @@ export function createRepresentativeGraphicsRoom(
     relayMaterial,
   );
   const encounter = addDamagedScrapperVignette(scene);
-  const wreckDamage = addWreckDamageLayer(scene);
+  const wreckDamage = addWreckDamageLayer(
+    scene,
+    darkMetal,
+    emergency,
+    deckAccent,
+  );
 
   const leftArm = scene.getMeshByName("wayfarer-left-arm") as Mesh | null;
   const rightArm = scene.getMeshByName("wayfarer-right-arm") as Mesh | null;
@@ -1688,6 +1689,14 @@ export function createRepresentativeGraphicsRoom(
     keyLight,
     shadowGenerator,
     resonanceMaterial,
+    authoredPalette: {
+      dark: darkMetal,
+      shell: paintedMetal,
+      ceramic: hullCeramic,
+      resonance: relayMaterial,
+      hostile: emergency,
+      damage: hazardAccent,
+    },
     getPreset: () => presetName,
     getRenderScale: () => currentRenderScale,
     applyPreset,
@@ -1704,6 +1713,29 @@ export function createRepresentativeGraphicsRoom(
         if (mesh === encounter.warningRing) continue;
         mesh.setEnabled(enabled);
       }
+    },
+    releaseProceduralWayfarerFallback(): void {
+      const fallbackMaterials = new Set<Material>();
+      if (meshes.player.material) fallbackMaterials.add(meshes.player.material);
+      meshes.player.material = null;
+      meshes.player.isVisible = false;
+      for (const mesh of wayfarerMeshes.slice(1)) {
+        if (mesh.material) fallbackMaterials.add(mesh.material);
+        mesh.dispose(false, false);
+      }
+      for (const material of fallbackMaterials) material.dispose();
+    },
+    releaseProceduralScrapperFallback(): void {
+      const warningMaterial = encounter.warningRing.material;
+      const fallbackMaterials = new Set<Material>();
+      for (const mesh of encounter.meshes) {
+        if (mesh === encounter.warningRing) continue;
+        if (mesh.material && mesh.material !== warningMaterial) {
+          fallbackMaterials.add(mesh.material);
+        }
+        mesh.dispose(false, false);
+      }
+      for (const material of fallbackMaterials) material.dispose();
     },
     update(elapsedSeconds: number): void {
       const pulse = 0.5 + 0.5 * Math.sin(elapsedSeconds * 3.1);
