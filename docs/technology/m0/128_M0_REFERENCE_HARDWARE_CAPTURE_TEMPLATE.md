@@ -53,15 +53,17 @@ For each required run:
 1. use a production build, not Vite dev mode;
 2. record Build/commit SHA;
 3. close unrelated GPU-heavy tabs/apps where practical;
-4. open the representative M0 course;
-5. allow startup and shader warmup to finish;
-6. press X to reset the performance ring;
-7. traverse for at least 120 seconds;
-8. include jump, evade, moving anchor, Attract and Repel;
-9. press P to export the JSON evidence;
-10. confirm the export contains `frameSummary.captureDurationMs`, `cpuFrameP95Ms`, `gpuFrameP95Ms`, `drawCallsMin` and `drawCallsMax`;
-11. attach/store the JSON with this record;
-12. record any visible hitch, corruption or recovery issue separately.
+4. open the representative M0 course with the explicit evidence backend route (`?backend=webgpu` or `?backend=webgl2`);
+5. confirm diagnostics show matching requested/active backend;
+6. allow startup and shader warmup to finish;
+7. press X to reset the performance ring;
+8. traverse for at least 120 seconds;
+9. include jump, evade, moving anchor, Attract and Repel;
+10. press P to export the JSON evidence;
+11. confirm the export's `backend` and `backendPreference` match the requested route;
+12. confirm the export contains `frameSummary.captureDurationMs`, `cpuFrameP95Ms`, `gpuFrameP95Ms`, `drawCallsMin` and `drawCallsMax`;
+13. attach/store the JSON with this record;
+14. record any visible hitch, corruption or recovery issue separately.
 
 Do not hand-edit exported capture values.
 
