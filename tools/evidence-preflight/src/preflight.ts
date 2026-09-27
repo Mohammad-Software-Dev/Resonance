@@ -269,6 +269,9 @@ export function summarizeEvidence(
   if (!performance.some((entry) => entry.backend === "webgl2")) {
     blockers.push("No WebGL2 performance capture found.");
   }
+  if (!performance.some((entry) => /Firefox\//.test(entry.userAgent))) {
+    blockers.push("No Firefox physical performance capture found.");
+  }
   for (const entry of performance) {
     const failed = Object.entries(entry.gates)
       .filter(([, state]) => state === "fail")
