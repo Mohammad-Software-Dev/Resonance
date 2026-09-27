@@ -23,6 +23,7 @@ import {
   hardwareScalingLevel,
   type GraphicsPresetName,
 } from "./presets";
+import type { WayfarerPresentationPose } from "./wayfarer-presentation";
 
 const M0_ENVIRONMENT_URL =
   "/assets/environment/resonance-m0-orbital.env";
@@ -58,7 +59,7 @@ export interface RepresentativeGraphicsRoom {
   applyPreset(name: GraphicsPresetName): void;
   applyRenderScale(scale: number): void;
   setRelayActivated(active: boolean): void;
-  update(elapsedSeconds: number): void;
+  update(elapsedSeconds: number, wayfarerPose: WayfarerPresentationPose): void;
   stats(): GraphicsRoomStats;
 }
 
@@ -1217,7 +1218,6 @@ export function createRepresentativeGraphicsRoom(
   const leftLeg = scene.getMeshByName("wayfarer-left-leg") as Mesh | null;
   const rightLeg = scene.getMeshByName("wayfarer-right-leg") as Mesh | null;
   const fabricTab = scene.getMeshByName("wayfarer-fabric-tab") as Mesh | null;
-  let lastPlayerX = meshes.player.position.x;
 
   scene.skipPointerMovePicking = true;
   for (const mesh of scene.meshes) mesh.isPickable = false;
@@ -1345,7 +1345,7 @@ export function createRepresentativeGraphicsRoom(
     setRelayActivated(active: boolean): void {
       relayActivated = active;
     },
-    update(elapsedSeconds: number): void {
+    update(elapsedSeconds: number, wayfarerPose: WayfarerPresentationPose): void {
       const pulse = 0.5 + 0.5 * Math.sin(elapsedSeconds * 3.1);
       if (colorInput) {
         colorInput.value = new Color4(
@@ -1404,15 +1404,18 @@ export function createRepresentativeGraphicsRoom(
         mesh.scaling.z = pulseScale;
       }
 
-      const dx = meshes.player.position.x - lastPlayerX;
-      lastPlayerX = meshes.player.position.x;
-      const moving = Math.abs(dx) > 0.0015;
-      const gait = moving ? Math.sin(elapsedSeconds * 10.5) * 0.38 : Math.sin(elapsedSeconds * 2.2) * 0.035;
-      if (leftArm) leftArm.rotation.z = gait;
-      if (rightArm) rightArm.rotation.z = -gait * 0.8;
-      if (leftLeg) leftLeg.rotation.z = -gait * 0.72;
-      if (rightLeg) rightLeg.rotation.z = gait * 0.72;
-      if (fabricTab) fabricTab.rotation.z = -0.18 - Math.min(0.32, Math.abs(dx) * 12);
+      const gait = Math.sin(elapsedSeconds * wayfarerPose.gaitFrequency)
+        * wayfarerPose.gaitAmplitude;
+      meshes.player.rotation.z = wayfarerPose.bodyLean;
+      if (leftArm) leftArm.rotation.z = gait + wayfarerPose.armBias;
+      if (rightArm) rightArm.rotation.z = -gait * 0.8 + wayfarerPose.armBias * 0.72;
+      if (leftLeg) leftLeg.rotation.z = -gait * 0.72 + wayfarerPose.legBias;
+      if (rightLeg) rightLeg.rotation.z = gait * 0.72 - wayfarerPose.legBias;
+      if (fabricTab) {
+        fabricTab.rotation.z = -0.18 - wayfarerPose.fabricLift
+          - Math.sin(elapsedSeconds * 6.2) * wayfarerPose.fabricLift * 0.08;
+      }
+      document.body.dataset.resonanceWayfarerPose = wayfarerPose.mode;
     },
     stats: (): GraphicsRoomStats => {
       const preset = GRAPHICS_PRESETS[presetName];
