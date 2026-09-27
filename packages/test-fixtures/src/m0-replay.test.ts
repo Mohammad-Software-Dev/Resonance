@@ -60,11 +60,11 @@ describe("M0 replay harness", () => {
     }
   });
 
-  it("actually traverses the authored v2 breaches and exercises Resonance", async () => {
+  it("traverses the authored v2 course through the relay approach and exercises Resonance", async () => {
     const artifact = await generateCanonicalM0Replay("test");
     const runtime = await M0ReplayRuntime.create(artifact);
     let sawFirstBreach = false;
-    let sawRightDeck = false;
+    let sawRelayApproach = false;
     let sawAttract = false;
     let sawRepel = false;
     let maxX = Number.NEGATIVE_INFINITY;
@@ -75,7 +75,7 @@ describe("M0 replay harness", () => {
         const x = Number(step.telemetry.positionX);
         maxX = Math.max(maxX, x);
         if (x > -3.3 && x < -1.6) sawFirstBreach = true;
-        if (x > 2.2) sawRightDeck = true;
+        if (x > 6.25) sawRelayApproach = true;
         if (Number(step.telemetry.attractTargetId) !== 0) sawAttract = true;
         if (Number(step.telemetry.repelUses) > 0) sawRepel = true;
       }
@@ -84,7 +84,7 @@ describe("M0 replay harness", () => {
     }
 
     expect(sawFirstBreach).toBe(true);
-    expect(sawRightDeck, `canonical max x was ${maxX}`).toBe(true);
+    expect(sawRelayApproach, `canonical max x was ${maxX}`).toBe(true);
     expect(sawAttract).toBe(true);
     expect(sawRepel).toBe(true);
   });
