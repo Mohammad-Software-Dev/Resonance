@@ -59,6 +59,7 @@ import {
 import { parseBackendPreference } from "./graphics/backend-preference";
 import { auditVisualLandmarks } from "./graphics/visual-landmarks";
 import { resonanceInteractionPresentation } from "./graphics/interaction-presentation";
+import { objectiveStagePresentation } from "./graphics/objective-presentation";
 import {
   cameraSmoothingFactor,
   presentationCameraGoal,
@@ -93,6 +94,10 @@ const sliceComplete = requireElement<HTMLElement>("#slice-complete");
 const resonanceHud = requireElement<HTMLElement>("#hud-resonance");
 const resonanceHudTitle = requireElement<HTMLElement>("#hud-resonance-title");
 const resonanceHudDetail = requireElement<HTMLElement>("#hud-resonance-detail");
+const objectiveEvent = requireElement<HTMLElement>("#objective-event");
+const objectiveEventKicker = requireElement<HTMLElement>("#objective-event-kicker");
+const objectiveEventTitle = requireElement<HTMLElement>("#objective-event-title");
+const objectiveEventDetail = requireElement<HTMLElement>("#objective-event-detail");
 const backendPreference = parseBackendPreference(location.search);
 const query = new URLSearchParams(location.search);
 document.body.classList.toggle("debug", query.get("debug") === "1");
@@ -287,6 +292,26 @@ resonanceTether.color = new Color3(0.12, 0.92, 1);
 resonanceTether.isPickable = false;
 resonanceTether.isVisible = false;
 
+function circularFieldPoints(center: Vector3, radius: number): Vector3[] {
+  return Array.from({ length: 33 }, (_, index) => {
+    const angle = (index / 32) * Math.PI * 2;
+    return new Vector3(
+      center.x + Math.cos(angle) * radius,
+      center.y + Math.sin(angle) * radius,
+      center.z - 0.38,
+    );
+  });
+}
+
+const repelShockwave = CreateLines(
+  "repel-impact-shockwave",
+  { points: circularFieldPoints(Vector3.Zero(), 0.1), updatable: true },
+  scene,
+);
+repelShockwave.color = new Color3(1, 0.46, 0.12);
+repelShockwave.isPickable = false;
+repelShockwave.isVisible = false;
+
 const { createRepresentativeGraphicsRoom } = await import(
   "./graphics/representative-room"
 );
@@ -318,6 +343,7 @@ applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
 let lastScarStage = "";
+let objectiveEventTimer = 0;
 const scarProgressBars = [...objectiveProgress.querySelectorAll("i")];
 
 function renderScarProgress(snapshot: WayfarerScarProgressSnapshot): void {
@@ -328,8 +354,21 @@ function renderScarProgress(snapshot: WayfarerScarProgressSnapshot): void {
   for (let index = 0; index < scarProgressBars.length; index += 1) {
     scarProgressBars[index]?.classList.toggle("active", index < snapshot.step);
   }
+
+  const stagePresentation = objectiveStagePresentation(snapshot.stage);
+  objectiveEvent.dataset.tone = stagePresentation.tone;
+  objectiveEventKicker.textContent = stagePresentation.kicker;
+  objectiveEventTitle.textContent = stagePresentation.title;
+  objectiveEventDetail.textContent = stagePresentation.detail;
+  objectiveEvent.classList.add("visible");
+  window.clearTimeout(objectiveEventTimer);
+  objectiveEventTimer = window.setTimeout(() => {
+    objectiveEvent.classList.remove("visible");
+  }, snapshot.complete ? 2200 : 1450);
+
   sliceComplete.classList.toggle("visible", snapshot.complete);
   document.body.dataset.resonanceSliceStage = snapshot.stage;
+  document.body.dataset.resonanceObjectiveEvent = snapshot.stage;
   graphicsRoom.setRelayActivated(snapshot.complete);
 }
 
@@ -622,6 +661,8 @@ let nextDiagnosticsUpdateMs = 0;
 let lastVisualRepelUses = 0;
 let repelFlashTargetId = 0;
 let repelFlashUntilMs = 0;
+let repelShockwaveStartedMs = -1;
+const repelShockwaveCenter = new Vector3();
 
 function exportPerformanceCapture(): void {
   const payload = {
@@ -915,6 +956,29 @@ engine.runRenderLoop(() => {
     lastVisualRepelUses = repelRuntime.uses;
     repelFlashTargetId = Number(repelRuntime.lastTargetId);
     repelFlashUntilMs = now + 210;
+    const repelOrigin = targetMeshes.get(repelFlashTargetId)?.position
+      ?? (state ? new Vector3(state.position.x, state.position.y, state.position.z) : Vector3.Zero());
+    repelShockwaveCenter.copyFrom(repelOrigin);
+    repelShockwaveStartedMs = now;
+  }
+
+  const repelShockwaveAge = repelShockwaveStartedMs < 0
+    ? 1
+    : Math.min(1, (now - repelShockwaveStartedMs) / 320);
+  if (repelShockwaveAge < 1) {
+    const easedAge = 1 - Math.pow(1 - repelShockwaveAge, 2);
+    const radius = 0.22 + easedAge * 1.72;
+    CreateLines(
+      "repel-impact-shockwave",
+      {
+        points: circularFieldPoints(repelShockwaveCenter, radius),
+        instance: repelShockwave,
+      },
+      scene,
+    );
+    repelShockwave.isVisible = true;
+  } else {
+    repelShockwave.isVisible = false;
   }
 
   const activeAttractTargetId = Number(attractRuntime.targetId);
