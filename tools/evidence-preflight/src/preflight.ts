@@ -252,14 +252,15 @@ export function summarizeEvidence(
     ignoredFiles.push(item.file);
   }
 
-  const blind = summarizeBlindTestReports(blindReports);
+  const matchingBlindReports = blindReports.filter(
+    (report) => report.buildId === expectedBuildId,
+  );
+  const blind = summarizeBlindTestReports(matchingBlindReports);
   const wrongBuildFiles = blindReports
     .map((report, index) => ({ report, file: blindFiles[index] ?? "unknown" }))
     .filter(({ report }) => report.buildId !== expectedBuildId)
     .map(({ file }) => file);
-  const completedMatchingBuild = blindReports.filter(
-    (report) => report.buildId === expectedBuildId && isCompletedSession(report),
-  ).length;
+  const completedMatchingBuild = matchingBlindReports.filter(isCompletedSession).length;
 
   const blockers: string[] = [];
   if (!performance.some((entry) => entry.backend === "webgpu")) {
@@ -321,7 +322,7 @@ export function summarizeEvidence(
     },
     blind: {
       ...blind,
-      matchingBuildCount: blindReports.filter((report) => report.buildId === expectedBuildId).length,
+      matchingBuildCount: matchingBlindReports.length,
       wrongBuildFiles,
     },
     ignoredFiles,
