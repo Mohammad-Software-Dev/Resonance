@@ -1,10 +1,10 @@
 # M0 Evidence Deployment Request
 
-**Request:** 4  
-**Requested from baseline:** `a57376f2396d16a42a58e07221b6dc6df74c7087`  
-**Purpose:** Publish the first externally reachable M0 acceptance build after completing one-time workers.dev account-subdomain onboarding.
+**Request:** 5  
+**Requested from baseline:** `1310a7b8969217e3dabd468fb6d11dd9e1068d1a`  
+**Purpose:** Publish and automatically smoke-test the evidence build after adding exact-build stamping to performance exports.
 
-Request 3 confirmed the Cloudflare credentials are valid and passed all evidence-build gates, then failed because the account had no workers.dev namespace. The deployment workflow now preserves an existing account subdomain and creates `resonance-mohammad-dev` only when none exists.
+Request 4 successfully created the account workers.dev namespace and deployed `resonance-m0-evidence`. Request 5 adds retained post-deploy evidence: Chromium loads the normal route and blind route, verifies blind diagnostics suppression and F7 questionnaire startup, exports both performance and blind-test JSON, and requires both exports to carry this deployed commit SHA.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
 

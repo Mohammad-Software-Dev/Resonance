@@ -519,6 +519,7 @@ let nextDiagnosticsUpdateMs = 0;
 function exportPerformanceCapture(): void {
   const payload = {
     schema: "resonance.m0.performance-capture.v1",
+    buildId: import.meta.env.VITE_BUILD_ID ?? "dev",
     capturedAt: new Date().toISOString(),
     userAgent: navigator.userAgent,
     backend,

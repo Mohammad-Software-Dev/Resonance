@@ -27,7 +27,11 @@ Do not gather acceptance evidence from a different build unless the signoff reco
 
 ## Phase 2 — smoke-check the deployed build
 
-Before inviting testers:
+The deployment workflow first runs an automated Chromium smoke against the published URL and retains its JSON/screenshots as a workflow artifact. The automated smoke must confirm the normal route, blind route, hidden diagnostics in blind mode, F7 questionnaire startup, and deployed-build SHA in both performance and blind-test exports.
+
+That automated result is a deployment/runtime sanity gate, not a substitute for the physical-device checks below.
+
+Before inviting testers, also perform the physical smoke check:
 
 - load the normal URL in a Chromium browser;
 - confirm WebGPU or the expected WebGL2 fallback boots;
