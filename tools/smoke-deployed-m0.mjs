@@ -151,6 +151,12 @@ try {
   if (cameraStaging !== "follow-focus-v1") {
     throw new Error(`Expected game-style camera staging, got: ${cameraStaging}`);
   }
+  const depthComposition = await root.locator("body").getAttribute(
+    "data-resonance-depth-composition",
+  );
+  if (depthComposition !== "essential-v1") {
+    throw new Error(`Expected essential depth composition, got: ${depthComposition}`);
+  }
   await root.waitForFunction(
     () => ["idle", "run", "air", "evade", "attract", "repel"].includes(
       document.body.dataset.resonanceWayfarerMotion ?? "",
@@ -259,6 +265,7 @@ try {
     visualLandmarks,
     traversalCourse,
     cameraStaging,
+    depthComposition,
     initialWayfarerMotion,
     wayfarerMotion,
     authoredVisualAssets,

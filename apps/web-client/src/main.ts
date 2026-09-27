@@ -515,6 +515,7 @@ if (!visualLandmarkAudit.ready) {
 }
 document.body.dataset.resonanceTraversalCourse = "v2";
 document.body.dataset.resonanceCameraStaging = "follow-focus-v1";
+document.body.dataset.resonanceDepthComposition = "essential-v1";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
