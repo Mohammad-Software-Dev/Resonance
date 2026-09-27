@@ -153,7 +153,7 @@ Detailed Periapsis topology, Anchor Zero, four final configurations, world-state
 - `117_ITERATION_3J_CONSOLIDATION_SUMMARY.md`
 
 
-### 119–136 — M0 implementation and acceptance
+### 119–137 — M0 implementation and acceptance
 
 - `119_M0_REPOSITORY_AND_PACKAGE_ARCHITECTURE.md` — exact monorepo/package boundaries, dependency rules and kickoff pins.
 - `120_M0_SIMULATION_TICK_AND_STATE_CONTRACT.md` — fixed 60 Hz input/state/snapshot contract.
