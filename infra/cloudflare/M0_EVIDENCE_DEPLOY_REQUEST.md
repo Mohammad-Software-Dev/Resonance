@@ -1,19 +1,13 @@
 # M0 Evidence Deployment Request
 
-**Request:** 12  
-**Requested from baseline:** `2ba1c4a54a4493a9737e7d2847e16a3b8ac20cd9`  
-**Purpose:** Publish the final physical-capture candidate with deterministic backend selection.
+**Request:** 13  
+**Requested from baseline:** `7d4d1fe7b7cf38df9ff4b0f5c2ed14e9914f9aee`  
+**Purpose:** Publish the physical-test candidate with a high-refresh-safe two-minute capture window.
 
-Before physical collection began, the evidence procedure exposed one remaining reproducibility gap: a WebGPU-capable Chrome/Edge machine had no app-level way to force the WebGL2 fallback, and a nominal WebGPU run could silently fall back if WebGPU initialization failed.
+Before physical collection began, review of the capture implementation found that the ring buffer was sized as `60 * 120` samples. On a 120/144/240 Hz display that could retain substantially less than 120 seconds even when the tester followed the protocol correctly.
 
-This request adds evidence-only backend controls:
-
-- `?backend=webgpu` — require WebGPU; fail visibly rather than silently falling back.
-- `?backend=webgl2` — skip WebGPU entirely and use WebGL2 deterministically.
-- no parameter / `?backend=auto` — retain normal runtime behavior.
-
-Performance exports now record both the requested backend preference and active backend. The retained deployed smoke explicitly exercises `backend=webgl2` and requires matching export metadata. Gameplay and deterministic simulation semantics are unchanged.
+This request increases the allocation-stable capture capacity to 120,000 samples, enough to retain at least two minutes up to 1000 samples/second. It also tightens the local preflight so a Tier M WebGPU capture below Medium preset is an objective failure. Gameplay and deterministic simulation semantics are unchanged.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
 
-If request #12 passes, supersede `a18df4f0a3743964615da8ca146feb33584bd725` and use the new exact deployed commit for all subsequent physical and blind acceptance evidence.
+If request #13 passes, supersede `07c914155c74814a036cecf302b847792852b66c` before physical/human evidence collection begins and use the new exact deployed commit for all subsequent evidence.

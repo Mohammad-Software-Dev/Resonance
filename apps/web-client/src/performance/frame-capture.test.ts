@@ -48,6 +48,15 @@ describe("FrameCaptureBuffer", () => {
     expect(capture.exportSamples().gpuFrameMs).toEqual([null]);
   });
 
+  it("can represent a two-minute high-refresh capture when capacity permits", () => {
+    const capture = new FrameCaptureBuffer(144 * 120);
+    for (let index = 0; index < 144 * 120; index += 1) {
+      capture.push(1000 / 144, 0.85, 4, null, 45);
+    }
+    expect(capture.summary().captureDurationMs).toBeCloseTo(120_000, -1);
+    expect(capture.summary().samples).toBe(144 * 120);
+  });
+
   it("can be reset between physical capture runs", () => {
     const capture = new FrameCaptureBuffer(3);
     capture.push(10, 1, 1, null, 10);
