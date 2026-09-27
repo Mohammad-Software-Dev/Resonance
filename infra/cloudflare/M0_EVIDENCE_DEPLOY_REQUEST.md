@@ -1,25 +1,23 @@
 # M0 Evidence Deployment Request
 
-**Request:** 25  
-**Requested from baseline:** `3302248e202ff0a9f22dd8ae033494863dc61636`  
-**Purpose:** Publish M0.12 Pass 12 real traversal topology.
+**Request:** 26  
+**Requested from baseline:** `5f83cc3abaa32b6ae1f3738adda9f3f99c8bdac8`  
+**Purpose:** Publish M0.12 Pass 13 authored Wayfarer Scar set dressing.
 
-Pass 11 restored the presentation material budget while retaining authored Mara/Scrapper GLBs. Pass 12 now replaces the last major greybox artifact—the continuous test floor—with an actual three-deck Wayfarer Scar traversal course.
+Pass 12 established the real three-deck traversal topology and retained the material budget at 22/24. Pass 13 now assigns the third authored visual slot rather than adding more procedural presentation.
 
 Changes:
 
-- split browser floor into three matching visual/Rapier deck segments;
-- add a moving-platform breach and second traversal gap;
-- keep central pillar, slope and relay approach physically authoritative;
-- add hazard fields below both breaches without visually bridging them;
-- update semantic deck-edge/route dressing to match real collision gaps;
-- advance deterministic fixture to `m0-representative-course@2`;
-- retime the canonical replay through the new course and intentionally update its fingerprint;
-- make browser F9 replay exports use fixture v2;
-- require replay coverage to reach the relay approach and exercise Attract/Repel;
-- publish and smoke-test `data-resonance-traversal-course="v2"`.
+- assign `wayfarer-scar-setdress` to `/assets/visual/environment/wayfarer-scar-setdress-m0.glb`;
+- add explicit asset provenance metadata;
+- load the GLB through the existing authored visual boundary;
+- remap/dispose imported materials onto the shared room palette;
+- dispose the superseded procedural bulkhead/cargo/conduit meshes after successful load;
+- require authored environment landmarks in the visual audit;
+- require `data-resonance-authored-setdress="authored"` in deployed smoke;
+- preserve authored Mara/Scrapper checks, traversal course v2 and the <=24 material gate.
 
-Authored Wayfarer/Scrapper assets and the <=24 material gate remain in force.
+No Rapier collision, movement, target selection, Resonance-force, combat, AI, progression or deterministic replay semantics are changed.
 
 Physical and blind-human acceptance remain deferred. No owner-run testing is requested.
 

@@ -127,6 +127,12 @@ try {
   if (authoredScrapper !== "authored") {
     throw new Error(`Authored Scrapper GLB did not load: ${authoredScrapper}`);
   }
+  const authoredSetdress = await root.locator("body").getAttribute(
+    "data-resonance-authored-setdress",
+  );
+  if (authoredSetdress !== "authored") {
+    throw new Error(`Authored Wayfarer Scar setdress GLB did not load: ${authoredSetdress}`);
+  }
   const visualLandmarks = await root.locator("body").getAttribute(
     "data-resonance-visual-landmarks",
   );
@@ -226,6 +232,7 @@ try {
     authoredVisualAssets,
     authoredWayfarer,
     authoredScrapper,
+    authoredSetdress,
     interactionState,
     interactionHudVisible: true,
     objectiveStage,

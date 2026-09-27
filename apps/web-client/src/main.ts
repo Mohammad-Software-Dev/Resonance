@@ -460,6 +460,34 @@ if (scrapperVisualResult.status === "authored") {
   );
 }
 
+const setdressVisualSpec = AUTHORED_VISUAL_ASSETS.find(
+  (spec) => spec.slot === "wayfarer-scar-setdress",
+);
+if (!setdressVisualSpec) {
+  throw new Error("Authored visual slot wayfarer-scar-setdress is missing");
+}
+const setdressVisualResult = await loadAuthoredVisualAsset(scene, setdressVisualSpec);
+if (setdressVisualResult.status === "authored") {
+  remapImportedMaterials(setdressVisualResult.meshes, {
+    Scar_Shell: graphicsRoom.authoredPalette.shell,
+    Scar_Ceramic: graphicsRoom.authoredPalette.ceramic,
+    Scar_Resonance: graphicsRoom.authoredPalette.resonance,
+    Scar_Damage: graphicsRoom.authoredPalette.damage,
+  });
+  for (const mesh of setdressVisualResult.meshes) {
+    mesh.isPickable = false;
+    graphicsRoom.shadowGenerator.addShadowCaster(mesh);
+  }
+  graphicsRoom.releaseProceduralSetdressFallback();
+  document.body.dataset.resonanceAuthoredSetdress = "authored";
+} else {
+  document.body.dataset.resonanceAuthoredSetdress = "fallback";
+  console.warn(
+    "Authored Wayfarer Scar setdress failed to load; procedural fallback remains active.",
+    setdressVisualResult.reason,
+  );
+}
+
 const visualLandmarkAudit = auditVisualLandmarks(scene.meshes.map((mesh) => mesh.name));
 document.body.dataset.resonanceVisualLandmarks = visualLandmarkAudit.ready
   ? "ready"
