@@ -36,6 +36,8 @@ jobs:
         run: |
           pnpm --filter @resonance/replay-cli exec tsx src/cli.ts --fingerprint > /tmp/m0-canonical.fingerprint.json
           diff -u packages/test-fixtures/replays/m0-canonical.fingerprint.json /tmp/m0-canonical.fingerprint.json
+      - name: Generate canonical replay artifact
+        run: pnpm --filter @resonance/replay-cli replay --generate ../../packages/test-fixtures/replays/m0-canonical.json
       - run: pnpm test:replay
       - run: pnpm test:replay:matrix
       - name: Build evidence client
