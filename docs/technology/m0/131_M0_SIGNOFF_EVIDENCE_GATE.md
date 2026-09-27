@@ -17,7 +17,7 @@ The engineering implementation through M0.11 is merged.
 | M0.9 browser performance instrumentation/pass | `b44d4a0006170f7e30e73ad22ebe7bfa50b77105` | IMPLEMENTED |
 | M0.10 deterministic replay/test harness | PR #9, squash `a2dced350f6d9d32863d8284213657ce62dad2d3`; final PR CI run 149 passed verify + Chromium + Firefox + WebKit | IMPLEMENTED / AUTOMATED GATE GREEN |
 | M0.11 blind movement test harness | PR #10, squash `da925b3dc49cd33c82f33156a460d7c2934ff774`; final PR CI run 159 passed | IMPLEMENTED / AUTOMATED GATE GREEN |
-| Deployed M0 evidence candidate | `7044e62be61f58f3b2edfae19bfc8dd0405d4621`; Deploy M0 Evidence Build run `36315331943`; retained smoke artifact `10930925566` | DEPLOYED / AUTOMATED SMOKE GREEN |
+| Deployed M0 evidence candidate | `a18df4f0a3743964615da8ca146feb33584bd725`; Deploy M0 Evidence Build run `36316525999`; retained smoke artifact `10931161148` | DEPLOYED / AUTOMATED SMOKE GREEN |
 
 These results prove that the test infrastructure and current automated regression gates work. They do **not** satisfy the physical-performance or blind-human acceptance requirements below.
 
@@ -54,7 +54,7 @@ M0.11 remains **NOT HUMAN-SIGNED-OFF** until genuinely blind tester evidence exi
 
 Required evidence:
 
-- [x] `Deploy M0 Evidence Build` published commit `7044e62be61f58f3b2edfae19bfc8dd0405d4621` from `main` at `https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev`; automated Chromium smoke verified the normal route and `?blind=1` on that exact build. See `133_M0_DEPLOYED_SMOKE_EVIDENCE.md`.
+- [x] `Deploy M0 Evidence Build` published commit `a18df4f0a3743964615da8ca146feb33584bd725` from `main` at `https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev`; automated Chromium smoke verified the normal route, `?blind=1`, exact build IDs, and full-window physical-capture telemetry on that exact build. See `133_M0_DEPLOYED_SMOKE_EVIDENCE.md`.
 - [ ] The physical pre-tester smoke from `132_M0_EVIDENCE_EXECUTION_RUNBOOK.md` is completed on the intended test machine.
 - [ ] At least five testers who did not build the movement system and were not coached through the course complete the M0 course.
 - [ ] A questionnaire-completed local report is retained for each qualifying tester.
