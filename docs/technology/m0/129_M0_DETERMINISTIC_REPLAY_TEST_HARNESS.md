@@ -41,7 +41,9 @@ Presentation state is deliberately excluded.
 
 Fixture:
 
-`m0-representative-course@1`
+`m0-representative-course@2`
+
+Fixture version 2 mirrors the recognizable Wayfarer Scar traversal topology: three broken deck segments, the moving-platform breach, the central pillar and the relay-side approach.
 
 The canonical trace is 360 fixed ticks and exercises:
 
