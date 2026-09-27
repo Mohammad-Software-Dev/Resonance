@@ -73,6 +73,8 @@ function requireElement<T extends Element>(selector: string): T {
 
 const canvas = requireElement<HTMLCanvasElement>("#game");
 const diagnostics = requireElement<HTMLDivElement>("#diagnostics");
+document.body.dataset.resonanceBoot = "dom-ready";
+document.body.dataset.resonanceBuildId = import.meta.env.VITE_BUILD_ID ?? "dev";
 
 async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
   if ("gpu" in navigator) {
@@ -92,6 +94,7 @@ async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backen
 }
 
 const { engine, backend } = await createEngine();
+document.body.dataset.resonanceBoot = `engine-ready:${backend}`;
 const scene = new Scene(engine);
 scene.clearColor.set(0.018, 0.027, 0.045, 1);
 
@@ -234,10 +237,14 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
   initialGraphicsPreset(backend),
 );
 applyCameraMode();
+document.body.dataset.resonanceBoot = "graphics-room-ready";
 
 const shaderWarmupStartMs = performance.now();
+document.body.dataset.resonanceBoot = "shader-warmup";
 const warmedShaderBindings = await warmCriticalShaders(scene);
 const shaderWarmupMs = performance.now() - shaderWarmupStartMs;
+document.body.dataset.resonanceBoot = "shader-warmup-complete";
+document.body.dataset.resonanceShaderWarmupMs = shaderWarmupMs.toFixed(1);
 const performanceMonitor = new BrowserPerformanceMonitor(scene, engine);
 const dynamicResolution = new DynamicResolutionGovernor(graphicsRoom.getRenderScale());
 const frameCapture = new FrameCaptureBuffer();
@@ -544,6 +551,8 @@ function exportPerformanceCapture(): void {
   anchor.click();
   URL.revokeObjectURL(url);
 }
+
+document.body.dataset.resonanceBoot = "ready";
 
 engine.runRenderLoop(() => {
   const now = performance.now();

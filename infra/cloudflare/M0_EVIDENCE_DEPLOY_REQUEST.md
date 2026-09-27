@@ -1,12 +1,12 @@
 # M0 Evidence Deployment Request
 
-**Request:** 7  
-**Requested from baseline:** `bbe9d880e97dd1ef85affe74d1344b07570e00ce`  
-**Purpose:** Rerun deployed acceptance smoke with explicit CI software-WebGL support and retained failure diagnostics.
+**Request:** 8  
+**Requested from baseline:** `1e41cca1b98d8bdf89184f2a7edd021fba5d1ab6`  
+**Purpose:** Resolve deployed Chromium readiness with explicit client boot-phase evidence and a longer software-renderer warmup window.
 
-Request 6 deployed successfully but its Chromium smoke timed out waiting for the runtime diagnostics marker. The smoke now launches Chromium with explicit ANGLE/SwiftShader software-WebGL flags and retains smoke JSON, screenshots, DOM, console errors and page errors on both success and failure.
+Request 7 proved the deployed page answers, WebGL2 is available, and the M0 scene visibly renders, but the app did not reach the diagnostics/input/export stage within the prior 30-second window. The client now exposes non-gameplay DOM boot markers for DOM, engine, graphics-room, shader-warmup and ready phases. The smoke allows up to 120 seconds for software-rendered shader warmup and retains page/console/resource failures.
 
-All original smoke assertions remain: normal route runtime boot, blind mode, hidden diagnostics, F7 questionnaire, and exact deployed commit SHA in both performance and blind-test exports.
+No movement, simulation, targeting, Attract or Repel semantics are changed.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
 
