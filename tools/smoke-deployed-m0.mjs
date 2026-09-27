@@ -133,6 +133,12 @@ try {
   if (visualLandmarks !== "ready") {
     throw new Error(`Recognizable-game visual landmark audit failed: ${visualLandmarks}`);
   }
+  const traversalCourse = await root.locator("body").getAttribute(
+    "data-resonance-traversal-course",
+  );
+  if (traversalCourse !== "v2") {
+    throw new Error(`Expected broken-deck traversal course v2, got: ${traversalCourse}`);
+  }
   await root.waitForFunction(
     () => ["idle", "locked", "attract", "repel"].includes(
       document.body.dataset.resonanceInteractionState ?? "",
@@ -216,6 +222,7 @@ try {
     backendPreference: rootBackendPreference,
     activeBackend: performance.backend,
     visualLandmarks,
+    traversalCourse,
     authoredVisualAssets,
     authoredWayfarer,
     authoredScrapper,

@@ -256,3 +256,29 @@ This is a resource consolidation pass, not a visual rollback. The authored binar
 The deployed smoke now makes the material target executable: a visual-recovery build fails deployment smoke when `performance.graphics.materials > 24`.
 
 The third authored set-dress slot should not be assigned until this budget gate is green.
+
+
+## Pass 12 — real traversal topology
+
+The twelfth M0.12 pass replaces the remaining flat continuous test floor with a spatially legible Wayfarer Scar traversal route.
+
+Gameplay/runtime changes:
+
+- the 16-unit continuous floor becomes three separated deck colliders;
+- the first breach spans the moving-platform route;
+- a second gap separates the center deck from the relay-side deck;
+- the central Resonance pillar remains a physical obstacle;
+- the existing slope leads into the relay approach;
+- visible hazard fields sit below both breaches;
+- deck-edge and route-marking presentation is split so no decorative strip visually bridges a real gameplay gap.
+
+Deterministic proof:
+
+- headless fixture advances from `m0-representative-course@1` to `@2`;
+- browser F9 replay exports use the same fixture version;
+- the canonical 360-tick trace is intentionally retimed for the broken-deck route;
+- the canonical fingerprint is intentionally regenerated;
+- replay tests require the trace to enter the first breach region, reach the relay-side approach, and exercise both Attract and Repel;
+- deployed smoke requires `data-resonance-traversal-course="v2"` in addition to the visual-landmark audit.
+
+This is the first M0.12 pass that changes the representative course's collision topology. It is intentional and fully mirrored between browser physics and the engine-independent replay fixture. Physical/human acceptance remains deferred; no owner-run testing is requested.

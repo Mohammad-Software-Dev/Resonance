@@ -21,9 +21,10 @@ The room contains:
 - a glow layer;
 - a large gas-giant exterior vista;
 - a multi-part Wayfarer proxy silhouette;
-- the existing moving anchor and complete Attract/Repel movement course.
+- the existing moving anchor and complete Attract/Repel movement course;
+- a three-segment Wayfarer Scar deck topology with a moving-platform breach, a second traversal gap, the central Resonance pillar obstacle and a relay-side approach.
 
-All added room geometry is presentation-only unless it corresponds to an existing Rapier collider.
+Presentation dressing remains non-authoritative. The three deck segments, moving platform, central pillar, slope and boundary walls correspond to matching Rapier colliders and are mirrored by `m0-representative-course@2` in the headless replay runtime.
 
 ## Graphics presets
 

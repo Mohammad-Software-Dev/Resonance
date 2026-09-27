@@ -1,7 +1,11 @@
 export const REQUIRED_VISUAL_LANDMARKS = [
   "Mara_Helmet",
   "Mara_GauntletEmitter",
-  "gameplay-deck-edge",
+  "gameplay-deck-edge-left",
+  "gameplay-deck-edge-center",
+  "gameplay-deck-edge-right",
+  "scar-gap-field-left",
+  "scar-gap-field-right",
   "moving-platform-identity-panel",
   "hazard-identity-panel",
   "scar-relay-core",
