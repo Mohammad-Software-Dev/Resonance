@@ -469,6 +469,7 @@ if (!visualLandmarkAudit.ready) {
     `Recognizable-game visual landmarks missing: ${visualLandmarkAudit.missing.join(", ")}`,
   );
 }
+document.body.dataset.resonanceTraversalCourse = "v2";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
