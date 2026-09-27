@@ -109,6 +109,12 @@ try {
   if (rootBackendPreference !== "webgl2") {
     throw new Error(`Forced WebGL2 preference was not retained: ${rootBackendPreference}`);
   }
+  const visualIdentity = await root.locator("body").getAttribute(
+    "data-resonance-visual-identity",
+  );
+  if (visualIdentity !== "authored-v2") {
+    throw new Error(`Expected authored-v2 visual identity, got: ${visualIdentity}`);
+  }
   const authoredVisualAssets = await root.locator("body").getAttribute(
     "data-resonance-authored-visual-assets",
   );
@@ -266,6 +272,7 @@ try {
     traversalCourse,
     cameraStaging,
     depthComposition,
+    visualIdentity,
     initialWayfarerMotion,
     wayfarerMotion,
     authoredVisualAssets,
