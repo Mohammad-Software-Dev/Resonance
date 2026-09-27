@@ -3,8 +3,10 @@ import { FreeCamera } from "@babylonjs/core/Cameras/freeCamera";
 import type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
 import { Engine } from "@babylonjs/core/Engines/engine";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
+import { Color3 } from "@babylonjs/core/Maths/math.color";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
+import { CreateLines } from "@babylonjs/core/Meshes/Builders/linesBuilder";
 import { CreateCapsule } from "@babylonjs/core/Meshes/Builders/capsuleBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { Scene } from "@babylonjs/core/scene";
@@ -55,6 +57,10 @@ import {
   nextGraphicsPreset,
 } from "./graphics/presets";
 import { parseBackendPreference } from "./graphics/backend-preference";
+import {
+  cameraSmoothingFactor,
+  presentationCameraGoal,
+} from "./graphics/presentation-camera";
 import {
   BrowserPerformanceMonitor,
   warmCriticalShaders,
@@ -128,9 +134,9 @@ document.body.dataset.resonanceBoot = `engine-ready:${backend}`;
 const scene = new Scene(engine);
 scene.clearColor.set(0.018, 0.027, 0.045, 1);
 
-const camera = new FreeCamera("m0-camera", new Vector3(0, 3.1, -14.5), scene);
-camera.setTarget(new Vector3(0, 1.65, 0));
-camera.fov = 0.58;
+const camera = new FreeCamera("m0-camera", new Vector3(-2.2, 3.0, -10.9), scene);
+camera.setTarget(new Vector3(-2.2, 1.55, 0));
+camera.fov = 0.52;
 camera.minZ = 0.1;
 camera.maxZ = 80;
 let cameraMode: "perspective" | "orthographic" = "perspective";
@@ -247,6 +253,22 @@ for (const [guid, mesh] of [
   const target = targetRegistry.getByGuid(guid);
   if (target) targetMeshes.set(Number(target.id), mesh);
 }
+
+const feedbackSeed = [
+  new Vector3(0, 0, -0.45),
+  new Vector3(0.25, 0.2, -0.35),
+  new Vector3(0.5, 0.1, -0.25),
+  new Vector3(0.75, 0.2, -0.15),
+  new Vector3(1, 0, -0.05),
+];
+const resonanceTether = CreateLines(
+  "resonance-field-tether",
+  { points: feedbackSeed, updatable: true },
+  scene,
+);
+resonanceTether.color = new Color3(0.12, 0.92, 1);
+resonanceTether.isPickable = false;
+resonanceTether.isVisible = false;
 
 const { createRepresentativeGraphicsRoom } = await import(
   "./graphics/representative-room"
@@ -571,6 +593,9 @@ let lastRepelEvent: RepelSemanticEvent | null = null;
 let repelRequested = false;
 let gamepadRepelWasHeld = false;
 let nextDiagnosticsUpdateMs = 0;
+let lastVisualRepelUses = 0;
+let repelFlashTargetId = 0;
+let repelFlashUntilMs = 0;
 
 function exportPerformanceCapture(): void {
   const payload = {
@@ -847,12 +872,65 @@ engine.runRenderLoop(() => {
       attractActive: attractRuntime.ticksActive > 0 || lastAttractEvent !== null,
       repelUses: repelRuntime.uses,
     }));
+
+    const cameraGoal = presentationCameraGoal({
+      playerX: state.position.x,
+      playerY: state.position.y,
+      velocityX: state.velocity.x,
+    });
+    const cameraEase = cameraSmoothingFactor(frameSeconds);
+    camera.position.x += (cameraGoal.x - camera.position.x) * cameraEase;
+    camera.position.y += (cameraGoal.y - camera.position.y) * cameraEase;
+    camera.position.z += (cameraGoal.z - camera.position.z) * cameraEase;
+    camera.setTarget(new Vector3(camera.position.x, cameraGoal.targetY, 0));
+  }
+
+  if (repelRuntime.uses > lastVisualRepelUses) {
+    lastVisualRepelUses = repelRuntime.uses;
+    repelFlashTargetId = Number(repelRuntime.lastTargetId);
+    repelFlashUntilMs = now + 210;
+  }
+
+  const activeAttractTargetId = Number(attractRuntime.targetId);
+  const visualTargetId = now < repelFlashUntilMs
+    ? repelFlashTargetId
+    : activeAttractTargetId;
+  const visualTarget = visualTargetId === 0 ? undefined : targetMeshes.get(visualTargetId);
+
+  if (state && visualTarget) {
+    const start = new Vector3(state.position.x, state.position.y + 0.15, -0.42);
+    const end = new Vector3(
+      visualTarget.position.x,
+      visualTarget.position.y,
+      visualTarget.position.z - 0.18,
+    );
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const wave = now < repelFlashUntilMs ? 0.34 : 0.18;
+    const points = [0, 0.25, 0.5, 0.75, 1].map((t, index) => new Vector3(
+      start.x + dx * t,
+      start.y + dy * t + Math.sin(t * Math.PI) * wave * (index % 2 === 0 ? 1 : -0.65),
+      start.z + (end.z - start.z) * t,
+    ));
+    CreateLines(
+      "resonance-field-tether",
+      { points, instance: resonanceTether },
+      scene,
+    );
+    resonanceTether.color = now < repelFlashUntilMs
+      ? new Color3(1, 0.46, 0.12)
+      : new Color3(0.12, 0.92, 1);
+    resonanceTether.isVisible = true;
+  } else {
+    resonanceTether.isVisible = false;
   }
 
   for (const [id, mesh] of targetMeshes) {
     const selected = id === Number(selectedTargetId);
-    const scale = selected ? 1.35 : 1;
-    mesh.scaling.set(scale, scale, scale);
+    const active = id === activeAttractTargetId;
+    const repelFlash = now < repelFlashUntilMs && id === repelFlashTargetId;
+    const scale = repelFlash ? 0.76 : active ? 0.7 : selected ? 0.59 : 0.5;
+    mesh.scaling.setAll(scale);
   }
 
   graphicsRoom.update(now / 1000);
