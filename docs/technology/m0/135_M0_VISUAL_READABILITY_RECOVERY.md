@@ -1,6 +1,6 @@
 # M0.12 Visual Readability / Recognizable Game Pass
 
-**Status:** IN PROGRESS  
+**Status:** IMPLEMENTATION COMPLETE — M0 acceptance still deferred  
 **Reason:** Product-owner review found the current representative room technically functional but visually too abstract to read as a game. Player, gameplay surfaces, traversal objects and Resonance targets are not sufficiently self-explanatory.
 
 ## Decision
@@ -360,3 +360,26 @@ With Passes 1–14, the recovery milestone now has:
 M0.12 may be marked **implementation complete** once Pass 14 passes the full CI/browser matrix and deployed smoke on the exact merged commit.
 
 This is not M0 acceptance. Physical Tier-M performance and blind-human evidence remain deferred and incomplete. No owner-run testing is requested at this boundary.
+
+
+## Implementation completion record
+
+M0.12 implementation completed on `ab043ace342c66f19e4c71c2d62092864bf6eed2`.
+
+Automated completion evidence:
+
+- PR #53 / game-style camera staging merged;
+- CI #248: verify + Chromium + Firefox + WebKit passed;
+- Deploy M0 Evidence Build #27 / run `36342810612`: passed;
+- deployed smoke reported `visualLandmarks: ready`;
+- `traversalCourse: v2`;
+- `cameraStaging: follow-focus-v1`;
+- authored Wayfarer, Scrapper and set-dress slots all loaded as `authored`;
+- loaded scene materials: 22, within the <=24 M0 target;
+- loaded textures: 16;
+- deployed-smoke draw calls: 129–134;
+- no page, console, request or HTTP failures;
+- retained smoke artifact: `10939197148`;
+- artifact digest: `sha256:d2bdea5629822119de36a2cbd4689dd68e8bafceddb917ee7cbaee4fd43d1e83`.
+
+This closes the M0.12 implementation recovery milestone only. It does not satisfy Gate A physical performance or Gate B blind-human evidence.
