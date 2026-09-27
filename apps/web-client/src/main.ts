@@ -71,6 +71,7 @@ import {
   cameraSmoothingFactor,
   presentationCameraGoal,
 } from "./graphics/presentation-camera";
+import { wayfarerPresentationPose } from "./graphics/wayfarer-presentation-motion";
 import {
   BrowserPerformanceMonitor,
   warmCriticalShaders,
@@ -114,6 +115,7 @@ document.body.dataset.resonanceBackendPreference = backendPreference;
 document.body.dataset.resonanceAuthoredVisualAssets = authoredVisualAssetMode();
 document.body.dataset.resonanceAuthoredWayfarer = "loading";
 document.body.dataset.resonanceAuthoredScrapper = "loading";
+document.body.dataset.resonanceWayfarerMotion = "loading";
 
 async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
   if (backendPreference !== "webgl2" && "gpu" in navigator) {
@@ -377,6 +379,12 @@ if (!wayfarerVisualSpec) {
 }
 const wayfarerVisualResult = await loadAuthoredVisualAsset(scene, wayfarerVisualSpec);
 let authoredWayfarerRoot: AbstractMesh | null = null;
+let authoredWayfarerHelmet: AbstractMesh | null = null;
+let authoredWayfarerEmitter: AbstractMesh | null = null;
+let authoredWayfarerRootBaseRotationZ = 0;
+let authoredWayfarerHelmetBaseRotationZ = 0;
+let authoredWayfarerEmitterBaseScale = new Vector3(1, 1, 1);
+const AUTHORED_WAYFARER_SCALE = 0.82;
 if (wayfarerVisualResult.status === "authored") {
   authoredWayfarerRoot =
     wayfarerVisualResult.meshes.find((mesh) => mesh.parent === null)
@@ -386,7 +394,15 @@ if (wayfarerVisualResult.status === "authored") {
     throw new Error("Authored Wayfarer GLB loaded without a root mesh");
   }
   authoredWayfarerRoot.position.copyFrom(playerMesh.position);
-  authoredWayfarerRoot.scaling.setAll(0.82);
+  authoredWayfarerRoot.scaling.setAll(AUTHORED_WAYFARER_SCALE);
+  authoredWayfarerRootBaseRotationZ = authoredWayfarerRoot.rotation.z;
+  authoredWayfarerHelmet =
+    wayfarerVisualResult.meshes.find((mesh) => mesh.name === "Mara_Helmet") ?? null;
+  authoredWayfarerEmitter =
+    wayfarerVisualResult.meshes.find((mesh) => mesh.name === "Mara_GauntletEmitter") ?? null;
+  authoredWayfarerHelmetBaseRotationZ = authoredWayfarerHelmet?.rotation.z ?? 0;
+  authoredWayfarerEmitterBaseScale = authoredWayfarerEmitter?.scaling.clone()
+    ?? new Vector3(1, 1, 1);
   remapImportedMaterials(wayfarerVisualResult.meshes, {
     Mara_Suit: graphicsRoom.authoredPalette.shell,
     Mara_Ceramic: graphicsRoom.authoredPalette.ceramic,
@@ -1094,14 +1110,41 @@ engine.runRenderLoop(() => {
   const state = simulation.getWayfarer(PLAYER_ID);
   if (state) {
     playerMesh.position.set(state.position.x, state.position.y, state.position.z);
+    const wayfarerPose = wayfarerPresentationPose({
+      elapsedSeconds: now / 1000,
+      velocityX: state.velocity.x,
+      velocityY: state.velocity.y,
+      grounded: state.grounded,
+      movementMode: state.movementMode,
+      attractActive: attractRuntime.ticksActive > 0,
+      repelActive: state.repelRecoveryTicksRemaining > 0 || now < repelFlashUntilMs,
+    });
+    document.body.dataset.resonanceWayfarerMotion = wayfarerPose.mode;
+
     if (authoredWayfarerRoot) {
       authoredWayfarerRoot.position.set(
         state.position.x,
-        state.position.y,
+        state.position.y + wayfarerPose.rootYOffset,
         state.position.z,
       );
-      authoredWayfarerRoot.scaling.x = Math.abs(authoredWayfarerRoot.scaling.x)
-        * state.facing;
+      authoredWayfarerRoot.rotation.z =
+        authoredWayfarerRootBaseRotationZ + wayfarerPose.rootLeanZ * state.facing;
+      authoredWayfarerRoot.scaling.set(
+        AUTHORED_WAYFARER_SCALE * state.facing,
+        AUTHORED_WAYFARER_SCALE * wayfarerPose.rootScaleY,
+        AUTHORED_WAYFARER_SCALE,
+      );
+      if (authoredWayfarerHelmet) {
+        authoredWayfarerHelmet.rotation.z =
+          authoredWayfarerHelmetBaseRotationZ + wayfarerPose.helmetTiltZ * state.facing;
+      }
+      if (authoredWayfarerEmitter) {
+        authoredWayfarerEmitter.scaling.set(
+          authoredWayfarerEmitterBaseScale.x * wayfarerPose.emitterScale,
+          authoredWayfarerEmitterBaseScale.y * wayfarerPose.emitterScale,
+          authoredWayfarerEmitterBaseScale.z * wayfarerPose.emitterScale,
+        );
+      }
     }
     renderScarProgress(scarProgress.update({
       positionX: state.position.x,
