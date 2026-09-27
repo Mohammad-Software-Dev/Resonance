@@ -62,4 +62,22 @@ jobs:
           path: packages/test-fixtures/replays
       - name: Install browser runtime
         run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      - name: Start replay harness server
+        run: |
+          pnpm --filter @resonance/web-client dev --host 127.0.0.1 --port 4173 > /tmp/resonance-replay-vite.log 2>&1 &
+          echo $! > /tmp/resonance-replay-vite.pid
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/replay.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/resonance-replay-vite.log
+          exit 1
       - run: pnpm exec playwright test --project=${{ matrix.browser }}
+      - name: Stop replay harness server
+        if: always()
+        run: |
+          if [ -f /tmp/resonance-replay-vite.pid ]; then
+            kill "$(cat /tmp/resonance-replay-vite.pid)" 2>/dev/null || true
+          fi
