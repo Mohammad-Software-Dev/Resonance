@@ -1,10 +1,12 @@
 # M0 Evidence Deployment Request
 
-**Request:** 5  
-**Requested from baseline:** `1310a7b8969217e3dabd468fb6d11dd9e1068d1a`  
-**Purpose:** Publish and automatically smoke-test the evidence build after adding exact-build stamping to performance exports.
+**Request:** 6  
+**Requested from baseline:** `8ea9caef9b5c0c4dddf1500f206db8ad9fcdf50b`  
+**Purpose:** Publish and retain the first automated deployed-smoke evidence using the established workers.dev namespace.
 
-Request 4 successfully created the account workers.dev namespace and deployed `resonance-m0-evidence`. Request 5 adds retained post-deploy evidence: Chromium loads the normal route and blind route, verifies blind diagnostics suppression and F7 questionnaire startup, exports both performance and blind-test JSON, and requires both exports to carry this deployed commit SHA.
+Request 5 failed before build because the one-time account-subdomain onboarding step was not idempotent after request 4 had already created `resonance-mohammad-dev`. Routine deployments now preserve that established account-level namespace instead of attempting to create it again.
+
+This deployment includes exact build IDs in both performance and blind-test exports, plus retained Chromium smoke evidence for the normal route, blind mode, hidden diagnostics, F7 questionnaire startup and build-ID equality.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
 
