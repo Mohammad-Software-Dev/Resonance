@@ -1,0 +1,11 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "resonance-m0-evidence",
+  "compatibility_date": "2026-09-27",
+  "workers_dev": true,
+  "assets": {
+    "directory": "../../apps/web-client/dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  }
+}

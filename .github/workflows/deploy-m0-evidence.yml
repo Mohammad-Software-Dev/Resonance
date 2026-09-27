@@ -1,0 +1,46 @@
+name: Deploy M0 Evidence Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-m0-evidence
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.6.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.21.0
+      - run: pnpm install --no-frozen-lockfile
+      - name: Record evidence build SHA
+        run: echo "M0_EVIDENCE_BUILD_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Verify canonical replay fingerprint
+        run: |
+          pnpm --filter @resonance/replay-cli exec tsx src/cli.ts --fingerprint > /tmp/m0-canonical.fingerprint.json
+          diff -u packages/test-fixtures/replays/m0-canonical.fingerprint.json /tmp/m0-canonical.fingerprint.json
+      - run: pnpm test:replay
+      - run: pnpm test:replay:matrix
+      - name: Build evidence client
+        run: pnpm build
+        env:
+          VITE_BUILD_ID: ${{ env.M0_EVIDENCE_BUILD_SHA }}
+      - run: pnpm check:bundle
+      - name: Deploy to Cloudflare Workers Static Assets
+        run: pnpm deploy:m0:evidence
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

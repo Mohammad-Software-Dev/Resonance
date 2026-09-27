@@ -5,6 +5,8 @@
 **Repository baseline:** `da925b3dc49cd33c82f33156a460d7c2934ff774` (M0.11 merged)  
 **Purpose:** Keep implemented engineering evidence separate from acceptance evidence that must come from real hardware and real blind testers.
 
+**Execution runbook:** `132_M0_EVIDENCE_EXECUTION_RUNBOOK.md`
+
 ## Current repository state
 
 The engineering implementation through M0.11 is merged.
@@ -50,7 +52,7 @@ M0.11 remains **NOT HUMAN-SIGNED-OFF** until genuinely blind tester evidence exi
 
 Required evidence:
 
-- [ ] A deployed/reachable M0 build is available with the `?blind=1` route.
+- [ ] The manual `Deploy M0 Evidence Build` workflow has published a reachable production build from `main`, and the `?blind=1` route is verified on that exact build.
 - [ ] At least five testers who did not build the movement system and were not coached through the course complete the M0 course.
 - [ ] A questionnaire-completed local report is retained for each qualifying tester.
 - [ ] Useful partial reports are retained separately and are not counted toward the five-completed-session minimum.

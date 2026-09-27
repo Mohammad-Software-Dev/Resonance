@@ -19,13 +19,16 @@
     "test:replay:matrix": "pnpm --filter @resonance/replay-cli replay --matrix ../../packages/test-fixtures/replays/m0-canonical.json",
     "test:browser:replay": "playwright test",
     "replay:fingerprint": "pnpm --filter @resonance/replay-cli replay --fingerprint",
-    "blind-test:report": "pnpm --filter @resonance/blind-test-report report"
+    "blind-test:report": "pnpm --filter @resonance/blind-test-report report",
+    "deploy:m0:evidence": "wrangler deploy --config infra/cloudflare/wrangler.m0.jsonc",
+    "deploy:m0:evidence:dry-run": "wrangler deploy --dry-run --config infra/cloudflare/wrangler.m0.jsonc"
   },
   "devDependencies": {
     "@types/node": "24.10.0",
     "typescript": "7.0.2",
     "vite": "8.3.1",
     "vitest": "4.0.18",
-    "@playwright/test": "1.63.0"
+    "@playwright/test": "1.63.0",
+    "wrangler": "4.141.0"
   }
 }

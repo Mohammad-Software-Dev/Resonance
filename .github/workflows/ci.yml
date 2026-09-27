@@ -38,6 +38,8 @@ jobs:
           retention-days: 7
       - run: pnpm build
       - run: pnpm check:bundle
+      - name: Validate M0 evidence deployment
+        run: pnpm deploy:m0:evidence:dry-run
 
   replay-browser:
     needs: verify

@@ -1,3 +1,55 @@
-# cloudflare
+# Cloudflare
 
-Static asset, CDN and R2 infrastructure configuration.
+Cloudflare hosts the browser-first static client and later CDN/R2 infrastructure.
+
+## M0 evidence deployment
+
+M0 uses Workers Static Assets for a production-style test URL.
+
+Configuration:
+
+- `wrangler.m0.jsonc`
+- Worker name: `resonance-m0-evidence`
+- asset root: `apps/web-client/dist`
+- public route: the account's `*.workers.dev` URL
+- blind-test entry: append `?blind=1`
+
+The deployment contains no Worker script. It serves only the Vite production output.
+
+### GitHub authentication
+
+The manual `Deploy M0 Evidence Build` workflow requires these GitHub Actions repository secrets:
+
+- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_API_TOKEN`
+
+Do not commit either value.
+
+For a brand-new Worker, the token must be able to create the Worker in the selected Cloudflare account. After the Worker exists, reduce the token to the minimum permissions needed to deploy it.
+
+### Deployment
+
+1. Merge only code that has passed the ordinary CI gate.
+2. In GitHub Actions, run **Deploy M0 Evidence Build** from `main`.
+3. The workflow records the checked-out commit SHA and injects it into the Vite build as `VITE_BUILD_ID`.
+4. The workflow reruns typecheck, unit tests, deterministic replay checks, production build and bundle budget before publishing.
+5. Copy the deployed `workers.dev` URL from the Wrangler step.
+6. Verify the normal route and `/?blind=1` on physical hardware before distributing it to testers.
+
+The build SHA embedded in blind-test and performance exports must match the commit recorded for M0 signoff.
+
+### Local validation
+
+After a production build:
+
+```text
+pnpm deploy:m0:evidence:dry-run
+```
+
+This validates the Workers Static Assets package without uploading it.
+
+An authenticated local deployment uses:
+
+```text
+CLOUDFLARE_ACCOUNT_ID=... CLOUDFLARE_API_TOKEN=... pnpm deploy:m0:evidence
+```
