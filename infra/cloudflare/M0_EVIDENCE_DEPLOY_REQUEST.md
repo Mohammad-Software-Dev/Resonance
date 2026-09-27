@@ -1,12 +1,12 @@
 # M0 Evidence Deployment Request
 
-**Request:** 6  
-**Requested from baseline:** `8ea9caef9b5c0c4dddf1500f206db8ad9fcdf50b`  
-**Purpose:** Publish and retain the first automated deployed-smoke evidence using the established workers.dev namespace.
+**Request:** 7  
+**Requested from baseline:** `bbe9d880e97dd1ef85affe74d1344b07570e00ce`  
+**Purpose:** Rerun deployed acceptance smoke with explicit CI software-WebGL support and retained failure diagnostics.
 
-Request 5 failed before build because the one-time account-subdomain onboarding step was not idempotent after request 4 had already created `resonance-mohammad-dev`. Routine deployments now preserve that established account-level namespace instead of attempting to create it again.
+Request 6 deployed successfully but its Chromium smoke timed out waiting for the runtime diagnostics marker. The smoke now launches Chromium with explicit ANGLE/SwiftShader software-WebGL flags and retains smoke JSON, screenshots, DOM, console errors and page errors on both success and failure.
 
-This deployment includes exact build IDs in both performance and blind-test exports, plus retained Chromium smoke evidence for the normal route, blind mode, hidden diagnostics, F7 questionnaire startup and build-ID equality.
+All original smoke assertions remain: normal route runtime boot, blind mode, hidden diagnostics, F7 questionnaire, and exact deployed commit SHA in both performance and blind-test exports.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
 
