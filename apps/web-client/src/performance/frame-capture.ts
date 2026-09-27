@@ -14,6 +14,8 @@ export interface FrameCaptureSummary {
   readonly drawCallsMax: number;
 }
 
+const DEFAULT_CAPTURE_CAPACITY = 120_000;
+
 export interface FrameCaptureSamples {
   readonly frameMs: readonly number[];
   readonly renderScale: readonly number[];
@@ -40,7 +42,7 @@ export class FrameCaptureBuffer {
   private writeIndex = 0;
   private count = 0;
 
-  public constructor(capacity = 60 * 120) {
+  public constructor(capacity = DEFAULT_CAPTURE_CAPACITY) {
     this.frameMs = new Float32Array(capacity);
     this.renderScale = new Float32Array(capacity);
     this.cpuFrameMs = new Float32Array(capacity);
