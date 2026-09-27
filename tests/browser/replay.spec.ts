@@ -4,14 +4,12 @@ import type { ReplayArtifact } from "@resonance/simulation";
 
 test("canonical M0 replay matches Node in the browser runtime", async ({
   page,
-  browser,
   browserName,
 }) => {
   const artifact = JSON.parse(
     await readFile("packages/test-fixtures/replays/m0-canonical.json", "utf8"),
   ) as ReplayArtifact;
 
-  page.on("console", (message) => console.log(`[${browserName}] ${message.text()}`));
   await page.goto("/replay.html");
   await page.waitForFunction(() => typeof window.__RESONANCE_VERIFY_REPLAY__ === "function");
 
@@ -32,7 +30,6 @@ test("canonical M0 replay matches Node in the browser runtime", async ({
   ]).finally(() => {
     if (watchdog) clearTimeout(watchdog);
   });
-  console.log(`[${browserName}] node:result-received`);
   const result = JSON.parse(resultJson) as {
     direct: { ok: boolean; finalHash: string; divergence: unknown };
     matrix: Array<{
@@ -64,10 +61,4 @@ test("canonical M0 replay matches Node in the browser runtime", async ({
   } else {
     expect(result.matrix).toEqual([]);
   }
-
-  console.log(`[${browserName}] node:assertions-done`);
-  await page.context().close();
-  console.log(`[${browserName}] node:context-closed`);
-  await browser.close();
-  console.log(`[${browserName}] node:browser-closed`);
 });
