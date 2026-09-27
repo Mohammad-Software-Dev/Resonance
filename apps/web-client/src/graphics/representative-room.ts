@@ -1565,6 +1565,8 @@ export function createRepresentativeGraphicsRoom(
   const rightLeg = scene.getMeshByName("wayfarer-right-leg") as Mesh | null;
   const fabricTab = scene.getMeshByName("wayfarer-fabric-tab") as Mesh | null;
   let lastPlayerX = meshes.player.position.x;
+  let proceduralWayfarerReleased = false;
+  let proceduralScrapperReleased = false;
 
   scene.skipPointerMovePicking = true;
   for (const mesh of scene.meshes) mesh.isPickable = false;
@@ -1715,6 +1717,8 @@ export function createRepresentativeGraphicsRoom(
       }
     },
     releaseProceduralWayfarerFallback(): void {
+      if (proceduralWayfarerReleased) return;
+      proceduralWayfarerReleased = true;
       const fallbackMaterials = new Set<Material>();
       if (meshes.player.material) fallbackMaterials.add(meshes.player.material);
       meshes.player.material = null;
@@ -1726,6 +1730,8 @@ export function createRepresentativeGraphicsRoom(
       for (const material of fallbackMaterials) material.dispose();
     },
     releaseProceduralScrapperFallback(): void {
+      if (proceduralScrapperReleased) return;
+      proceduralScrapperReleased = true;
       const warningMaterial = encounter.warningRing.material;
       const fallbackMaterials = new Set<Material>();
       for (const mesh of encounter.meshes) {
@@ -1788,14 +1794,16 @@ export function createRepresentativeGraphicsRoom(
         }
       }
 
-      const scrapperDrift = Math.sin(elapsedSeconds * 0.9) * 0.18;
-      encounter.root.position.x = 5.75 + scrapperDrift;
-      encounter.root.rotation.z = -0.08 + Math.sin(elapsedSeconds * 1.3) * 0.025;
-      encounter.damagedArm.rotation.z = -0.48 + Math.sin(elapsedSeconds * 2.1) * 0.08;
-      encounter.loosePlate.rotation.z = 0.22 + Math.sin(elapsedSeconds * 4.2) * 0.08;
       const hostilePulse = 0.82 + 0.18 * Math.sin(elapsedSeconds * 6.2);
-      encounter.sensor.scaling.x = 1.35 * hostilePulse;
-      encounter.sensor.scaling.y = 0.65 * hostilePulse;
+      if (!proceduralScrapperReleased) {
+        const scrapperDrift = Math.sin(elapsedSeconds * 0.9) * 0.18;
+        encounter.root.position.x = 5.75 + scrapperDrift;
+        encounter.root.rotation.z = -0.08 + Math.sin(elapsedSeconds * 1.3) * 0.025;
+        encounter.damagedArm.rotation.z = -0.48 + Math.sin(elapsedSeconds * 2.1) * 0.08;
+        encounter.loosePlate.rotation.z = 0.22 + Math.sin(elapsedSeconds * 4.2) * 0.08;
+        encounter.sensor.scaling.x = 1.35 * hostilePulse;
+        encounter.sensor.scaling.y = 0.65 * hostilePulse;
+      }
       encounter.warningRing.scaling.setAll(0.94 + hostilePulse * 0.08);
       encounter.warningRing.visibility = 0.32 + hostilePulse * 0.28;
 
@@ -1825,13 +1833,15 @@ export function createRepresentativeGraphicsRoom(
 
       const dx = meshes.player.position.x - lastPlayerX;
       lastPlayerX = meshes.player.position.x;
-      const moving = Math.abs(dx) > 0.0015;
-      const gait = moving ? Math.sin(elapsedSeconds * 10.5) * 0.38 : Math.sin(elapsedSeconds * 2.2) * 0.035;
-      if (leftArm) leftArm.rotation.z = gait;
-      if (rightArm) rightArm.rotation.z = -gait * 0.8;
-      if (leftLeg) leftLeg.rotation.z = -gait * 0.72;
-      if (rightLeg) rightLeg.rotation.z = gait * 0.72;
-      if (fabricTab) fabricTab.rotation.z = -0.18 - Math.min(0.32, Math.abs(dx) * 12);
+      if (!proceduralWayfarerReleased) {
+        const moving = Math.abs(dx) > 0.0015;
+        const gait = moving ? Math.sin(elapsedSeconds * 10.5) * 0.38 : Math.sin(elapsedSeconds * 2.2) * 0.035;
+        if (leftArm) leftArm.rotation.z = gait;
+        if (rightArm) rightArm.rotation.z = -gait * 0.8;
+        if (leftLeg) leftLeg.rotation.z = -gait * 0.72;
+        if (rightLeg) rightLeg.rotation.z = gait * 0.72;
+        if (fabricTab) fabricTab.rotation.z = -0.18 - Math.min(0.32, Math.abs(dx) * 12);
+      }
     },
     stats: (): GraphicsRoomStats => {
       const preset = GRAPHICS_PRESETS[presetName];
