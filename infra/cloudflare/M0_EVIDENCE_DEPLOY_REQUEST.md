@@ -1,18 +1,17 @@
 # M0 Evidence Deployment Request
 
-**Request:** 16  
-**Requested from baseline:** `ed88aa65bc79c3a372becb6d8e59f480e6a7824c`  
-**Purpose:** Publish M0.12 Pass 3 procedural material language.
+**Request:** 17  
+**Requested from baseline:** `d6f8d3513cf26ea27ea2e657526547923ec88903`  
+**Purpose:** Publish M0.12 Pass 4 Resonance interaction readability.
 
-This presentation-only candidate adds self-contained generated textures for:
+This presentation-only candidate adds:
 
-- walkable deck panels and rivets;
-- wall panel seams;
-- hazard striping;
-- moving machinery markings;
-- a banded gas-giant backdrop.
+- a live Resonance interaction HUD;
+- authored target labels for anchor/node types;
+- explicit idle / locked / Attract / Repel presentation states;
+- deployed-smoke checks for normal-route interaction HUD visibility and blind-mode HUD concealment.
 
-No external art dependency is introduced. Collision, fixed-step simulation, target IDs, movement rules, Attract/Repel behavior and deterministic replay semantics remain unchanged.
+No targeting, movement, force, collision, cooldown or deterministic replay semantics are changed.
 
 Physical and blind-human acceptance remain deferred. No owner-run testing is requested.
 
