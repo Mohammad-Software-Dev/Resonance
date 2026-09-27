@@ -25,6 +25,8 @@ The manual `Deploy M0 Evidence Build` workflow requires these GitHub Actions rep
 
 Do not commit either value.
 
+The deployment workflow validates both secrets before dependency installation or evidence-build work. If either is absent, it fails immediately with the missing secret name and does not spend CI time rebuilding an undeployable artifact.
+
 For a brand-new Worker, the token must be able to create the Worker in the selected Cloudflare account. After the Worker exists, reduce the token to the minimum permissions needed to deploy it.
 
 ### Deployment
