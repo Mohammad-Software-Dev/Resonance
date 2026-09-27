@@ -405,7 +405,7 @@ if (wayfarerVisualResult.status === "authored") {
     ?? new Vector3(1, 1, 1);
   remapImportedMaterials(wayfarerVisualResult.meshes, {
     Mara_Suit: graphicsRoom.authoredPalette.shell,
-    Mara_Ceramic: graphicsRoom.authoredPalette.ceramic,
+    Mara_Ceramic: graphicsRoom.authoredPalette.wayfarerCeramic,
     Mara_Resonance: graphicsRoom.authoredPalette.resonance,
     Mara_Dark: graphicsRoom.authoredPalette.dark,
     Mara_Fabric: graphicsRoom.authoredPalette.dark,
@@ -515,7 +515,7 @@ if (!visualLandmarkAudit.ready) {
 }
 document.body.dataset.resonanceTraversalCourse = "v2";
 document.body.dataset.resonanceCameraStaging = "follow-focus-v1";
-document.body.dataset.resonanceDepthComposition = "essential-v1";
+document.body.dataset.resonanceDepthComposition = "essential-v2";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
