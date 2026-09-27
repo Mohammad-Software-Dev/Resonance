@@ -73,7 +73,7 @@ Required conditions are defined in `127_M0_BROWSER_PERFORMANCE_PASS.md`.
 For each WebGPU and WebGL2 capture:
 
 1. use the explicit backend URL above and confirm diagnostics show the same active/requested backend;
-2. use 1920x1080 and Medium preset for Tier M approval;
+2. for the WebGPU Tier M approval run, use 1920x1080 and Medium preset; WebGL2 may use its documented fallback preset policy;
 3. close unrelated GPU-heavy applications where practical;
 4. allow startup and shader warmup to complete;
 5. press X to reset the capture window;
@@ -82,6 +82,8 @@ For each WebGPU and WebGL2 capture:
 8. press P;
 9. verify the JSON `backend` and `backendPreference` match the requested route;
 10. move the unchanged JSON into the matching private evidence folder.
+
+The capture ring is sized so 120 seconds remains available on high-refresh displays instead of being truncated to a 60 Hz sample budget.
 
 The current capture artifact records full-window:
 
