@@ -23,20 +23,12 @@ window.__RESONANCE_VERIFY_REPLAY__ = async (
   artifact: ReplayArtifact,
   options?: BrowserReplayOptions,
 ) => {
-  console.info("[replay-harness] physics:init:start");
   await initializePhysics();
-  console.info("[replay-harness] physics:init:done");
-
-  console.info("[replay-harness] direct:start");
   const direct = await verifyM0Replay(artifact);
-  console.info("[replay-harness] direct:done");
-
-  console.info("[replay-harness] matrix:start");
   const matrix = options?.renderCadenceMatrix
     ? await verifyM0ReplayRenderMatrix(artifact)
     : [];
-  console.info("[replay-harness] matrix:done");
-  const result = JSON.stringify({
+  return JSON.stringify({
     direct: {
       ok: direct.ok,
       finalHash: direct.finalHash,
@@ -44,7 +36,5 @@ window.__RESONANCE_VERIFY_REPLAY__ = async (
     },
     matrix,
   });
-  console.info("[replay-harness] serialize:done");
-  return result;
 };
 if (status) status.textContent = "replay harness ready";
