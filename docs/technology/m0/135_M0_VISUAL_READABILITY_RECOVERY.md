@@ -58,3 +58,21 @@ Follow the canonical art direction:
 ## Human acceptance
 
 Deferred until the project reaches a materially more game-like presentation. When resumed, physical/human evidence must be collected against the then-current deployed build. Previous missing evidence is not retroactively waived.
+
+
+## Pass 2 — recognizable world composition
+
+The second M0.12 pass moves beyond semantic contrast and adds recognizable world cues:
+
+- in-world Meridian Transit / Wreck 07 signage;
+- in-world Relay 07 destination signage;
+- a visible transit bulkhead and maintenance/cargo props;
+- a persistent Relay beacon column/halo;
+- explicit moving-platform and hazard identity panels;
+- non-overlapping cardinal anchor fins;
+- a more human Wayfarer silhouette with collar, pelvis, boots and shoulder volumes;
+- an automated visual-landmark boot contract so required scene landmarks cannot silently disappear.
+
+This remains a presentation-only pass. Collision, fixed-step simulation, target IDs, Attract/Repel behavior and deterministic replay semantics are unchanged.
+
+The deployed smoke must report `data-resonance-visual-landmarks="ready"` before a visual recovery build is considered automation-green.
