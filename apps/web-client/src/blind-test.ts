@@ -113,6 +113,10 @@ export class BlindMovementTestSession {
     this.recordEvent(0, "session-start");
   }
 
+  public get inputBlocked(): boolean {
+    return this.enabled && this.form !== null;
+  }
+
   public recordTick(sample: BlindTestTickSample): void {
     if (!this.enabled) return;
     this.lastTick = sample.tick;
