@@ -26,13 +26,18 @@ export interface PerformanceSnapshot {
 }
 
 export function supportsGpuFrameCapture(engine: AbstractEngine): boolean {
-  return typeof (engine as AbstractEngine & { captureGPUFrameTime?: unknown }).captureGPUFrameTime
-    === "function";
+  const gpuEngine = engine as AbstractEngine & {
+    captureGPUFrameTime?: unknown;
+    getGPUFrameTimeCounter?: unknown;
+  };
+  return typeof gpuEngine.captureGPUFrameTime === "function"
+    && typeof gpuEngine.getGPUFrameTimeCounter === "function";
 }
 
 export class BrowserPerformanceMonitor {
   private readonly sceneInstrumentation: SceneInstrumentation;
   private readonly engineInstrumentation: EngineInstrumentation;
+  private readonly gpuFrameCaptureSupported: boolean;
 
   public constructor(
     scene: Scene,
@@ -45,7 +50,8 @@ export class BrowserPerformanceMonitor {
     this.sceneInstrumentation.captureParticlesRenderTime = true;
 
     this.engineInstrumentation = new EngineInstrumentation(engine);
-    if (supportsGpuFrameCapture(engine)) {
+    this.gpuFrameCaptureSupported = supportsGpuFrameCapture(engine);
+    if (this.gpuFrameCaptureSupported) {
       this.engineInstrumentation.captureGPUFrameTime = true;
     }
     this.engineInstrumentation.captureShaderCompilationTime = true;
@@ -54,8 +60,10 @@ export class BrowserPerformanceMonitor {
   public snapshot(): PerformanceSnapshot {
     const performanceWithMemory = performance as PerformanceWithMemory;
     const memory = performanceWithMemory.memory;
-    const gpuNs = this.engineInstrumentation.gpuFrameTimeCounter.current;
-    const gpuFrameMs = Number.isFinite(gpuNs) && gpuNs > 0
+    const gpuNs = this.gpuFrameCaptureSupported
+      ? this.engineInstrumentation.gpuFrameTimeCounter.current
+      : null;
+    const gpuFrameMs = gpuNs !== null && Number.isFinite(gpuNs) && gpuNs > 0
       ? gpuNs / 1_000_000
       : null;
 
