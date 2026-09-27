@@ -112,7 +112,6 @@ function createSignMaterial(
   context.fillRect(0, 0, 12, 160);
   context.fillRect(28, 118, 456, 3);
   context.font = "700 28px sans-serif";
-  context.textAlign = "left";
   context.fillText(kicker, 34, 48);
   context.fillStyle = "#e7f4f2";
   context.font = "800 52px sans-serif";
