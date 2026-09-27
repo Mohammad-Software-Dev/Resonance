@@ -185,9 +185,17 @@ const RIGHT_WALL_ID = asEntityId(102);
 const SLOPE_ID = asEntityId(103);
 const PLATFORM_ID = asEntityId(104);
 const ATTRACT_PILLAR_ID = asEntityId(105);
+const MID_FLOOR_ID = asEntityId(106);
+const RIGHT_FLOOR_ID = asEntityId(107);
 
-const ground = CreateBox("ground", { width: 16, height: 0.5, depth: 2 }, scene);
-ground.position.set(0, -0.25, 0);
+const groundLeft = CreateBox("ground-left", { width: 4.7, height: 0.5, depth: 2 }, scene);
+groundLeft.position.set(-5.65, -0.25, 0);
+
+const groundCenter = CreateBox("ground-center", { width: 2.7, height: 0.5, depth: 2 }, scene);
+groundCenter.position.set(-0.25, -0.25, 0);
+
+const groundRight = CreateBox("ground-right", { width: 5.8, height: 0.5, depth: 2 }, scene);
+groundRight.position.set(5.1, -0.25, 0);
 
 const leftWall = CreateBox("left-wall", { width: 0.3, height: 4, depth: 2 }, scene);
 leftWall.position.set(-8, 2, 0);
@@ -222,7 +230,9 @@ const wallRepelAnchor = CreateSphere("anchor-wall-repel", { diameter: 0.62 }, sc
 wallRepelAnchor.position.set(7.25, 2.1, 0);
 
 const physics = await RapierCharacterWorld.create();
-physics.addStaticBox(FLOOR_ID, { x: 0, y: -0.25, z: 0 }, { x: 8, y: 0.25, z: 1 });
+physics.addStaticBox(FLOOR_ID, { x: -5.65, y: -0.25, z: 0 }, { x: 2.35, y: 0.25, z: 1 });
+physics.addStaticBox(MID_FLOOR_ID, { x: -0.25, y: -0.25, z: 0 }, { x: 1.35, y: 0.25, z: 1 });
+physics.addStaticBox(RIGHT_FLOOR_ID, { x: 5.1, y: -0.25, z: 0 }, { x: 2.9, y: 0.25, z: 1 });
 physics.addStaticBox(LEFT_WALL_ID, { x: -8, y: 2, z: 0 }, { x: 0.15, y: 2, z: 1 });
 physics.addStaticBox(RIGHT_WALL_ID, { x: 8, y: 2, z: 0 }, { x: 0.15, y: 2, z: 1 });
 physics.addStaticBox(SLOPE_ID, { x: 4.9, y: 0.45, z: 0 }, { x: 1.8, y: 0.15, z: 1 }, Math.PI / 12);
@@ -329,7 +339,7 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
   scene,
   engine,
   {
-    ground,
+    grounds: [groundLeft, groundCenter, groundRight],
     leftWall,
     rightWall,
     slope,
@@ -740,7 +750,7 @@ function startReplayCapture(): void {
 
   replayRecorder = new ReplayRecorder({
     buildId: import.meta.env.VITE_BUILD_ID ?? "dev",
-    fixture: { id: "m0-representative-course", version: 1 },
+    fixture: { id: "m0-representative-course", version: 2 },
     initialSeed: 0,
     settings: { attractArrivalMode: arrivalMode },
     checkpointIntervalTicks: 30,
