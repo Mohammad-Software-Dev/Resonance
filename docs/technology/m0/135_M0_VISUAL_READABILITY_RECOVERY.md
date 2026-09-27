@@ -147,3 +147,19 @@ WS01 canon already calls for one damaged **Scrapper** blocking the door. This pa
 This is deliberately presentation-only. The Scrapper has no hitbox, damage, health, attack resolution or AI authority yet. It does not alter Rapier collision, target selection, movement, Resonance forces, progression thresholds or deterministic replay.
 
 The purpose is to make Wayfarer Scar read as an inhabited game space while preserving M0's deterministic foundation. Full combat belongs to the combat milestone rather than being smuggled into a visual-recovery pass.
+
+
+## Pass 7 — animated wreck-state atmosphere
+
+The seventh M0.12 pass makes Wayfarer Scar feel like an actively failing transit wreck rather than a static arrangement of geometry.
+
+Presentation additions:
+
+- broken conduit with intermittent electrical sparks;
+- hanging cable / fault light with subtle motion and flicker;
+- visible atmosphere leak / vapor plume;
+- drifting lightweight wreck debris in the deeper presentation plane;
+- graphics-preset-aware particle rates;
+- visual-landmark enforcement for the major wreck-state cues.
+
+All effects are presentation-only. They do not create colliders, forces, damage, navigation state, AI state or deterministic simulation input. The damage layer exists to communicate place, danger and motion while keeping the gameplay plane readable.
