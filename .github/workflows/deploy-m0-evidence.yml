@@ -18,7 +18,7 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Validate Cloudflare deployment credentials
@@ -52,18 +52,20 @@ jobs:
           if [ "$status" = "200" ] && printf '%s' "$body" | grep -q '"success":true'; then
             subdomain="$(printf '%s' "$body" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>process.stdout.write(JSON.parse(s).result.subdomain))")"
             echo "Using existing workers.dev account subdomain: $subdomain"
-            exit 0
+          else
+            echo "No workers.dev account subdomain is configured; creating resonance-mohammad-dev."
+            create_response="$(curl --silent --show-error --fail-with-body \
+              -X PUT \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              -H "Content-Type: application/json" \
+              --data '{"subdomain":"resonance-mohammad-dev"}' \
+              "$endpoint")"
+            subdomain="$(printf '%s' "$create_response" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);if(!j.success)process.exit(1);process.stdout.write(j.result.subdomain)})")"
+            echo "Created workers.dev account subdomain: $subdomain"
           fi
 
-          echo "No workers.dev account subdomain is configured; creating resonance-mohammad-dev."
-          create_response="$(curl --silent --show-error --fail-with-body \
-            -X PUT \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H "Content-Type: application/json" \
-            --data '{"subdomain":"resonance-mohammad-dev"}' \
-            "$endpoint")"
-          subdomain="$(printf '%s' "$create_response" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);if(!j.success)process.exit(1);process.stdout.write(j.result.subdomain)})")"
-          echo "Created workers.dev account subdomain: $subdomain"
+          echo "CLOUDFLARE_WORKERS_SUBDOMAIN=$subdomain" >> "$GITHUB_ENV"
+          echo "M0_EVIDENCE_URL=https://resonance-m0-evidence.$subdomain.workers.dev" >> "$GITHUB_ENV"
       - uses: pnpm/action-setup@v4
         with:
           version: 12.6.0
@@ -93,3 +95,15 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Install deployed-smoke browser runtime
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Smoke-test deployed evidence build
+        run: pnpm smoke:m0:evidence
+      - name: Retain deployed smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m0-deployed-smoke-${{ github.sha }}
+          path: artifacts/m0-evidence-smoke
+          if-no-files-found: warn
+          retention-days: 30
