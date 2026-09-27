@@ -182,3 +182,33 @@ Infrastructure added:
 Current slot URLs intentionally remain unassigned until actual reviewed art exists. This pass does **not** relabel the procedural M0 geometry as production art. It creates the replacement seam so real Blender/Babylon-authored assets can be introduced without changing collision, movement or deterministic gameplay code.
 
 The next visual milestone should replace at least one major procedural subject through this path rather than adding more permanent code-generated geometry.
+
+
+## Pass 9 — first authored character replacement
+
+The ninth M0.12 pass uses the Pass 8 asset boundary for a real replacement rather than adding more permanent procedural character geometry.
+
+Runtime asset:
+
+- `/assets/visual/characters/wayfarer-mara-m0.glb`;
+- slot: `wayfarer-player`;
+- character identity: Mara Venn;
+- binary glTF 2.0;
+- explicit asset metadata: `wayfarer-mara-m0.asset.json`;
+- status: authored M0 placeholder, **not shipping art**.
+
+Presentation intent:
+
+- readable adult human silhouette;
+- ceramic field-rig plates;
+- dark flexible suit;
+- asymmetric shoulder treatment;
+- visible Resonance gauntlet/emitter;
+- backpack/resonance spine;
+- non-gothic orbital-industrial language.
+
+The deterministic simulation still moves the original invisible player presentation root. The authored GLB mirrors that state visually; collision, movement, target selection, Attract/Repel and replay hashes remain untouched.
+
+Fail-safe behavior remains available in code, but this Pass 9 deployment is automation-green only when the authored Mara GLB actually loads. Deployed smoke requires both `data-resonance-authored-wayfarer="authored"` and authored mesh landmarks such as `Mara_Helmet` and `Mara_GauntletEmitter`.
+
+This asset is deliberately a pipeline/recognizability step, not a claim of final character quality, rigging, skinning or animation.
