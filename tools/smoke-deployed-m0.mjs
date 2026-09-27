@@ -1,5 +1,5 @@
 import { chromium } from "@playwright/test";
-import { mkdir, readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const baseUrl = process.env.M0_EVIDENCE_URL;
@@ -60,7 +60,7 @@ try {
   await root.screenshot({ path: path.join(artifactDir, "root.png") });
 
   const performanceDownload = root.waitForEvent("download");
-  await root.keyboard.press("KeyP");
+  await root.keyboard.press("p");
   const performance = await readDownloadJson(await performanceDownload);
   if (performance.schema !== "resonance.m0.performance-capture.v1") {
     throw new Error(`Unexpected performance schema: ${performance.schema}`);
@@ -126,7 +126,7 @@ try {
     throw new Error(`Deployed page errors observed: ${JSON.stringify({ rootErrors, blindErrors })}`);
   }
 
-  await Bun.write(path.join(artifactDir, "smoke.json"), JSON.stringify(report, null, 2));
+  await writeFile(path.join(artifactDir, "smoke.json"), JSON.stringify(report, null, 2));
 } finally {
   await context.close();
   await browser.close();
