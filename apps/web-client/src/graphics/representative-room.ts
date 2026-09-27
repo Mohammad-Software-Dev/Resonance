@@ -26,7 +26,7 @@ const M0_ENVIRONMENT_URL =
   "/assets/environment/resonance-m0-orbital.env";
 
 export interface RepresentativeRoomMeshes {
-  readonly ground: Mesh;
+  readonly grounds: readonly Mesh[];
   readonly leftWall: Mesh;
   readonly rightWall: Mesh;
   readonly slope: Mesh;
@@ -662,14 +662,27 @@ export function createRepresentativeGraphicsRoom(
     new Color3(0.06, 0.75, 0.92),
   );
 
-  meshes.ground.material = floorMaterial;
+  for (const ground of meshes.grounds) ground.material = floorMaterial;
   meshes.leftWall.material = darkMetal;
   meshes.rightWall.material = darkMetal;
   meshes.slope.material = hazardMaterial;
   meshes.attractPillar.material = paintedMetal;
   meshes.platform.material = paintedMetal;
 
-  meshes.ground.receiveShadows = true;
+  for (const gap of [
+    { name: "scar-gap-field-left", x: -2.45, width: 1.7 },
+    { name: "scar-gap-field-right", x: 1.65, width: 1.1 },
+  ]) {
+    const field = CreateBox(
+      gap.name,
+      { width: gap.width, height: 0.08, depth: 1.85 },
+      scene,
+    );
+    field.position.set(gap.x, -0.72, 0.08);
+    field.material = emergency;
+  }
+
+  for (const ground of meshes.grounds) ground.receiveShadows = true;
   meshes.leftWall.receiveShadows = true;
   meshes.rightWall.receiveShadows = true;
   meshes.slope.receiveShadows = true;
