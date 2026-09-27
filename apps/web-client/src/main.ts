@@ -310,7 +310,13 @@ window.addEventListener("keydown", (event) => {
   if (event.code === "KeyX" && !event.repeat) frameCapture.reset();
   if (event.code === "F9" && !event.repeat) startReplayCapture();
   if (event.code === "F10" && !event.repeat) exportReplayCapture();
-  if (event.code === "F7" && !event.repeat) blindTest.showQuestionnaire();
+  if (event.code === "F7" && !event.repeat) {
+    keys.clear();
+    syncAxes();
+    input.clear();
+    repelRequested = false;
+    blindTest.showQuestionnaire();
+  }
   if (event.code === "F8" && !event.repeat) blindTest.export();
   if (event.code === "KeyC" && !event.repeat) {
     cameraMode = cameraMode === "perspective" ? "orthographic" : "perspective";
@@ -544,7 +550,8 @@ engine.runRenderLoop(() => {
   previousMs = now;
   frameCapture.push(frameSeconds * 1000, graphicsRoom.getRenderScale());
 
-  const steps = clock.advance(frameSeconds);
+  if (blindTest.inputBlocked) clock.clearAccumulator();
+  const steps = blindTest.inputBlocked ? [] : clock.advance(frameSeconds);
   stepsThisFrame = steps.length;
 
   for (const step of steps) {
