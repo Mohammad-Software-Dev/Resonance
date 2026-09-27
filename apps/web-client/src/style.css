@@ -72,6 +72,64 @@ body {
   letter-spacing: 0.22em;
 }
 
+.hud-progress {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.hud-progress i {
+  width: 30px;
+  height: 2px;
+  background: #87a6a32e;
+  box-shadow: 0 0 0 transparent;
+  transition: background 180ms ease, box-shadow 180ms ease;
+}
+
+.hud-progress i.active {
+  background: #62e7d8;
+  box-shadow: 0 0 12px #43e5d288;
+}
+
+.slice-complete {
+  position: fixed;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%) scale(0.96);
+  display: grid;
+  gap: 5px;
+  min-width: 310px;
+  padding: 20px 28px;
+  border-top: 1px solid #72f7e477;
+  border-bottom: 1px solid #72f7e477;
+  background: linear-gradient(90deg, transparent, #03151bd9 18%, #03151be8 82%, transparent);
+  color: #e8fffb;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  text-align: center;
+  text-shadow: 0 2px 12px #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms ease, transform 320ms ease;
+  z-index: 4;
+}
+
+.slice-complete strong {
+  font-size: 24px;
+  letter-spacing: 0.16em;
+}
+
+.slice-complete > span:last-child {
+  color: #9fc3be;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.slice-complete.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
 .hud-controls {
   position: absolute;
   left: 50%;
@@ -219,6 +277,7 @@ body.debug #diagnostics {
 }
 
 body.blind-test #diagnostics,
-body.blind-test #game-hud {
+body.blind-test #game-hud,
+body.blind-test #slice-complete {
   display: none;
 }

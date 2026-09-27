@@ -62,6 +62,10 @@ import {
 import { DynamicResolutionGovernor } from "./performance/dynamic-resolution";
 import { FrameCaptureBuffer } from "./performance/frame-capture";
 import { BlindMovementTestSession } from "./blind-test";
+import {
+  WayfarerScarProgress,
+  type WayfarerScarProgressSnapshot,
+} from "./slice-progression";
 import "./style.css";
 
 type Backend = "webgpu" | "webgl2";
@@ -74,6 +78,10 @@ function requireElement<T extends Element>(selector: string): T {
 
 const canvas = requireElement<HTMLCanvasElement>("#game");
 const diagnostics = requireElement<HTMLDivElement>("#diagnostics");
+const objectiveTitle = requireElement<HTMLElement>("#hud-objective-title");
+const objectiveDetail = requireElement<HTMLElement>("#hud-objective-detail");
+const objectiveProgress = requireElement<HTMLElement>("#hud-progress");
+const sliceComplete = requireElement<HTMLElement>("#slice-complete");
 const backendPreference = parseBackendPreference(location.search);
 const query = new URLSearchParams(location.search);
 document.body.classList.toggle("debug", query.get("debug") === "1");
@@ -259,6 +267,25 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
   initialGraphicsPreset(backend),
 );
 applyCameraMode();
+
+const scarProgress = new WayfarerScarProgress();
+let lastScarStage = "";
+const scarProgressBars = [...objectiveProgress.querySelectorAll("i")];
+
+function renderScarProgress(snapshot: WayfarerScarProgressSnapshot): void {
+  if (snapshot.stage === lastScarStage) return;
+  lastScarStage = snapshot.stage;
+  objectiveTitle.textContent = snapshot.title;
+  objectiveDetail.textContent = snapshot.detail;
+  for (let index = 0; index < scarProgressBars.length; index += 1) {
+    scarProgressBars[index]?.classList.toggle("active", index < snapshot.step);
+  }
+  sliceComplete.classList.toggle("visible", snapshot.complete);
+  document.body.dataset.resonanceSliceStage = snapshot.stage;
+  graphicsRoom.setRelayActivated(snapshot.complete);
+}
+
+renderScarProgress(scarProgress.snapshot());
 document.body.dataset.resonanceBoot = "graphics-room-ready";
 
 const shaderWarmupStartMs = performance.now();
@@ -813,7 +840,14 @@ engine.runRenderLoop(() => {
   }
 
   const state = simulation.getWayfarer(PLAYER_ID);
-  if (state) playerMesh.position.set(state.position.x, state.position.y, state.position.z);
+  if (state) {
+    playerMesh.position.set(state.position.x, state.position.y, state.position.z);
+    renderScarProgress(scarProgress.update({
+      positionX: state.position.x,
+      attractActive: attractRuntime.ticksActive > 0 || lastAttractEvent !== null,
+      repelUses: repelRuntime.uses,
+    }));
+  }
 
   for (const [id, mesh] of targetMeshes) {
     const selected = id === Number(selectedTargetId);

@@ -55,6 +55,7 @@ export interface RepresentativeGraphicsRoom {
   getRenderScale(): number;
   applyPreset(name: GraphicsPresetName): void;
   applyRenderScale(scale: number): void;
+  setRelayActivated(active: boolean): void;
   update(elapsedSeconds: number): void;
   stats(): GraphicsRoomStats;
 }
@@ -772,6 +773,7 @@ export function createRepresentativeGraphicsRoom(
 
   let presetName = initialPreset;
   let currentRenderScale = GRAPHICS_PRESETS[initialPreset].renderScale;
+  let relayActivated = false;
   const colorInput = resonanceMaterial.getInputBlockByPredicate(
     (block) => block.name.toLowerCase().includes("color"),
   );
@@ -808,6 +810,9 @@ export function createRepresentativeGraphicsRoom(
     getRenderScale: () => currentRenderScale,
     applyPreset,
     applyRenderScale,
+    setRelayActivated(active: boolean): void {
+      relayActivated = active;
+    },
     update(elapsedSeconds: number): void {
       const pulse = 0.5 + 0.5 * Math.sin(elapsedSeconds * 3.1);
       if (colorInput) {
@@ -834,7 +839,13 @@ export function createRepresentativeGraphicsRoom(
       for (let i = 0; i < scar.relayRings.length; i += 1) {
         const ring = scar.relayRings[i];
         if (!ring) continue;
-        ring.rotation.z = elapsedSeconds * (i % 2 === 0 ? 0.18 : -0.13);
+        const direction = i % 2 === 0 ? 1 : -1;
+        const speed = relayActivated ? 1.55 : 0.18;
+        ring.rotation.z = elapsedSeconds * speed * direction;
+        const pulse = relayActivated
+          ? 1 + Math.sin(elapsedSeconds * 5.5 + i) * 0.07
+          : 1;
+        ring.scaling.setAll(pulse);
       }
 
       for (let i = 0; i < anchorRings.length; i += 1) {
