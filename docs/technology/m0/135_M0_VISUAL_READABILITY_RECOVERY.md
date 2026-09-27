@@ -282,3 +282,41 @@ Deterministic proof:
 - deployed smoke requires `data-resonance-traversal-course="v2"` in addition to the visual-landmark audit.
 
 This is the first M0.12 pass that changes the representative course's collision topology. It is intentional and fully mirrored between browser physics and the engine-independent replay fixture. Physical/human acceptance remains deferred; no owner-run testing is requested.
+
+
+## Pass 13 — authored Wayfarer Scar set dressing
+
+The thirteenth M0.12 pass assigns the third typed authored slot after Pass 12 confirmed the scene remained below the 24-material target.
+
+Runtime asset:
+
+- `/assets/visual/environment/wayfarer-scar-setdress-m0.glb`;
+- slot: `wayfarer-scar-setdress`;
+- status: authored M0 placeholder, **not shipping art**;
+- provenance: `wayfarer-scar-setdress-m0.asset.json`.
+
+The GLB replaces the procedural presentation for:
+
+- the left-side Meridian transit bulkhead;
+- the cargo cluster and maintenance cases;
+- the overhead service-spine/conduit cluster;
+- small resonance/damage accents embedded in those assemblies.
+
+The world-space signs, Relay beacon, gameplay collision, broken-deck topology and objective VFX remain separate so semantic gameplay readability is not baked into decorative art.
+
+Resource discipline:
+
+- imported `Scar_Shell`, `Scar_Ceramic`, `Scar_Resonance` and `Scar_Damage` materials are remapped to the existing room palette;
+- imported materials are disposed after remapping;
+- replaced procedural set-dress meshes are disposed after successful authored load;
+- the deployed smoke still fails above 24 loaded materials.
+
+Automation now requires:
+
+- `data-resonance-authored-setdress="authored"`;
+- authored landmarks `Scar_TransitBulkhead`, `Scar_CargoCluster` and `Scar_ServiceSpine`;
+- existing Mara/Scrapper authored checks;
+- traversal course v2;
+- the <=24 material gate.
+
+No gameplay semantics are changed. Physical/human acceptance remains deferred and no owner-run testing is requested.
