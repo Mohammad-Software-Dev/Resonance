@@ -4,6 +4,7 @@ import type { ReplayArtifact } from "@resonance/simulation";
 
 test("canonical M0 replay matches Node in the browser runtime", async ({
   page,
+  browser,
   browserName,
 }) => {
   const artifact = JSON.parse(
@@ -67,4 +68,6 @@ test("canonical M0 replay matches Node in the browser runtime", async ({
   console.log(`[${browserName}] node:assertions-done`);
   await page.context().close();
   console.log(`[${browserName}] node:context-closed`);
+  await browser.close();
+  console.log(`[${browserName}] node:browser-closed`);
 });
