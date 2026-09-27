@@ -130,6 +130,21 @@ export function parseBlindTestReport(value: unknown): BlindTestReport {
   });
   if (!Array.isArray(value.samples)) throw new Error("samples must be an array");
 
+  const questionnaireComplete = events.some(
+    (event) => event.type === "questionnaire-complete",
+  );
+  const voluntaryReplayComplete = events.some(
+    (event) => event.type === "voluntary-replay-complete",
+  );
+  if (questionnaireComplete && questionnaire.voluntaryReplay === null) {
+    throw new Error("completed questionnaire must resolve voluntaryReplay");
+  }
+  if (questionnaire.voluntaryReplay === true && !voluntaryReplayComplete) {
+    throw new Error(
+      "voluntaryReplay=true requires a voluntary-replay-complete event",
+    );
+  }
+
   return {
     schema: BLIND_TEST_SCHEMA,
     buildId: value.buildId,
