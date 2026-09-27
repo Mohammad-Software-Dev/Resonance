@@ -13,6 +13,7 @@ function performance(overrides: Record<string, unknown> = {}) {
     buildId: BUILD,
     userAgent: "Mozilla/5.0 Chrome/153",
     backend: "webgpu",
+    backendPreference: "webgpu",
     graphics: {
       preset: "medium",
       activeMeshes: 80,
@@ -77,11 +78,22 @@ describe("M0 evidence preflight", () => {
   it("passes objective Tier M gates for a healthy capture", () => {
     const parsed = parsePerformanceCapture(performance());
     const evaluation = evaluatePerformanceCapture("webgpu.json", parsed, BUILD);
+    expect(evaluation.gates.backendSelection).toBe("pass");
     expect(evaluation.gates.duration120s).toBe("pass");
     expect(evaluation.gates.frameP95).toBe("pass");
     expect(evaluation.gates.cpuFrameP95).toBe("pass");
     expect(evaluation.gates.gpuFrameP95).toBe("pass");
     expect(evaluation.gates.mediumRenderScale).toBe("pass");
+  });
+
+  it("fails captures that relied on auto backend selection", () => {
+    const value = performance({ backendPreference: "auto" });
+    const evaluation = evaluatePerformanceCapture(
+      "auto.json",
+      parsePerformanceCapture(value),
+      BUILD,
+    );
+    expect(evaluation.gates.backendSelection).toBe("fail");
   });
 
   it("requires review rather than fabricating a hitch or unavailable-GPU verdict", () => {
