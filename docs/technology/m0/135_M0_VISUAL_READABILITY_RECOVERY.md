@@ -76,3 +76,19 @@ The second M0.12 pass moves beyond semantic contrast and adds recognizable world
 This remains a presentation-only pass. Collision, fixed-step simulation, target IDs, Attract/Repel behavior and deterministic replay semantics are unchanged.
 
 The deployed smoke must report `data-resonance-visual-landmarks="ready"` before a visual recovery build is considered automation-green.
+
+
+## Pass 3 — material language
+
+The third M0.12 pass reduces the remaining debug-primitive look without adding external art dependencies.
+
+Presentation changes:
+
+- procedural panel seams/rivets on walkable deck surfaces;
+- distinct wall panel patterning;
+- high-contrast hazard striping on dangerous traversal geometry;
+- machinery/moving-platform surface markings;
+- a banded gas-giant texture with a simple storm feature;
+- no changes to gameplay collision or deterministic simulation.
+
+The purpose is to make existing geometry read as authored orbital infrastructure rather than flat-color test primitives while keeping the browser bundle self-contained and reproducible.

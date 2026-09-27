@@ -1,21 +1,19 @@
 # M0 Evidence Deployment Request
 
-**Request:** 15  
-**Requested from baseline:** `18ab786551615b2de9a653b40aec640a7df7397c`  
-**Purpose:** Publish the second M0.12 recognizable-world composition candidate.
+**Request:** 16  
+**Requested from baseline:** `ed88aa65bc79c3a372becb6d8e59f480e6a7824c`  
+**Purpose:** Publish M0.12 Pass 3 procedural material language.
 
-This presentation-only deployment adds:
+This presentation-only candidate adds self-contained generated textures for:
 
-- in-world transit and Relay signage;
-- recognizable bulkhead, cargo and maintenance props;
-- a Relay beacon/halo destination landmark;
-- moving-platform and hazard identity panels;
-- corrected cardinal Resonance-anchor fins;
-- a more human Wayfarer silhouette;
-- a boot-time visual landmark contract, enforced again by deployed smoke.
+- walkable deck panels and rivets;
+- wall panel seams;
+- hazard striping;
+- moving machinery markings;
+- a banded gas-giant backdrop.
 
-No deterministic gameplay semantics, collision, target IDs, movement rules, Attract/Repel behavior or replay fingerprints are intentionally changed.
+No external art dependency is introduced. Collision, fixed-step simulation, target IDs, movement rules, Attract/Repel behavior and deterministic replay semantics remain unchanged.
 
-Physical and blind-human acceptance remain deferred. This deployment is for automated runtime verification and continued presentation development; it does not request owner testing.
+Physical and blind-human acceptance remain deferred. No owner-run testing is requested.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
