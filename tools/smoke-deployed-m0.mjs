@@ -109,6 +109,12 @@ try {
   if (rootBackendPreference !== "webgl2") {
     throw new Error(`Forced WebGL2 preference was not retained: ${rootBackendPreference}`);
   }
+  const authoredVisualAssets = await root.locator("body").getAttribute(
+    "data-resonance-authored-visual-assets",
+  );
+  if (!["fallback", "authored"].includes(authoredVisualAssets ?? "")) {
+    throw new Error(`Authored visual asset mode is missing: ${authoredVisualAssets}`);
+  }
   const visualLandmarks = await root.locator("body").getAttribute(
     "data-resonance-visual-landmarks",
   );
@@ -193,6 +199,7 @@ try {
     backendPreference: rootBackendPreference,
     activeBackend: performance.backend,
     visualLandmarks,
+    authoredVisualAssets,
     interactionState,
     interactionHudVisible: true,
     objectiveStage,
