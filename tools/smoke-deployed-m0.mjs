@@ -112,8 +112,14 @@ try {
   const authoredVisualAssets = await root.locator("body").getAttribute(
     "data-resonance-authored-visual-assets",
   );
-  if (!["fallback", "authored"].includes(authoredVisualAssets ?? "")) {
-    throw new Error(`Authored visual asset mode is missing: ${authoredVisualAssets}`);
+  if (authoredVisualAssets !== "authored") {
+    throw new Error(`Authored visual asset mode is not active: ${authoredVisualAssets}`);
+  }
+  const authoredWayfarer = await root.locator("body").getAttribute(
+    "data-resonance-authored-wayfarer",
+  );
+  if (authoredWayfarer !== "authored") {
+    throw new Error(`Authored Wayfarer GLB did not load: ${authoredWayfarer}`);
   }
   const visualLandmarks = await root.locator("body").getAttribute(
     "data-resonance-visual-landmarks",
@@ -200,6 +206,7 @@ try {
     activeBackend: performance.backend,
     visualLandmarks,
     authoredVisualAssets,
+    authoredWayfarer,
     interactionState,
     interactionHudVisible: true,
     objectiveStage,
