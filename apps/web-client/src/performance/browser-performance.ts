@@ -25,6 +25,11 @@ export interface PerformanceSnapshot {
   readonly totalHeapMb: number | null;
 }
 
+export function supportsGpuFrameCapture(engine: AbstractEngine): boolean {
+  return typeof (engine as AbstractEngine & { captureGPUFrameTime?: unknown }).captureGPUFrameTime
+    === "function";
+}
+
 export class BrowserPerformanceMonitor {
   private readonly sceneInstrumentation: SceneInstrumentation;
   private readonly engineInstrumentation: EngineInstrumentation;
@@ -40,7 +45,9 @@ export class BrowserPerformanceMonitor {
     this.sceneInstrumentation.captureParticlesRenderTime = true;
 
     this.engineInstrumentation = new EngineInstrumentation(engine);
-    this.engineInstrumentation.captureGPUFrameTime = true;
+    if (supportsGpuFrameCapture(engine)) {
+      this.engineInstrumentation.captureGPUFrameTime = true;
+    }
     this.engineInstrumentation.captureShaderCompilationTime = true;
   }
 
