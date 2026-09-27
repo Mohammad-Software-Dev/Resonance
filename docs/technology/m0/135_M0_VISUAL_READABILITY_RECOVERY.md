@@ -235,3 +235,24 @@ Deployment is considered automation-green only when both authored subjects load:
 - `data-resonance-authored-scrapper="authored"`.
 
 The landmark audit additionally requires `Scrapper_Torso`, `Scrapper_HostileEye` and `Scrapper_LooseForearmPlate`.
+
+
+## Pass 11 — presentation material-budget consolidation
+
+The eleventh M0.12 pass responds to a concrete regression signal from the Pass 10 deployed smoke: the scene had grown to **40 materials**, exceeding the earlier M0 target of 24.
+
+The pass preserves the authored Wayfarer and Scrapper while reducing material residency:
+
+- imported Mara and Scrapper material slots are remapped onto the room's existing authored presentation palette;
+- replaced GLB materials are disposed after remapping;
+- successfully replaced procedural Wayfarer fallback meshes/materials are released;
+- successfully replaced procedural Scrapper body meshes/materials are released while its gameplay-readable threat ring remains;
+- the retained threat ring moves onto the shared hostile/emergency material;
+- wreck sparks, fault infrastructure and air-leak presentation reuse existing dark/emergency/route materials instead of owning three additional materials;
+- released fallback meshes are no longer animated.
+
+This is a resource consolidation pass, not a visual rollback. The authored binary meshes remain active and the deterministic simulation is untouched.
+
+The deployed smoke now makes the material target executable: a visual-recovery build fails deployment smoke when `performance.graphics.materials > 24`.
+
+The third authored set-dress slot should not be assigned until this budget gate is green.
