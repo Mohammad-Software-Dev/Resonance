@@ -1732,16 +1732,18 @@ export function createRepresentativeGraphicsRoom(
     releaseProceduralScrapperFallback(): void {
       if (proceduralScrapperReleased) return;
       proceduralScrapperReleased = true;
-      const warningMaterial = encounter.warningRing.material;
       const fallbackMaterials = new Set<Material>();
+      const previousWarningMaterial = encounter.warningRing.material;
+      encounter.warningRing.material = emergency;
+      if (previousWarningMaterial) fallbackMaterials.add(previousWarningMaterial);
       for (const mesh of encounter.meshes) {
         if (mesh === encounter.warningRing) continue;
-        if (mesh.material && mesh.material !== warningMaterial) {
-          fallbackMaterials.add(mesh.material);
-        }
+        if (mesh.material) fallbackMaterials.add(mesh.material);
         mesh.dispose(false, false);
       }
-      for (const material of fallbackMaterials) material.dispose();
+      for (const material of fallbackMaterials) {
+        if (material !== emergency) material.dispose();
+      }
     },
     update(elapsedSeconds: number): void {
       const pulse = 0.5 + 0.5 * Math.sin(elapsedSeconds * 3.1);
