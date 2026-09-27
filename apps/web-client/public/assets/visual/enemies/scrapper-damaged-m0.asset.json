@@ -1,0 +1,18 @@
+{
+  "schema": "resonance.visual-asset.v1",
+  "slot": "scrapper-damaged",
+  "runtime": "/assets/visual/enemies/scrapper-damaged-m0.glb",
+  "milestone": "M0.12 Pass 10",
+  "status": "authored-placeholder",
+  "shippingArt": false,
+  "purpose": "Replace the procedural WS01 damaged Scrapper body with a binary runtime asset while retaining the existing threat-ring presentation.",
+  "artDirection": [
+    "maintenance construct silhouette",
+    "industrial shell and dark joints",
+    "single hostile sensor",
+    "asymmetrically damaged arm",
+    "loose forearm plate",
+    "non-gothic orbital machinery language"
+  ],
+  "notes": "Created specifically for the Resonance prototype. It proves the authored enemy runtime path; it is not final enemy art, rigging, combat animation or AI."
+}
