@@ -493,6 +493,26 @@ function addGameplayReadabilityLayer(
     dynamicMeshes.push(rail);
   }
 
+  const movingIdentity = CreateBox(
+    "moving-platform-identity-panel",
+    { width: 0.92, height: 0.11, depth: 2.14 },
+    scene,
+  );
+  movingIdentity.parent = meshes.platform;
+  movingIdentity.position.set(0, 0.23, 0);
+  movingIdentity.material = deckAccent;
+  dynamicMeshes.push(movingIdentity);
+
+  const hazardIdentity = CreateBox(
+    "hazard-identity-panel",
+    { width: 2.8, height: 0.05, depth: 2.14 },
+    scene,
+  );
+  hazardIdentity.parent = meshes.slope;
+  hazardIdentity.position.set(0, 0.2, 0);
+  hazardIdentity.material = hazardAccent;
+  staticMeshes.push(hazardIdentity);
+
   const pillarStripe = CreateBox(
     "attract-pillar-resonance-stripe",
     { width: 0.13, height: 2.12, depth: 2.08 },
@@ -506,14 +526,19 @@ function addGameplayReadabilityLayer(
   for (let index = 0; index < meshes.targets.length; index += 1) {
     const target = meshes.targets[index];
     if (!target) continue;
-    for (let fin = 0; fin < 4; fin += 1) {
+    for (const [fin, spec] of [
+      [0, { x: 0, y: 0.82, width: 0.42, height: 0.09 }],
+      [1, { x: 0.82, y: 0, width: 0.09, height: 0.42 }],
+      [2, { x: 0, y: -0.82, width: 0.42, height: 0.09 }],
+      [3, { x: -0.82, y: 0, width: 0.09, height: 0.42 }],
+    ] as const) {
       const marker = CreateBox(
         `anchor-fin-${index}-${fin}`,
-        { width: fin % 2 === 0 ? 1.0 : 0.11, height: fin % 2 === 0 ? 0.11 : 1.0, depth: 0.08 },
+        { width: spec.width, height: spec.height, depth: 0.08 },
         scene,
       );
       marker.parent = target;
-      marker.position.set(0, 0, -0.43);
+      marker.position.set(spec.x, spec.y, -0.43);
       marker.material = anchorAccent;
       dynamicMeshes.push(marker);
     }
