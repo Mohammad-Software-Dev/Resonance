@@ -10,12 +10,16 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:4173",
     headless: true,
   },
-  webServer: {
-    command: "pnpm --filter @resonance/web-client dev --host 127.0.0.1 --port 4173",
-    url: "http://127.0.0.1:4173",
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-  },
+  ...(process.env.CI
+    ? {}
+    : {
+        webServer: {
+          command: "pnpm --filter @resonance/web-client dev --host 127.0.0.1 --port 4173",
+          url: "http://127.0.0.1:4173",
+          reuseExistingServer: true,
+          timeout: 60_000,
+        },
+      }),
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
     { name: "firefox", use: { ...devices["Desktop Firefox"] } },
