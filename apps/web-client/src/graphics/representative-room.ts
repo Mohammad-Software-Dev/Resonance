@@ -740,7 +740,7 @@ function addWayfarerSilhouette(
   accent: StandardMaterial,
 ): Mesh[] {
   player.material = suit;
-  player.scaling.set(0.88, 1, 0.78);
+  player.scaling.set(0.68, 0.94, 0.7);
 
   const head = CreateSphere(
     "wayfarer-helmet",
@@ -852,6 +852,61 @@ function addWayfarerSilhouette(
   fabricTab.rotation.z = -0.18;
   fabricTab.material = accent;
 
+  const collar = CreateTorus(
+    "wayfarer-collar",
+    { diameter: 0.48, thickness: 0.055, tessellation: 20 },
+    scene,
+  );
+  collar.parent = player;
+  collar.position.set(0, 0.52, -0.03);
+  collar.rotation.x = Math.PI / 2;
+  collar.material = accent;
+
+  const pelvis = CreateBox(
+    "wayfarer-pelvis",
+    { width: 0.48, height: 0.24, depth: 0.24 },
+    scene,
+  );
+  pelvis.parent = player;
+  pelvis.position.set(0, -0.33, 0);
+  pelvis.material = suit;
+
+  const leftBoot = CreateBox(
+    "wayfarer-left-boot",
+    { width: 0.25, height: 0.17, depth: 0.34 },
+    scene,
+  );
+  leftBoot.parent = leftLeg;
+  leftBoot.position.set(0, -0.37, -0.06);
+  leftBoot.material = suit;
+
+  const rightBoot = CreateBox(
+    "wayfarer-right-boot",
+    { width: 0.25, height: 0.17, depth: 0.34 },
+    scene,
+  );
+  rightBoot.parent = rightLeg;
+  rightBoot.position.set(0, -0.37, -0.06);
+  rightBoot.material = suit;
+
+  const leftShoulder = CreateBox(
+    "wayfarer-left-shoulder",
+    { width: 0.27, height: 0.16, depth: 0.25 },
+    scene,
+  );
+  leftShoulder.parent = player;
+  leftShoulder.position.set(-0.38, 0.35, -0.01);
+  leftShoulder.material = suit;
+
+  const rightShoulder = CreateBox(
+    "wayfarer-right-shoulder",
+    { width: 0.27, height: 0.16, depth: 0.25 },
+    scene,
+  );
+  rightShoulder.parent = player;
+  rightShoulder.position.set(0.38, 0.35, -0.01);
+  rightShoulder.material = accent;
+
   return [
     player,
     head,
@@ -866,6 +921,12 @@ function addWayfarerSilhouette(
     gauntlet,
     shoulderMark,
     fabricTab,
+    collar,
+    pelvis,
+    leftBoot,
+    rightBoot,
+    leftShoulder,
+    rightShoulder,
   ];
 }
 
@@ -1028,6 +1089,13 @@ export function createRepresentativeGraphicsRoom(
     gameplayMover,
     anchorAccent,
   );
+  const story = addWorldStoryLayer(
+    scene,
+    darkMetal,
+    hullCeramic,
+    emergency,
+    relayMaterial,
+  );
 
   const leftArm = scene.getMeshByName("wayfarer-left-arm") as Mesh | null;
   const rightArm = scene.getMeshByName("wayfarer-right-arm") as Mesh | null;
@@ -1043,6 +1111,7 @@ export function createRepresentativeGraphicsRoom(
     ...scar.distantMeshes,
     ...vista,
     ...readability.staticMeshes,
+    ...story.staticMeshes,
   ]) {
     mesh.freezeWorldMatrix();
   }
@@ -1182,6 +1251,18 @@ export function createRepresentativeGraphicsRoom(
         if (!lamp) continue;
         const flash = 0.86 + 0.14 * Math.sin(elapsedSeconds * 3.8 + i * 0.9);
         lamp.scaling.x = flash;
+      }
+
+      for (let i = 0; i < story.animatedMeshes.length; i += 1) {
+        const mesh = story.animatedMeshes[i];
+        if (!mesh) continue;
+        const storyPulse = 0.92 + 0.08 * Math.sin(elapsedSeconds * 2.1 + i * 0.8);
+        if (mesh.name === "relay-beacon-halo") {
+          mesh.rotation.z = elapsedSeconds * (relayActivated ? 1.4 : 0.22);
+          mesh.scaling.setAll(relayActivated ? 1.08 + 0.07 * storyPulse : storyPulse);
+        } else {
+          mesh.scaling.y = relayActivated ? 1.08 + 0.05 * storyPulse : storyPulse;
+        }
       }
 
       for (let i = 0; i < scar.relayRings.length; i += 1) {
