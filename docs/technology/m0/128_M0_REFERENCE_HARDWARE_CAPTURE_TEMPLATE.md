@@ -59,8 +59,9 @@ For each required run:
 7. traverse for at least 120 seconds;
 8. include jump, evade, moving anchor, Attract and Repel;
 9. press P to export the JSON evidence;
-10. attach/store the JSON with this record;
-11. record any visible hitch, corruption or recovery issue separately.
+10. confirm the export contains `frameSummary.captureDurationMs`, `cpuFrameP95Ms`, `gpuFrameP95Ms`, `drawCallsMin` and `drawCallsMax`;
+11. attach/store the JSON with this record;
+12. record any visible hitch, corruption or recovery issue separately.
 
 Do not hand-edit exported capture values.
 
@@ -80,6 +81,7 @@ Do not hand-edit exported capture values.
 - CPU frame p95:
 - GPU frame p95:
 - Draw-call range:
+- Capture duration:
 - Runtime shader compile:
 - Heap observation:
 - Visual/readability notes:
@@ -101,6 +103,7 @@ Do not hand-edit exported capture values.
 - CPU frame p95:
 - GPU frame p95 if available:
 - Draw-call range:
+- Capture duration:
 - Runtime shader compile:
 - Heap observation:
 - Visual/readability notes:
