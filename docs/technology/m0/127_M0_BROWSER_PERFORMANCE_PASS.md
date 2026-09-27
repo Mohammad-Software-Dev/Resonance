@@ -212,9 +212,14 @@ The export includes:
 - camera/preset/render state;
 - dynamic-resolution state;
 - current Babylon performance counters;
+- capture-window duration;
 - frame p50/p95/p99/max;
+- CPU frame p95;
+- GPU frame p95 when the active engine exposes timing support;
 - count of frames above 50 ms;
 - minimum/average render scale;
+- minimum/maximum draw calls;
+- raw frame, CPU, GPU, render-scale and draw-call samples;
 - startup shader warmup;
 - raw frame/render-scale samples;
 - simulation tick and deterministic state hash.
