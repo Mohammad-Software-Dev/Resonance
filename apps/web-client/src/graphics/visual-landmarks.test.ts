@@ -14,11 +14,11 @@ describe("auditVisualLandmarks", () => {
 
   it("reports missing semantic landmarks", () => {
     const names = REQUIRED_VISUAL_LANDMARKS.filter(
-      (name) => name !== "world-sign-relay" && name !== "wayfarer-helmet",
+      (name) => name !== "world-sign-relay" && name !== "Mara_Helmet",
     );
     expect(auditVisualLandmarks(names)).toEqual({
       ready: false,
-      missing: ["wayfarer-helmet", "world-sign-relay"],
+      missing: ["Mara_Helmet", "world-sign-relay"],
     });
   });
 });
