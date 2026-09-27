@@ -87,7 +87,7 @@ try {
     rootRequestFailures.push({ url: request.url(), error: request.failure()?.errorText ?? "unknown" });
   });
   root.on("response", (response) => {
-    if (!response.ok()) rootHttpFailures.push({ url: response.url(), status: response.status() });
+    if (response.status() >= 400) rootHttpFailures.push({ url: response.url(), status: response.status() });
   });
 
   const rootResponse = await gotoWithRetry(root, `${baseUrl}/?backend=webgl2`);
@@ -309,7 +309,7 @@ try {
     blindRequestFailures.push({ url: request.url(), error: request.failure()?.errorText ?? "unknown" });
   });
   blind.on("response", (response) => {
-    if (!response.ok()) blindHttpFailures.push({ url: response.url(), status: response.status() });
+    if (response.status() >= 400) blindHttpFailures.push({ url: response.url(), status: response.status() });
   });
 
   const blindResponse = await gotoWithRetry(blind, `${baseUrl}/?blind=1&backend=webgl2`);
@@ -383,14 +383,22 @@ try {
   if (
     rootErrors.length
     || unexpectedRootConsoleErrors.length
+    || rootRequestFailures.length
+    || rootHttpFailures.length
     || blindErrors.length
     || unexpectedBlindConsoleErrors.length
+    || blindRequestFailures.length
+    || blindHttpFailures.length
   ) {
     throw new Error(`Deployed browser errors observed: ${JSON.stringify({
       rootErrors,
       unexpectedRootConsoleErrors,
+      rootRequestFailures,
+      rootHttpFailures,
       blindErrors,
       unexpectedBlindConsoleErrors,
+      blindRequestFailures,
+      blindHttpFailures,
     })}`);
   }
 } catch (error) {
