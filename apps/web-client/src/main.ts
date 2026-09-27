@@ -75,6 +75,8 @@ function requireElement<T extends Element>(selector: string): T {
 const canvas = requireElement<HTMLCanvasElement>("#game");
 const diagnostics = requireElement<HTMLDivElement>("#diagnostics");
 const backendPreference = parseBackendPreference(location.search);
+const query = new URLSearchParams(location.search);
+document.body.classList.toggle("debug", query.get("debug") === "1");
 document.body.dataset.resonanceBoot = "dom-ready";
 document.body.dataset.resonanceBuildId = import.meta.env.VITE_BUILD_ID ?? "dev";
 document.body.dataset.resonanceBackendPreference = backendPreference;
