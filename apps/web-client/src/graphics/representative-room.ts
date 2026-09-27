@@ -558,6 +558,138 @@ function addGameplayReadabilityLayer(
   return { staticMeshes, dynamicMeshes };
 }
 
+function addWorldStoryLayer(
+  scene: Scene,
+  structural: PBRMaterial,
+  ceramic: PBRMaterial,
+  emergency: PBRMaterial,
+  resonance: PBRMaterial,
+): { staticMeshes: Mesh[]; animatedMeshes: Mesh[] } {
+  const staticMeshes: Mesh[] = [];
+  const animatedMeshes: Mesh[] = [];
+
+  const transitSignMaterial = createSignMaterial(
+    "transit-sign-material",
+    scene,
+    "MERIDIAN TRANSIT",
+    "WRECK 07",
+    "#48d9cf",
+  );
+  const relaySignMaterial = createSignMaterial(
+    "relay-sign-material",
+    scene,
+    "EMERGENCY LINK",
+    "RELAY 07",
+    "#f2a447",
+  );
+
+  const transitSign = CreatePlane(
+    "world-sign-transit",
+    { width: 2.8, height: 0.88 },
+    scene,
+  );
+  transitSign.position.set(-5.8, 4.55, 1.05);
+  transitSign.material = transitSignMaterial;
+  staticMeshes.push(transitSign);
+
+  const relaySign = CreatePlane(
+    "world-sign-relay",
+    { width: 2.45, height: 0.77 },
+    scene,
+  );
+  relaySign.position.set(6.72, 4.45, 1.02);
+  relaySign.material = relaySignMaterial;
+  staticMeshes.push(relaySign);
+
+  const archHeader = CreateBox(
+    "transit-bulkhead-header",
+    { width: 3.2, height: 0.34, depth: 0.58 },
+    scene,
+  );
+  archHeader.position.set(-5.9, 3.7, 1.35);
+  archHeader.material = ceramic;
+  staticMeshes.push(archHeader);
+
+  for (const x of [-7.25, -4.55]) {
+    const post = CreateBox(
+      `transit-bulkhead-post-${x}`,
+      { width: 0.28, height: 3.2, depth: 0.58 },
+      scene,
+    );
+    post.position.set(x, 2.05, 1.35);
+    post.material = structural;
+    staticMeshes.push(post);
+  }
+
+  const cargoStack = CreateBox(
+    "story-prop-cargo-stack",
+    { width: 1.0, height: 0.9, depth: 0.8 },
+    scene,
+  );
+  cargoStack.position.set(-6.45, 0.52, 1.3);
+  cargoStack.material = structural;
+  staticMeshes.push(cargoStack);
+
+  for (const [index, x] of [-5.85, -5.45].entries()) {
+    const canister = CreateCylinder(
+      `story-prop-canister-${index}`,
+      { height: 0.72, diameter: 0.28, tessellation: 16 },
+      scene,
+    );
+    canister.position.set(x, 0.42, 1.12);
+    canister.material = ceramic;
+    staticMeshes.push(canister);
+  }
+
+  for (const [index, y] of [5.35, 5.72].entries()) {
+    const conduit = CreateBox(
+      `story-overhead-conduit-${index}`,
+      { width: 5.8, height: 0.12, depth: 0.18 },
+      scene,
+    );
+    conduit.position.set(-1.4, y, 1.65);
+    conduit.rotation.z = index === 0 ? -0.025 : 0.018;
+    conduit.material = structural;
+    staticMeshes.push(conduit);
+  }
+
+  const beaconMaterial = new StandardMaterial("relay-beacon-material", scene);
+  beaconMaterial.diffuseColor = new Color3(0.03, 0.35, 0.31);
+  beaconMaterial.emissiveColor = new Color3(0.08, 0.95, 0.74);
+  beaconMaterial.alpha = 0.24;
+  beaconMaterial.backFaceCulling = false;
+
+  const beacon = CreateBox(
+    "relay-beacon-column",
+    { width: 0.18, height: 4.2, depth: 0.18 },
+    scene,
+  );
+  beacon.position.set(7.08, 4.65, 1.5);
+  beacon.material = beaconMaterial;
+  animatedMeshes.push(beacon);
+
+  const beaconHalo = CreateTorus(
+    "relay-beacon-halo",
+    { diameter: 1.75, thickness: 0.035, tessellation: 48 },
+    scene,
+  );
+  beaconHalo.position.set(7.08, 4.9, 1.45);
+  beaconHalo.rotation.x = Math.PI / 2;
+  beaconHalo.material = resonance;
+  animatedMeshes.push(beaconHalo);
+
+  const emergencyMarker = CreateBox(
+    "relay-emergency-marker",
+    { width: 1.4, height: 0.08, depth: 0.12 },
+    scene,
+  );
+  emergencyMarker.position.set(7.08, 3.92, 1.08);
+  emergencyMarker.material = emergency;
+  animatedMeshes.push(emergencyMarker);
+
+  return { staticMeshes, animatedMeshes };
+}
+
 function addGasGiantVista(scene: Scene): Mesh[] {
   const planetMaterial = new StandardMaterial("gas-giant-material", scene);
   planetMaterial.diffuseColor = new Color3(0.32, 0.18, 0.12);
