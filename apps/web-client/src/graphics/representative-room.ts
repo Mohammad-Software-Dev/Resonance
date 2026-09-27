@@ -11,6 +11,8 @@ import { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTextur
 import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
+import { CreateCylinder } from "@babylonjs/core/Meshes/Builders/cylinderBuilder";
+import { CreatePlane } from "@babylonjs/core/Meshes/Builders/planeBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
 import { CreateTorus } from "@babylonjs/core/Meshes/Builders/torusBuilder";
 import { Mesh } from "@babylonjs/core/Meshes/mesh";
@@ -87,6 +89,42 @@ function semanticMaterial(
   material.diffuseColor = diffuse;
   material.emissiveColor = emissive;
   material.specularColor = new Color3(0.03, 0.04, 0.05);
+  return material;
+}
+
+function createSignMaterial(
+  name: string,
+  scene: Scene,
+  kicker: string,
+  label: string,
+  accent: string,
+): StandardMaterial {
+  const texture = new DynamicTexture(
+    `${name}-texture`,
+    { width: 512, height: 160 },
+    scene,
+    false,
+  );
+  const context = texture.getContext();
+  context.fillStyle = "#061017";
+  context.fillRect(0, 0, 512, 160);
+  context.fillStyle = accent;
+  context.fillRect(0, 0, 12, 160);
+  context.fillRect(28, 118, 456, 3);
+  context.font = "700 28px sans-serif";
+  context.fillText(kicker, 34, 48);
+  context.fillStyle = "#e7f4f2";
+  context.font = "800 52px sans-serif";
+  context.fillText(label, 34, 104);
+  texture.hasAlpha = false;
+  texture.update();
+
+  const material = new StandardMaterial(name, scene);
+  material.diffuseTexture = texture;
+  material.emissiveTexture = texture;
+  material.emissiveColor = new Color3(0.42, 0.46, 0.45);
+  material.specularColor = Color3.Black();
+  material.backFaceCulling = false;
   return material;
 }
 
@@ -454,6 +492,26 @@ function addGameplayReadabilityLayer(
     dynamicMeshes.push(rail);
   }
 
+  const movingIdentity = CreateBox(
+    "moving-platform-identity-panel",
+    { width: 0.92, height: 0.11, depth: 2.14 },
+    scene,
+  );
+  movingIdentity.parent = meshes.platform;
+  movingIdentity.position.set(0, 0.23, 0);
+  movingIdentity.material = deckAccent;
+  dynamicMeshes.push(movingIdentity);
+
+  const hazardIdentity = CreateBox(
+    "hazard-identity-panel",
+    { width: 2.8, height: 0.05, depth: 2.14 },
+    scene,
+  );
+  hazardIdentity.parent = meshes.slope;
+  hazardIdentity.position.set(0, 0.2, 0);
+  hazardIdentity.material = hazardAccent;
+  staticMeshes.push(hazardIdentity);
+
   const pillarStripe = CreateBox(
     "attract-pillar-resonance-stripe",
     { width: 0.13, height: 2.12, depth: 2.08 },
@@ -467,14 +525,19 @@ function addGameplayReadabilityLayer(
   for (let index = 0; index < meshes.targets.length; index += 1) {
     const target = meshes.targets[index];
     if (!target) continue;
-    for (let fin = 0; fin < 4; fin += 1) {
+    for (const [fin, spec] of [
+      [0, { x: 0, y: 0.82, width: 0.42, height: 0.09 }],
+      [1, { x: 0.82, y: 0, width: 0.09, height: 0.42 }],
+      [2, { x: 0, y: -0.82, width: 0.42, height: 0.09 }],
+      [3, { x: -0.82, y: 0, width: 0.09, height: 0.42 }],
+    ] as const) {
       const marker = CreateBox(
         `anchor-fin-${index}-${fin}`,
-        { width: fin % 2 === 0 ? 1.0 : 0.11, height: fin % 2 === 0 ? 0.11 : 1.0, depth: 0.08 },
+        { width: spec.width, height: spec.height, depth: 0.08 },
         scene,
       );
       marker.parent = target;
-      marker.position.set(0, 0, -0.43);
+      marker.position.set(spec.x, spec.y, -0.43);
       marker.material = anchorAccent;
       dynamicMeshes.push(marker);
     }
@@ -492,6 +555,138 @@ function addGameplayReadabilityLayer(
   dynamicMeshes.push(playerMarker);
 
   return { staticMeshes, dynamicMeshes };
+}
+
+function addWorldStoryLayer(
+  scene: Scene,
+  structural: PBRMaterial,
+  ceramic: PBRMaterial,
+  emergency: PBRMaterial,
+  resonance: PBRMaterial,
+): { staticMeshes: Mesh[]; animatedMeshes: Mesh[] } {
+  const staticMeshes: Mesh[] = [];
+  const animatedMeshes: Mesh[] = [];
+
+  const transitSignMaterial = createSignMaterial(
+    "transit-sign-material",
+    scene,
+    "MERIDIAN TRANSIT",
+    "WRECK 07",
+    "#48d9cf",
+  );
+  const relaySignMaterial = createSignMaterial(
+    "relay-sign-material",
+    scene,
+    "EMERGENCY LINK",
+    "RELAY 07",
+    "#f2a447",
+  );
+
+  const transitSign = CreatePlane(
+    "world-sign-transit",
+    { width: 2.8, height: 0.88 },
+    scene,
+  );
+  transitSign.position.set(-5.8, 4.55, 1.05);
+  transitSign.material = transitSignMaterial;
+  staticMeshes.push(transitSign);
+
+  const relaySign = CreatePlane(
+    "world-sign-relay",
+    { width: 2.45, height: 0.77 },
+    scene,
+  );
+  relaySign.position.set(6.72, 4.45, 1.02);
+  relaySign.material = relaySignMaterial;
+  staticMeshes.push(relaySign);
+
+  const archHeader = CreateBox(
+    "transit-bulkhead-header",
+    { width: 3.2, height: 0.34, depth: 0.58 },
+    scene,
+  );
+  archHeader.position.set(-5.9, 3.7, 1.35);
+  archHeader.material = ceramic;
+  staticMeshes.push(archHeader);
+
+  for (const x of [-7.25, -4.55]) {
+    const post = CreateBox(
+      `transit-bulkhead-post-${x}`,
+      { width: 0.28, height: 3.2, depth: 0.58 },
+      scene,
+    );
+    post.position.set(x, 2.05, 1.35);
+    post.material = structural;
+    staticMeshes.push(post);
+  }
+
+  const cargoStack = CreateBox(
+    "story-prop-cargo-stack",
+    { width: 1.0, height: 0.9, depth: 0.8 },
+    scene,
+  );
+  cargoStack.position.set(-6.45, 0.52, 1.3);
+  cargoStack.material = structural;
+  staticMeshes.push(cargoStack);
+
+  for (const [index, x] of [-5.85, -5.45].entries()) {
+    const canister = CreateCylinder(
+      `story-prop-canister-${index}`,
+      { height: 0.72, diameter: 0.28, tessellation: 16 },
+      scene,
+    );
+    canister.position.set(x, 0.42, 1.12);
+    canister.material = ceramic;
+    staticMeshes.push(canister);
+  }
+
+  for (const [index, y] of [5.35, 5.72].entries()) {
+    const conduit = CreateBox(
+      `story-overhead-conduit-${index}`,
+      { width: 5.8, height: 0.12, depth: 0.18 },
+      scene,
+    );
+    conduit.position.set(-1.4, y, 1.65);
+    conduit.rotation.z = index === 0 ? -0.025 : 0.018;
+    conduit.material = structural;
+    staticMeshes.push(conduit);
+  }
+
+  const beaconMaterial = new StandardMaterial("relay-beacon-material", scene);
+  beaconMaterial.diffuseColor = new Color3(0.03, 0.35, 0.31);
+  beaconMaterial.emissiveColor = new Color3(0.08, 0.95, 0.74);
+  beaconMaterial.alpha = 0.24;
+  beaconMaterial.backFaceCulling = false;
+
+  const beacon = CreateBox(
+    "relay-beacon-column",
+    { width: 0.18, height: 4.2, depth: 0.18 },
+    scene,
+  );
+  beacon.position.set(7.08, 4.65, 1.5);
+  beacon.material = beaconMaterial;
+  animatedMeshes.push(beacon);
+
+  const beaconHalo = CreateTorus(
+    "relay-beacon-halo",
+    { diameter: 1.75, thickness: 0.035, tessellation: 48 },
+    scene,
+  );
+  beaconHalo.position.set(7.08, 4.9, 1.45);
+  beaconHalo.rotation.x = Math.PI / 2;
+  beaconHalo.material = resonance;
+  animatedMeshes.push(beaconHalo);
+
+  const emergencyMarker = CreateBox(
+    "relay-emergency-marker",
+    { width: 1.4, height: 0.08, depth: 0.12 },
+    scene,
+  );
+  emergencyMarker.position.set(7.08, 3.92, 1.08);
+  emergencyMarker.material = emergency;
+  animatedMeshes.push(emergencyMarker);
+
+  return { staticMeshes, animatedMeshes };
 }
 
 function addGasGiantVista(scene: Scene): Mesh[] {
@@ -544,7 +739,7 @@ function addWayfarerSilhouette(
   accent: StandardMaterial,
 ): Mesh[] {
   player.material = suit;
-  player.scaling.set(0.88, 1, 0.78);
+  player.scaling.set(0.68, 0.94, 0.7);
 
   const head = CreateSphere(
     "wayfarer-helmet",
@@ -656,6 +851,61 @@ function addWayfarerSilhouette(
   fabricTab.rotation.z = -0.18;
   fabricTab.material = accent;
 
+  const collar = CreateTorus(
+    "wayfarer-collar",
+    { diameter: 0.48, thickness: 0.055, tessellation: 20 },
+    scene,
+  );
+  collar.parent = player;
+  collar.position.set(0, 0.52, -0.03);
+  collar.rotation.x = Math.PI / 2;
+  collar.material = accent;
+
+  const pelvis = CreateBox(
+    "wayfarer-pelvis",
+    { width: 0.48, height: 0.24, depth: 0.24 },
+    scene,
+  );
+  pelvis.parent = player;
+  pelvis.position.set(0, -0.33, 0);
+  pelvis.material = suit;
+
+  const leftBoot = CreateBox(
+    "wayfarer-left-boot",
+    { width: 0.25, height: 0.17, depth: 0.34 },
+    scene,
+  );
+  leftBoot.parent = leftLeg;
+  leftBoot.position.set(0, -0.37, -0.06);
+  leftBoot.material = suit;
+
+  const rightBoot = CreateBox(
+    "wayfarer-right-boot",
+    { width: 0.25, height: 0.17, depth: 0.34 },
+    scene,
+  );
+  rightBoot.parent = rightLeg;
+  rightBoot.position.set(0, -0.37, -0.06);
+  rightBoot.material = suit;
+
+  const leftShoulder = CreateBox(
+    "wayfarer-left-shoulder",
+    { width: 0.27, height: 0.16, depth: 0.25 },
+    scene,
+  );
+  leftShoulder.parent = player;
+  leftShoulder.position.set(-0.38, 0.35, -0.01);
+  leftShoulder.material = suit;
+
+  const rightShoulder = CreateBox(
+    "wayfarer-right-shoulder",
+    { width: 0.27, height: 0.16, depth: 0.25 },
+    scene,
+  );
+  rightShoulder.parent = player;
+  rightShoulder.position.set(0.38, 0.35, -0.01);
+  rightShoulder.material = accent;
+
   return [
     player,
     head,
@@ -670,6 +920,12 @@ function addWayfarerSilhouette(
     gauntlet,
     shoulderMark,
     fabricTab,
+    collar,
+    pelvis,
+    leftBoot,
+    rightBoot,
+    leftShoulder,
+    rightShoulder,
   ];
 }
 
@@ -832,6 +1088,13 @@ export function createRepresentativeGraphicsRoom(
     gameplayMover,
     anchorAccent,
   );
+  const story = addWorldStoryLayer(
+    scene,
+    darkMetal,
+    hullCeramic,
+    emergency,
+    relayMaterial,
+  );
 
   const leftArm = scene.getMeshByName("wayfarer-left-arm") as Mesh | null;
   const rightArm = scene.getMeshByName("wayfarer-right-arm") as Mesh | null;
@@ -847,6 +1110,7 @@ export function createRepresentativeGraphicsRoom(
     ...scar.distantMeshes,
     ...vista,
     ...readability.staticMeshes,
+    ...story.staticMeshes,
   ]) {
     mesh.freezeWorldMatrix();
   }
@@ -986,6 +1250,18 @@ export function createRepresentativeGraphicsRoom(
         if (!lamp) continue;
         const flash = 0.86 + 0.14 * Math.sin(elapsedSeconds * 3.8 + i * 0.9);
         lamp.scaling.x = flash;
+      }
+
+      for (let i = 0; i < story.animatedMeshes.length; i += 1) {
+        const mesh = story.animatedMeshes[i];
+        if (!mesh) continue;
+        const storyPulse = 0.92 + 0.08 * Math.sin(elapsedSeconds * 2.1 + i * 0.8);
+        if (mesh.name === "relay-beacon-halo") {
+          mesh.rotation.z = elapsedSeconds * (relayActivated ? 1.4 : 0.22);
+          mesh.scaling.setAll(relayActivated ? 1.08 + 0.07 * storyPulse : storyPulse);
+        } else {
+          mesh.scaling.y = relayActivated ? 1.08 + 0.05 * storyPulse : storyPulse;
+        }
       }
 
       for (let i = 0; i < scar.relayRings.length; i += 1) {

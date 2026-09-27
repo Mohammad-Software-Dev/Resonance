@@ -1,22 +1,21 @@
 # M0 Evidence Deployment Request
 
-**Request:** 14  
-**Requested from baseline:** `40499e4457ad221f985065e4f3fb640498031123`  
-**Purpose:** Publish the first M0.12 visual-readability recovery candidate.
+**Request:** 15  
+**Requested from baseline:** `18ab786551615b2de9a653b40aec640a7df7397c`  
+**Purpose:** Publish the second M0.12 recognizable-world composition candidate.
 
-Owner review of the previous deployed room found it technically functional but visually too abstract to recognize as a game. This deployment moves presentation forward without altering deterministic gameplay semantics.
+This presentation-only deployment adds:
 
-The candidate adds:
+- in-world transit and Relay signage;
+- recognizable bulkhead, cargo and maintenance props;
+- a Relay beacon/halo destination landmark;
+- moving-platform and hazard identity panels;
+- corrected cardinal Resonance-anchor fins;
+- a more human Wayfarer silhouette;
+- a boot-time visual landmark contract, enforced again by deployed smoke.
 
-- explicit semantic materials for the gameplay plane, independent of PBR/IBL readability;
-- stronger separation between walkable deck, collision walls, moving platform and hazard surface;
-- route-edge and hazard markings;
-- moving-platform rails;
-- a clearer Resonance pillar;
-- anchor fins/rings so Resonance targets no longer read as plain spheres;
-- a stronger human Wayfarer silhouette and ground marker;
-- preserved hidden-by-default diagnostics and unchanged simulation/target IDs.
+No deterministic gameplay semantics, collision, target IDs, movement rules, Attract/Repel behavior or replay fingerprints are intentionally changed.
 
-Physical and blind-human acceptance remain deferred, not passed. This deployment is for automated regression/runtime verification and future visual development, not a request for owner testing.
+Physical and blind-human acceptance remain deferred. This deployment is for automated runtime verification and continued presentation development; it does not request owner testing.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
