@@ -129,3 +129,21 @@ Presentation additions:
 - deployed-smoke checks for objective choreography presence on the normal route and concealment in blind mode.
 
 The pass observes existing gameplay state only. It does not alter target selection, force magnitudes, movement, collision, progression thresholds or deterministic simulation.
+
+
+## Pass 6 — living encounter presence
+
+The sixth M0.12 pass addresses the remaining empty-test-room feel by adding the first canonical hostile presence from the opening-room specification.
+
+WS01 canon already calls for one damaged **Scrapper** blocking the door. This pass visualizes that beat without prematurely adding combat simulation:
+
+- recognizable maintenance-construct torso/head/limb silhouette;
+- hostile sensor eye distinct from Resonance teal;
+- visibly damaged arm and loosened forearm plate;
+- subtle unstable idle/patrol motion;
+- ground threat ring that communicates hostile space without relying on color alone;
+- required visual-landmark coverage so the encounter vignette cannot silently disappear.
+
+This is deliberately presentation-only. The Scrapper has no hitbox, damage, health, attack resolution or AI authority yet. It does not alter Rapier collision, target selection, movement, Resonance forces, progression thresholds or deterministic replay.
+
+The purpose is to make Wayfarer Scar read as an inhabited game space while preserving M0's deterministic foundation. Full combat belongs to the combat milestone rather than being smuggled into a visual-recovery pass.
