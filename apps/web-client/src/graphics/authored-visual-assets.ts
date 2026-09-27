@@ -33,7 +33,7 @@ export const AUTHORED_VISUAL_ASSETS: readonly AuthoredVisualAssetSpec[] = [
   },
   {
     slot: "wayfarer-scar-setdress",
-    url: null,
+    url: "/assets/visual/environment/wayfarer-scar-setdress-m0.glb",
     fallback: "procedural",
   },
 ];
