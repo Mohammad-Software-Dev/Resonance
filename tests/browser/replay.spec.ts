@@ -31,6 +31,7 @@ test("canonical M0 replay matches Node in the browser runtime", async ({
   ]).finally(() => {
     if (watchdog) clearTimeout(watchdog);
   });
+  console.log(`[${browserName}] node:result-received`);
   const result = JSON.parse(resultJson) as {
     direct: { ok: boolean; finalHash: string; divergence: unknown };
     matrix: Array<{
@@ -62,4 +63,8 @@ test("canonical M0 replay matches Node in the browser runtime", async ({
   } else {
     expect(result.matrix).toEqual([]);
   }
+
+  console.log(`[${browserName}] node:assertions-done`);
+  await page.context().close();
+  console.log(`[${browserName}] node:context-closed`);
 });
