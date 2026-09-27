@@ -2,7 +2,8 @@
 
 **Status:** Automated deployment smoke complete; physical and human execution pending  
 **Milestone:** M0 final acceptance  
-**Depends on:** M0.9-M0.11 engineering complete and `131_M0_SIGNOFF_EVIDENCE_GATE.md`
+**Depends on:** M0.9-M0.11 engineering complete and `131_M0_SIGNOFF_EVIDENCE_GATE.md`  
+**Field kit:** `134_M0_FIELD_EVIDENCE_KIT.md`
 
 ## Purpose
 
@@ -107,6 +108,14 @@ Record:
 - recurring confusion themes.
 
 Human review still decides whether each qualifying tester completed the course.
+
+Before signoff, run the combined machine-checkable preflight:
+
+```text
+pnpm evidence:preflight .local/m0-evidence/<build-sha> <build-sha>
+```
+
+The preflight does not replace the human judgments documented in the field kit.
 
 ## Phase 6 — evidence-driven tuning
 
