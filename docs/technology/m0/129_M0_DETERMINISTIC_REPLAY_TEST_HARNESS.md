@@ -1,6 +1,6 @@
 # M0.10 Deterministic Replay and Test Harness
 
-**Status:** Implementation candidate; CI/browser validation required before merge  
+**Status:** Implemented; enforced by the M0 replay CI gate  
 **Milestone:** M0.10  
 **Purpose:** Turn M0 movement/Resonance behavior into reproducible evidence and make the first divergent fixed tick actionable.
 
