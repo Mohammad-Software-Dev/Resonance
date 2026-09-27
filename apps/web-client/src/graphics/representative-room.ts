@@ -73,6 +73,7 @@ export interface RepresentativeGraphicsRoom {
   setProceduralScrapperEnabled(enabled: boolean): void;
   releaseProceduralWayfarerFallback(): void;
   releaseProceduralScrapperFallback(): void;
+  releaseProceduralSetdressFallback(): void;
   update(elapsedSeconds: number): void;
   stats(): GraphicsRoomStats;
 }
@@ -680,9 +681,10 @@ function addWorldStoryLayer(
   ceramic: PBRMaterial,
   emergency: PBRMaterial,
   resonance: PBRMaterial,
-): { staticMeshes: Mesh[]; animatedMeshes: Mesh[] } {
+): { staticMeshes: Mesh[]; animatedMeshes: Mesh[]; setdressMeshes: Mesh[] } {
   const staticMeshes: Mesh[] = [];
   const animatedMeshes: Mesh[] = [];
+  const setdressMeshes: Mesh[] = [];
 
   const transitSignMaterial = createSignMaterial(
     "transit-sign-material",
@@ -725,6 +727,7 @@ function addWorldStoryLayer(
   archHeader.position.set(-5.9, 3.7, 1.35);
   archHeader.material = ceramic;
   staticMeshes.push(archHeader);
+  setdressMeshes.push(archHeader);
 
   for (const x of [-7.25, -4.55]) {
     const post = CreateBox(
@@ -735,6 +738,7 @@ function addWorldStoryLayer(
     post.position.set(x, 2.05, 1.35);
     post.material = structural;
     staticMeshes.push(post);
+    setdressMeshes.push(post);
   }
 
   const cargoStack = CreateBox(
@@ -745,6 +749,7 @@ function addWorldStoryLayer(
   cargoStack.position.set(-6.45, 0.52, 1.3);
   cargoStack.material = structural;
   staticMeshes.push(cargoStack);
+  setdressMeshes.push(cargoStack);
 
   for (const [index, x] of [-5.85, -5.45].entries()) {
     const canister = CreateCylinder(
@@ -755,6 +760,7 @@ function addWorldStoryLayer(
     canister.position.set(x, 0.42, 1.12);
     canister.material = ceramic;
     staticMeshes.push(canister);
+    setdressMeshes.push(canister);
   }
 
   for (const [index, y] of [5.35, 5.72].entries()) {
@@ -767,6 +773,7 @@ function addWorldStoryLayer(
     conduit.rotation.z = index === 0 ? -0.025 : 0.018;
     conduit.material = structural;
     staticMeshes.push(conduit);
+    setdressMeshes.push(conduit);
   }
 
   const beaconMaterial = new StandardMaterial("relay-beacon-material", scene);
@@ -803,7 +810,7 @@ function addWorldStoryLayer(
   emergencyMarker.material = emergency;
   animatedMeshes.push(emergencyMarker);
 
-  return { staticMeshes, animatedMeshes };
+  return { staticMeshes, animatedMeshes, setdressMeshes };
 }
 
 function addDamagedScrapperVignette(
@@ -1587,6 +1594,7 @@ export function createRepresentativeGraphicsRoom(
   let lastPlayerX = meshes.player.position.x;
   let proceduralWayfarerReleased = false;
   let proceduralScrapperReleased = false;
+  let proceduralSetdressReleased = false;
 
   scene.skipPointerMovePicking = true;
   for (const mesh of scene.meshes) mesh.isPickable = false;
@@ -1764,6 +1772,11 @@ export function createRepresentativeGraphicsRoom(
       for (const material of fallbackMaterials) {
         if (material !== emergency) material.dispose();
       }
+    },
+    releaseProceduralSetdressFallback(): void {
+      if (proceduralSetdressReleased) return;
+      proceduralSetdressReleased = true;
+      for (const mesh of story.setdressMeshes) mesh.dispose(false, false);
     },
     update(elapsedSeconds: number): void {
       const pulse = 0.5 + 0.5 * Math.sin(elapsedSeconds * 3.1);
