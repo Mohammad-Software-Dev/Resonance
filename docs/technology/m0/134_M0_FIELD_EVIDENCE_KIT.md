@@ -132,6 +132,7 @@ The command recursively reads JSON and validates:
 - exact deployed build ID;
 - performance schema;
 - WebGPU and WebGL2 capture presence;
+- explicit requested/active backend equality (auto-selected backend captures are rejected);
 - required Firefox physical capture presence;
 - >=120-second capture window;
 - average 60 Hz frame cadence;
