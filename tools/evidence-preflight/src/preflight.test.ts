@@ -86,6 +86,19 @@ describe("M0 evidence preflight", () => {
     expect(evaluation.gates.mediumRenderScale).toBe("pass");
   });
 
+  it("fails WebGPU Tier-M evidence collected below Medium preset", () => {
+    const base = performance();
+    const value = performance({
+      graphics: { ...base.graphics, preset: "low" },
+    });
+    const evaluation = evaluatePerformanceCapture(
+      "webgpu-low.json",
+      parsePerformanceCapture(value),
+      BUILD,
+    );
+    expect(evaluation.gates.mediumRenderScale).toBe("fail");
+  });
+
   it("fails captures that relied on auto backend selection", () => {
     const value = performance({ backendPreference: "auto" });
     const evaluation = evaluatePerformanceCapture(
