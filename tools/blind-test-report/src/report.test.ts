@@ -17,6 +17,9 @@ function report(
 ): BlindTestReport {
   const complete = options.complete ?? true;
   const recoveryCount = options.recoveryCount ?? 1;
+  const voluntaryReplay = options.voluntaryReplay === undefined
+    ? true
+    : options.voluntaryReplay;
   return parseBlindTestReport({
     schema: "resonance.m0.blind-test.v1",
     buildId: "test",
@@ -28,7 +31,7 @@ function report(
       responsiveness: 4,
       targetingClarity: 3,
       repelPredictability: 5,
-      voluntaryReplay: options.voluntaryReplay ?? true,
+      voluntaryReplay,
       confusionNotes: "",
     },
     events: [
@@ -37,6 +40,9 @@ function report(
         type: "task-complete",
         detail: "recovery",
       })),
+      ...(voluntaryReplay === true
+        ? [{ tick: 300, type: "voluntary-replay-complete" }]
+        : []),
       ...(complete ? [{ tick: 360, type: "questionnaire-complete" }] : []),
     ],
     samples: [],
@@ -53,6 +59,18 @@ describe("blind-test report validation", () => {
       },
     };
     expect(() => parseBlindTestReport(value)).toThrow(/ratings/);
+  });
+
+  it("rejects claimed replay without an observed replay-complete event", () => {
+    const value = report("observed");
+    const withoutReplayEvent = {
+      ...value,
+      events: value.events.filter(
+        (event) => event.type !== "voluntary-replay-complete",
+      ),
+    };
+    expect(() => parseBlindTestReport(withoutReplayEvent))
+      .toThrow(/voluntary-replay-complete/);
   });
 
   it("rejects malformed task flags and duplicate sessions", () => {
