@@ -1,6 +1,6 @@
 # M0 Evidence Execution Runbook
 
-**Status:** Ready for real-world execution  
+**Status:** Automated deployment smoke complete; physical and human execution pending  
 **Milestone:** M0 final acceptance  
 **Depends on:** M0.9-M0.11 engineering complete and `131_M0_SIGNOFF_EVIDENCE_GATE.md`
 
@@ -27,7 +27,7 @@ Do not gather acceptance evidence from a different build unless the signoff reco
 
 ## Phase 2 — smoke-check the deployed build
 
-The deployment workflow first runs an automated Chromium smoke against the published URL and retains its JSON/screenshots as a workflow artifact. The automated smoke must confirm the normal route, blind route, hidden diagnostics in blind mode, F7 questionnaire startup, and deployed-build SHA in both performance and blind-test exports.
+The deployment workflow first runs an automated Chromium smoke against the published URL and retains its JSON/screenshots as a workflow artifact. The current passing automated record is documented in `133_M0_DEPLOYED_SMOKE_EVIDENCE.md`. The automated smoke must confirm the normal route, blind route, hidden diagnostics in blind mode, F7 questionnaire startup, and deployed-build SHA in both performance and blind-test exports.
 
 That automated result is a deployment/runtime sanity gate, not a substitute for the physical-device checks below.
 

@@ -153,7 +153,7 @@ Detailed Periapsis topology, Anchor Zero, four final configurations, world-state
 - `117_ITERATION_3J_CONSOLIDATION_SUMMARY.md`
 
 
-### 119–132 — M0 implementation and acceptance
+### 119–133 — M0 implementation and acceptance
 
 - `119_M0_REPOSITORY_AND_PACKAGE_ARCHITECTURE.md` — exact monorepo/package boundaries, dependency rules and kickoff pins.
 - `120_M0_SIMULATION_TICK_AND_STATE_CONTRACT.md` — fixed 60 Hz input/state/snapshot contract.
@@ -169,6 +169,7 @@ Detailed Periapsis topology, Anchor Zero, four final configurations, world-state
 - `130_M0_BLIND_MOVEMENT_TEST_PROTOCOL.md` — qualifying blind-test protocol and evidence rules.
 - `131_M0_SIGNOFF_EVIDENCE_GATE.md` — final M0/M1 go-no-go checklist.
 - `132_M0_EVIDENCE_EXECUTION_RUNBOOK.md` — deployment, physical capture and blind-session execution sequence.
+- `133_M0_DEPLOYED_SMOKE_EVIDENCE.md` — immutable deployed-build identity and retained automated smoke evidence.
 
 ### 118 — Browser architecture lock
 
