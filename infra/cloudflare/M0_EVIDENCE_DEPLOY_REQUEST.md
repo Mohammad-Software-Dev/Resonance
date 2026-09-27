@@ -1,23 +1,25 @@
 # M0 Evidence Deployment Request
 
-**Request:** 24  
-**Requested from baseline:** `aec8329d9793ccda9c44646fde6c9d62c2442e8a`  
-**Purpose:** Publish M0.12 Pass 11 presentation material-budget consolidation.
+**Request:** 25  
+**Requested from baseline:** `3302248e202ff0a9f22dd8ae033494863dc61636`  
+**Purpose:** Publish M0.12 Pass 12 real traversal topology.
 
-Pass 10 proved both authored character/enemy GLBs live, but its deployed smoke reported 40 scene materials. This pass restores the earlier M0 material discipline before adding the third authored set-dress slot.
+Pass 11 restored the presentation material budget while retaining authored Mara/Scrapper GLBs. Pass 12 now replaces the last major greybox artifact—the continuous test floor—with an actual three-deck Wayfarer Scar traversal course.
 
 Changes:
 
-- remap imported Mara/Scrapper materials onto the existing room presentation palette;
-- dispose replaced imported materials;
-- release hidden procedural Wayfarer fallback meshes/materials after successful authored load;
-- release hidden procedural Scrapper body meshes/materials after successful authored load;
-- retain the Scrapper threat ring on the shared hostile palette;
-- reuse existing room materials for wreck-state effects;
-- stop updating released fallback presentation meshes;
-- fail deployed smoke when the loaded scene exceeds 24 materials.
+- split browser floor into three matching visual/Rapier deck segments;
+- add a moving-platform breach and second traversal gap;
+- keep central pillar, slope and relay approach physically authoritative;
+- add hazard fields below both breaches without visually bridging them;
+- update semantic deck-edge/route dressing to match real collision gaps;
+- advance deterministic fixture to `m0-representative-course@2`;
+- retime the canonical replay through the new course and intentionally update its fingerprint;
+- make browser F9 replay exports use fixture v2;
+- require replay coverage to reach the relay approach and exercise Attract/Repel;
+- publish and smoke-test `data-resonance-traversal-course="v2"`.
 
-No authored Wayfarer/Scrapper geometry is removed. No movement, collision, targeting, Resonance-force, combat, AI, progression or deterministic replay semantics are changed.
+Authored Wayfarer/Scrapper assets and the <=24 material gate remain in force.
 
 Physical and blind-human acceptance remain deferred. No owner-run testing is requested.
 
