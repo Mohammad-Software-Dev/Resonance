@@ -1,0 +1,18 @@
+{
+  "schema": "resonance.visual-asset.v1",
+  "slot": "wayfarer-player",
+  "runtime": "/assets/visual/characters/wayfarer-mara-m0.glb",
+  "character": "Mara Venn",
+  "milestone": "M0.12 Pass 9",
+  "status": "authored-placeholder",
+  "shippingArt": false,
+  "purpose": "First binary GLB replacement of the procedural Wayfarer silhouette through the production asset boundary.",
+  "artDirection": [
+    "human/human-derived adult silhouette",
+    "ceramic field rig",
+    "asymmetric utility equipment",
+    "visible resonance gauntlet/emitter",
+    "orbital-industrial, non-gothic language"
+  ],
+  "notes": "Created specifically for the Resonance prototype. It proves the authored runtime asset path and improves recognizability; it is not final character art, rigging or animation."
+}

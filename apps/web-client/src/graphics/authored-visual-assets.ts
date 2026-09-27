@@ -23,7 +23,7 @@ export interface AuthoredVisualLoadResult {
 export const AUTHORED_VISUAL_ASSETS: readonly AuthoredVisualAssetSpec[] = [
   {
     slot: "wayfarer-player",
-    url: null,
+    url: "/assets/visual/characters/wayfarer-mara-m0.glb",
     fallback: "procedural",
   },
   {

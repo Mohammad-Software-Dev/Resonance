@@ -1,6 +1,8 @@
 export const REQUIRED_VISUAL_LANDMARKS = [
   "wayfarer-helmet",
   "wayfarer-visor",
+  "Mara_Helmet",
+  "Mara_GauntletEmitter",
   "gameplay-deck-edge",
   "moving-platform-identity-panel",
   "hazard-identity-panel",
