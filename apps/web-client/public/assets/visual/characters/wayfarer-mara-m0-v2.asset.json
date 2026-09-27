@@ -1,0 +1,18 @@
+{
+  "schema": "resonance.visual-asset.v1",
+  "slot": "wayfarer-player",
+  "runtime": "/assets/visual/characters/wayfarer-mara-m0-v2.glb",
+  "character": "Mara Venn",
+  "milestone": "M0.14",
+  "status": "authored-placeholder-v2",
+  "shippingArt": false,
+  "purpose": "Second authored Wayfarer pass focused on human proportions, asymmetric field gear and clearer side-view silhouette.",
+  "artDirection": [
+    "human/human-derived adult silhouette",
+    "ceramic field rig",
+    "asymmetric utility equipment",
+    "localized resonance gauntlet/emitter",
+    "orbital-industrial, non-gothic language"
+  ],
+  "generator": "tools/asset-pipeline/generate_m0_v2_assets.py"
+}
