@@ -119,6 +119,25 @@ try {
   if (performance.buildId !== expectedBuildId) {
     throw new Error(`Performance buildId mismatch: ${performance.buildId} != ${expectedBuildId}`);
   }
+  const frameSummary = performance.frameSummary;
+  if (
+    !frameSummary
+    || typeof frameSummary.captureDurationMs !== "number"
+    || typeof frameSummary.cpuFrameP95Ms !== "number"
+    || (frameSummary.gpuFrameP95Ms !== null && typeof frameSummary.gpuFrameP95Ms !== "number")
+    || typeof frameSummary.drawCallsMin !== "number"
+    || typeof frameSummary.drawCallsMax !== "number"
+  ) {
+    throw new Error("Performance export is missing full-window physical-signoff telemetry");
+  }
+  if (
+    !performance.samples
+    || !Array.isArray(performance.samples.cpuFrameMs)
+    || !Array.isArray(performance.samples.gpuFrameMs)
+    || !Array.isArray(performance.samples.drawCalls)
+  ) {
+    throw new Error("Performance export is missing full-window raw telemetry arrays");
+  }
 
   report.root = {
     status: rootResponse.status(),
@@ -130,6 +149,10 @@ try {
     shaderWarmupMs: await root.locator("body").getAttribute("data-resonance-shader-warmup-ms"),
     performanceSchema: performance.schema,
     performanceBuildId: performance.buildId,
+    performanceCaptureDurationMs: frameSummary.captureDurationMs,
+    performanceCpuFrameP95Ms: frameSummary.cpuFrameP95Ms,
+    performanceGpuFrameP95Ms: frameSummary.gpuFrameP95Ms,
+    performanceDrawCallsRange: [frameSummary.drawCallsMin, frameSummary.drawCallsMax],
     diagnosticsText: await root.locator("#diagnostics").textContent(),
     pageErrors: rootErrors,
     consoleErrors: rootConsoleErrors,

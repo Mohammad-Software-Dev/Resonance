@@ -558,7 +558,6 @@ engine.runRenderLoop(() => {
   const now = performance.now();
   const frameSeconds = (now - previousMs) / 1000;
   previousMs = now;
-  frameCapture.push(frameSeconds * 1000, graphicsRoom.getRenderScale());
 
   if (blindTest.inputBlocked) clock.clearAccumulator();
   const steps = blindTest.inputBlocked ? [] : clock.advance(frameSeconds);
@@ -802,6 +801,15 @@ engine.runRenderLoop(() => {
   graphicsRoom.update(now / 1000);
   scene.render();
 
+  const performanceStats = performanceMonitor.snapshot();
+  frameCapture.push(
+    frameSeconds * 1000,
+    graphicsRoom.getRenderScale(),
+    performanceStats.cpuFrameMs,
+    performanceStats.gpuFrameMs,
+    performanceStats.drawCalls,
+  );
+
   const adaptiveScale = dynamicResolution.sample(frameSeconds * 1000);
   if (adaptiveScale !== null) {
     graphicsRoom.applyRenderScale(adaptiveScale);
@@ -812,7 +820,6 @@ engine.runRenderLoop(() => {
   nextDiagnosticsUpdateMs = now + 250;
 
   const graphicsStats = graphicsRoom.stats();
-  const performanceStats = performanceMonitor.snapshot();
   const dynamicStats = dynamicResolution.snapshot();
   const candidateLines = targetDebug.map((candidate) => {
     const score = candidate.score === null ? candidate.rejectedReason : candidate.score.toFixed(3);
