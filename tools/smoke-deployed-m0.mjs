@@ -131,6 +131,18 @@ try {
   if (interactionHudDisplay === "none") {
     throw new Error("Normal route Resonance interaction HUD is hidden");
   }
+  const objectiveStage = await root.locator("body").getAttribute(
+    "data-resonance-objective-event",
+  );
+  if (!["breach", "resonance", "repel", "relay", "complete"].includes(objectiveStage ?? "")) {
+    throw new Error(`Objective choreography state is missing: ${objectiveStage}`);
+  }
+  const objectiveEventDisplay = await root.locator("#objective-event").evaluate(
+    (element) => getComputedStyle(element).display,
+  );
+  if (objectiveEventDisplay === "none") {
+    throw new Error("Normal route objective event surface is hidden");
+  }
   await root.waitForFunction(
     () => document.querySelector("#diagnostics")?.textContent?.includes("RESONANCE M0.9"),
     undefined,
@@ -183,6 +195,8 @@ try {
     visualLandmarks,
     interactionState,
     interactionHudVisible: true,
+    objectiveStage,
+    objectiveEventSurfacePresent: true,
     buildIdMarker: await root.locator("body").getAttribute("data-resonance-build-id"),
     shaderWarmupMs: await root.locator("body").getAttribute("data-resonance-shader-warmup-ms"),
     performanceSchema: performance.schema,
@@ -235,6 +249,14 @@ try {
   if (blindGameHudDisplay !== "none") {
     throw new Error(`Blind mode game HUD is visible: display=${blindGameHudDisplay}`);
   }
+  const blindObjectiveEventDisplay = await blind.locator("#objective-event").evaluate(
+    (element) => getComputedStyle(element).display,
+  );
+  if (blindObjectiveEventDisplay !== "none") {
+    throw new Error(
+      `Blind mode objective event is visible: display=${blindObjectiveEventDisplay}`,
+    );
+  }
 
   const blindDownload = blind.waitForEvent("download");
   await blind.keyboard.press("F8");
@@ -257,6 +279,7 @@ try {
     promptPresent: true,
     diagnosticsHidden: true,
     gameHudHidden: true,
+    objectiveEventHidden: true,
     questionnairePresent: true,
     backendPreference: blindBackendPreference,
     blindSchema: blindReport.schema,
