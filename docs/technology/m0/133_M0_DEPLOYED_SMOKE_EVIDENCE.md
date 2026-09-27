@@ -1,13 +1,13 @@
 # M0 Deployed Smoke Evidence
 
 **Status:** PASS — automated deployment/runtime smoke only  
-**Evidence build:** `7044e62be61f58f3b2edfae19bfc8dd0405d4621`  
-**Workflow:** Deploy M0 Evidence Build #10  
-**Workflow run:** `36315331943`  
+**Evidence build:** `a18df4f0a3743964615da8ca146feb33584bd725`  
+**Workflow:** Deploy M0 Evidence Build #11  
+**Workflow run:** `36316525999`  
 **Public URL:** `https://resonance-m0-evidence.resonance-mohammad-dev.workers.dev`  
-**Smoke artifact:** `10930925566`  
-**Artifact digest:** `sha256:2fa153fd0a4989217c48c6b17e5056f47fe95b7e3dfdd53662991108880705c5`  
-**Artifact expiry:** 2026-10-27T11:20:24Z
+**Smoke artifact:** `10931161148`  
+**Artifact digest:** `sha256:97614801358873e2fd965cc33133641665a7429b21ae0d9757134dc123556825`  
+**Artifact expiry:** 2026-10-27T11:42:26Z
 
 ## What this evidence proves
 
@@ -27,10 +27,11 @@ The retained Chromium deployed smoke then verified:
 
 - root route returned HTTP 200;
 - application reached the explicit `ready` boot phase;
-- build marker matched `7044e62be61f58f3b2edfae19bfc8dd0405d4621`;
+- build marker matched `a18df4f0a3743964615da8ca146feb33584bd725`;
 - WebGL2 fallback booted successfully in the headless CI environment;
 - performance export used schema `resonance.m0.performance-capture.v1`;
 - performance export `buildId` matched the deployed commit;
+- performance export contained capture-window duration, CPU frame p95, GPU frame p95-or-null, draw-call range and aligned raw CPU/GPU/draw-call arrays;
 - `/?blind=1` returned HTTP 200;
 - blind-test body/prompt initialized;
 - engineering diagnostics were hidden in blind mode;
@@ -47,13 +48,16 @@ The automated headless smoke reported, for diagnostic context only:
 
 - backend: WebGL2 fallback;
 - WebGL2 context available: yes;
-- shader warmup: 609.5 ms;
+- shader warmup: 573.7 ms;
 - runtime shader compile after warmup: 0.0 ms;
-- draw calls: 45;
+- deployed-smoke draw-call range: 44–45;
 - active render meshes: 16 of 43;
 - materials: 11;
 - textures: 7;
+- deployed-smoke CPU frame p95: 5.9 ms over its short smoke window;
 - GPU frame timing: unavailable on this fallback path and correctly reported as `n/a`.
+
+The smoke's capture window was only about 1.4 seconds because its purpose is schema/runtime verification. Those smoke values are not acceptance performance measurements; physical Tier M captures still require at least 120 seconds.
 
 The headless software-renderer FPS was about 17.2 and adaptive render scale was 0.72. Those values are **not Tier M performance evidence** and must not be used for physical signoff.
 
