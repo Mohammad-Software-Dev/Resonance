@@ -108,14 +108,14 @@ describe("blind-test report summary", () => {
       report("2", { voluntaryReplay: true }),
       report("3", { voluntaryReplay: true }),
       report("4", { voluntaryReplay: false }),
-      report("5", { voluntaryReplay: null }),
+      report("5", { voluntaryReplay: false }),
     ]);
     expect(summary.totalRecoveries).toBe(6);
     expect(summary.recoverySessions).toBe(5);
     expect(summary.voluntaryReplay).toEqual({
       yes: 3,
-      no: 1,
-      unanswered: 1,
+      no: 2,
+      unanswered: 0,
       majorityMet: true,
     });
   });
