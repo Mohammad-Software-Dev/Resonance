@@ -11,13 +11,13 @@ describe("authored visual asset contract", () => {
     expect(authoredVisualAssetMode()).toBe("authored");
     expect(
       AUTHORED_VISUAL_ASSETS.find((spec) => spec.slot === "wayfarer-player")?.url,
-    ).toBe("/assets/visual/characters/wayfarer-mara-m0.glb");
+    ).toBe("/assets/visual/characters/wayfarer-mara-m0-v2.glb");
     expect(
       AUTHORED_VISUAL_ASSETS.find((spec) => spec.slot === "scrapper-damaged")?.url,
-    ).toBe("/assets/visual/enemies/scrapper-damaged-m0.glb");
+    ).toBe("/assets/visual/enemies/scrapper-damaged-m0-v2.glb");
     expect(
       AUTHORED_VISUAL_ASSETS.find((spec) => spec.slot === "wayfarer-scar-setdress")?.url,
-    ).toBe("/assets/visual/environment/wayfarer-scar-setdress-m0.glb");
+    ).toBe("/assets/visual/environment/wayfarer-scar-setdress-m0-v2.glb");
     expect(AUTHORED_VISUAL_ASSETS.every((spec) => spec.fallback === "procedural")).toBe(true);
   });
 
