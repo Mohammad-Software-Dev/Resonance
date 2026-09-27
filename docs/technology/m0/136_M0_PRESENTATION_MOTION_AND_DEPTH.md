@@ -45,3 +45,25 @@ The pass is green only when:
 - no page/console/request/HTTP failures occur.
 
 No owner-run test is requested.
+
+
+## Pass 2 — essential world depth on every preset
+
+Deployment #28 proved state-driven Wayfarer motion, but its retained WebGL2/Low screenshot exposed a presentation-policy defect: Low disabled the entire industrial backdrop, Wayfarer Scar depth layer and gas-giant vista. The result was a technically readable gameplay plane floating in a black void.
+
+Pass 2 keeps **essential composition** independent of optional distant detail:
+
+- the main orbital frame remains enabled on every graphics preset;
+- a large double orbital ring establishes station scale behind the playable plane;
+- the gas giant is re-staged into the active follow-camera composition and remains visible on Low;
+- the gas-giant material is self-readable rather than depending on expensive lighting;
+- secondary Scar clutter remains controlled by `distantDetail`;
+- deck panels use a neutral ceramic/metal pattern with sufficient value contrast;
+- route teal is restricted to thin front-edge markers;
+- the previous bright cyan Wayfarer ground ring becomes a small neutral grounding cue;
+- shared ceramic/shell values are separated enough that Mara reads against the dark wreck;
+- ambient fill is raised slightly while the warm rim light remains the primary silhouette separator.
+
+The new automated contract is `data-resonance-depth-composition="essential-v1"`. The visual-landmark audit now requires both `orbital-parallax-ring` and `gas-giant`.
+
+This pass adds no materials, collision, gameplay rules or deterministic state.
