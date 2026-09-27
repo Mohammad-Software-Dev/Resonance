@@ -1,0 +1,18 @@
+{
+  "schema": "resonance.visual-asset.v1",
+  "slot": "wayfarer-scar-setdress",
+  "runtime": "/assets/visual/environment/wayfarer-scar-setdress-m0.glb",
+  "milestone": "M0.12 Pass 13",
+  "status": "authored-placeholder",
+  "shippingArt": false,
+  "purpose": "Replace the procedural Wayfarer Scar bulkhead, cargo and overhead service dressing through the authored GLB boundary without changing gameplay collision.",
+  "artDirection": [
+    "orbital industrial transit infrastructure",
+    "ceramic bulkhead shell",
+    "maintenance cargo cluster",
+    "conductive service spine",
+    "localized resonance and damage accents",
+    "non-gothic modular station language"
+  ],
+  "notes": "Created specifically for the Resonance prototype. Imported materials are remapped to the room palette and disposed so the authored replacement does not violate the M0 material budget."
+}
