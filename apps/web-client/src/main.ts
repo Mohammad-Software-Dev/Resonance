@@ -57,6 +57,7 @@ import {
   nextGraphicsPreset,
 } from "./graphics/presets";
 import { parseBackendPreference } from "./graphics/backend-preference";
+import { auditVisualLandmarks } from "./graphics/visual-landmarks";
 import {
   cameraSmoothingFactor,
   presentationCameraGoal,
@@ -288,6 +289,15 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
   },
   initialGraphicsPreset(backend),
 );
+const visualLandmarkAudit = auditVisualLandmarks(scene.meshes.map((mesh) => mesh.name));
+document.body.dataset.resonanceVisualLandmarks = visualLandmarkAudit.ready
+  ? "ready"
+  : `missing:${visualLandmarkAudit.missing.join(",")}`;
+if (!visualLandmarkAudit.ready) {
+  throw new Error(
+    `Recognizable-game visual landmarks missing: ${visualLandmarkAudit.missing.join(", ")}`,
+  );
+}
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
