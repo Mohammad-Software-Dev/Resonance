@@ -116,6 +116,22 @@ try {
     throw new Error(`Recognizable-game visual landmark audit failed: ${visualLandmarks}`);
   }
   await root.waitForFunction(
+    () => ["idle", "locked", "attract", "repel"].includes(
+      document.body.dataset.resonanceInteractionState ?? "",
+    ),
+    undefined,
+    { timeout: 15_000 },
+  );
+  const interactionState = await root.locator("body").getAttribute(
+    "data-resonance-interaction-state",
+  );
+  const interactionHudDisplay = await root.locator("#hud-resonance").evaluate(
+    (element) => getComputedStyle(element).display,
+  );
+  if (interactionHudDisplay === "none") {
+    throw new Error("Normal route Resonance interaction HUD is hidden");
+  }
+  await root.waitForFunction(
     () => document.querySelector("#diagnostics")?.textContent?.includes("RESONANCE M0.9"),
     undefined,
     { timeout: 15_000 },
@@ -165,6 +181,8 @@ try {
     backendPreference: rootBackendPreference,
     activeBackend: performance.backend,
     visualLandmarks,
+    interactionState,
+    interactionHudVisible: true,
     buildIdMarker: await root.locator("body").getAttribute("data-resonance-build-id"),
     shaderWarmupMs: await root.locator("body").getAttribute("data-resonance-shader-warmup-ms"),
     performanceSchema: performance.schema,
@@ -211,6 +229,12 @@ try {
   if (diagnosticsDisplay !== "none") {
     throw new Error(`Blind mode diagnostics are visible: display=${diagnosticsDisplay}`);
   }
+  const blindGameHudDisplay = await blind.locator("#game-hud").evaluate(
+    (element) => getComputedStyle(element).display,
+  );
+  if (blindGameHudDisplay !== "none") {
+    throw new Error(`Blind mode game HUD is visible: display=${blindGameHudDisplay}`);
+  }
 
   const blindDownload = blind.waitForEvent("download");
   await blind.keyboard.press("F8");
@@ -232,6 +256,7 @@ try {
     bodyClassPresent: true,
     promptPresent: true,
     diagnosticsHidden: true,
+    gameHudHidden: true,
     questionnairePresent: true,
     backendPreference: blindBackendPreference,
     blindSchema: blindReport.schema,

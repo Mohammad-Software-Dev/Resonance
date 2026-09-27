@@ -92,3 +92,25 @@ Presentation changes:
 - no changes to gameplay collision or deterministic simulation.
 
 The purpose is to make existing geometry read as authored orbital infrastructure rather than flat-color test primitives while keeping the browser bundle self-contained and reproducible.
+
+
+## Pass 4 — Resonance interaction readability
+
+The fourth M0.12 pass makes interaction state understandable without the engineering diagnostics overlay.
+
+The normal game HUD now exposes four presentation states:
+
+- idle scan;
+- passive anchor lock;
+- active Attract field;
+- Repel burst/recovery.
+
+The HUD names the selected gameplay object using authored terms such as Moving Anchor, Breach Anchor and Relay Node, and preserves the existing teal Attract / orange Repel VFX language.
+
+This is presentation-only. It reads existing selection, Attract and Repel state and does not alter targeting, force application, movement, cooldowns or deterministic simulation.
+
+The deployed smoke verifies that:
+
+- a valid interaction state is published by the normal route;
+- the Resonance interaction HUD is visible on the normal route;
+- the full game HUD remains hidden in blind-test mode.
