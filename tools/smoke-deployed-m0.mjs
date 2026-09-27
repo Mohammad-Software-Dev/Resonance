@@ -31,11 +31,12 @@ async function readDownloadJson(download) {
   return JSON.parse(await readFile(filePath, "utf8"));
 }
 
-const browser = await chromium.launch({
-  headless: true,
-  args: ["--enable-webgl", "--use-angle=swiftshader"],
-});
-const context = await browser.newContext({ acceptDownloads: true });
+async function snapshotPage(page, prefix) {
+  if (!page) return;
+  await page.screenshot({ path: path.join(artifactDir, `${prefix}.png`) }).catch(() => {});
+  await writeFile(path.join(artifactDir, `${prefix}.html`), await page.content()).catch(() => {});
+}
+
 const report = {
   schema: "resonance.m0.deployed-smoke.v1",
   baseUrl,
@@ -43,21 +44,48 @@ const report = {
   checkedAt: new Date().toISOString(),
   root: {},
   blind: {},
+  failure: null,
 };
 
+let browser;
+let context;
+let root;
+let blind;
+
 try {
-  const root = await context.newPage();
+  browser = await chromium.launch({
+    headless: true,
+    args: [
+      "--use-gl=angle",
+      "--use-angle=swiftshader",
+      "--enable-unsafe-swiftshader",
+      "--ignore-gpu-blocklist",
+    ],
+  });
+  context = await browser.newContext({ acceptDownloads: true });
+
+  root = await context.newPage();
   const rootErrors = [];
+  const rootConsoleErrors = [];
   root.on("pageerror", (error) => rootErrors.push(String(error)));
+  root.on("console", (message) => {
+    if (message.type() === "error") rootConsoleErrors.push(message.text());
+  });
 
   const rootResponse = await gotoWithRetry(root, `${baseUrl}/`);
+  const webgl2Available = await root.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    return Boolean(canvas.getContext("webgl2"));
+  });
+  if (!webgl2Available) throw new Error("Headless Chromium has no WebGL2 context");
+
   await root.waitForSelector("#game", { state: "attached", timeout: 30_000 });
   await root.waitForFunction(
     () => document.querySelector("#diagnostics")?.textContent?.includes("RESONANCE M0.9"),
     undefined,
     { timeout: 30_000 },
   );
-  await root.screenshot({ path: path.join(artifactDir, "root.png") });
+  await snapshotPage(root, "root");
 
   const performanceDownload = root.waitForEvent("download");
   await root.keyboard.press("p");
@@ -72,15 +100,22 @@ try {
   report.root = {
     status: rootResponse.status(),
     title: await root.title(),
+    webgl2Available,
     diagnosticsPresent: true,
     performanceSchema: performance.schema,
     performanceBuildId: performance.buildId,
+    diagnosticsText: await root.locator("#diagnostics").textContent(),
     pageErrors: rootErrors,
+    consoleErrors: rootConsoleErrors,
   };
 
-  const blind = await context.newPage();
+  blind = await context.newPage();
   const blindErrors = [];
+  const blindConsoleErrors = [];
   blind.on("pageerror", (error) => blindErrors.push(String(error)));
+  blind.on("console", (message) => {
+    if (message.type() === "error") blindConsoleErrors.push(message.text());
+  });
 
   const blindResponse = await gotoWithRetry(blind, `${baseUrl}/?blind=1`);
   await blind.waitForSelector("body.blind-test", { timeout: 30_000 });
@@ -108,7 +143,7 @@ try {
 
   await blind.keyboard.press("F7");
   await blind.waitForSelector("#blind-questionnaire", { timeout: 10_000 });
-  await blind.screenshot({ path: path.join(artifactDir, "blind-questionnaire.png") });
+  await snapshotPage(blind, "blind-questionnaire");
 
   report.blind = {
     status: blindResponse.status(),
@@ -120,16 +155,39 @@ try {
     blindSchema: blindReport.schema,
     blindBuildId: blindReport.buildId,
     pageErrors: blindErrors,
+    consoleErrors: blindConsoleErrors,
   };
 
-  if (rootErrors.length || blindErrors.length) {
-    throw new Error(`Deployed page errors observed: ${JSON.stringify({ rootErrors, blindErrors })}`);
+  if (rootErrors.length || rootConsoleErrors.length || blindErrors.length || blindConsoleErrors.length) {
+    throw new Error(`Deployed browser errors observed: ${JSON.stringify({
+      rootErrors,
+      rootConsoleErrors,
+      blindErrors,
+      blindConsoleErrors,
+    })}`);
   }
-
+} catch (error) {
+  report.failure = {
+    message: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack : null,
+  };
+  if (root) {
+    report.root = {
+      ...report.root,
+      diagnosticsText: await root.locator("#diagnostics").textContent().catch(() => null),
+      bodyClass: await root.locator("body").getAttribute("class").catch(() => null),
+    };
+    await snapshotPage(root, "root-failure");
+  }
+  if (blind) await snapshotPage(blind, "blind-failure");
   await writeFile(path.join(artifactDir, "smoke.json"), JSON.stringify(report, null, 2));
+  console.error(JSON.stringify(report, null, 2));
+  throw error;
 } finally {
-  await context.close();
-  await browser.close();
+  if (!report.failure) {
+    await writeFile(path.join(artifactDir, "smoke.json"), JSON.stringify(report, null, 2));
+    console.log(JSON.stringify(report, null, 2));
+  }
+  await context?.close().catch(() => {});
+  await browser?.close().catch(() => {});
 }
-
-console.log(JSON.stringify(report, null, 2));
