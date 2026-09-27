@@ -115,17 +115,20 @@ Samples include:
 
 No name, email, account identifier, IP address, or free-form demographic profile is requested by the harness.
 
-## Questionnaire
+## Questionnaire and voluntary replay evidence
 
-F7 asks:
+F7 first captures:
 
 - movement responsiveness, 1–5;
 - targeting clarity, 1–5;
 - Repel predictability, 1–5;
-- whether the tester would voluntarily replay a movement challenge;
 - free-form confusion/unpredictability notes.
 
 The free-form response is intentionally last so the numerical questions do not prime a specific complaint.
+
+The tester then chooses either **Finish & export** or **Replay a challenge**. The second choice is an actual behavioral opt-in, not a hypothetical survey answer. A positive `voluntaryReplay` value is recorded only after the replay attempt continues for at least 120 fixed ticks and includes meaningful movement or Resonance use. The tester then presses F7 again to finish and export.
+
+If the tester abandons that replay attempt and presses F7 early, the report records the replay as not completed. F8 can still export an in-progress/partial artifact at any point.
 
 ## Required sample
 
@@ -141,7 +144,7 @@ pnpm blind-test:report <report-directory>
 
 The command strictly validates schema, task flags, questionnaire values, event records and duplicate session IDs. F8 partial exports remain useful evidence, but they do **not** count toward the five-session minimum until the tester submits the F7 questionnaire and the report contains the `questionnaire-complete` event.
 
-The summary reports both loaded-report count and questionnaire-completed tester count, task coverage, recovery totals, voluntary-replay majority, rating distributions and confusion notes. It also reports how many completed sessions observed all six instrumented tasks.
+The summary reports both loaded-report count and questionnaire-completed tester count, task coverage, recovery totals, **observed** voluntary-replay majority, rating distributions and confusion notes. A report that claims `voluntaryReplay: true` without a `voluntary-replay-complete` event is rejected. It also reports how many completed sessions observed all six instrumented tasks.
 
 The aggregator does not independently decide whether a tester completed the M0 course. Hard acceptance item 13 still requires human review of the retained task/observer evidence showing that at least five blind testers completed the course.
 
