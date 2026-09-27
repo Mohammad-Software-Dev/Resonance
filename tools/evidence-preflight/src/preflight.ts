@@ -202,7 +202,9 @@ export function evaluatePerformanceCapture(
       runtimeShaderCompile: gate(capture.performance.runtimeShaderCompilationMs === 0),
       mediumRenderScale: capture.graphics.preset.toLowerCase() === "medium"
         ? gate(summary.minimumRenderScale >= 0.75)
-        : "review",
+        : capture.backend === "webgpu"
+          ? "fail"
+          : "review",
     },
     values: {
       ...summary,
