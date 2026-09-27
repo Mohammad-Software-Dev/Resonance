@@ -9,6 +9,7 @@ import { CreateBox } from "@babylonjs/core/Meshes/Builders/boxBuilder";
 import { CreateLines } from "@babylonjs/core/Meshes/Builders/linesBuilder";
 import { CreateCapsule } from "@babylonjs/core/Meshes/Builders/capsuleBuilder";
 import { CreateSphere } from "@babylonjs/core/Meshes/Builders/sphereBuilder";
+import type { Material } from "@babylonjs/core/Materials/material";
 import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 import { Scene } from "@babylonjs/core/scene";
 import {
@@ -340,6 +341,24 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
   initialGraphicsPreset(backend),
 );
 
+function remapImportedMaterials(
+  meshes: readonly AbstractMesh[],
+  mapping: Readonly<Record<string, Material>>,
+): void {
+  const replaced = new Set<Material>();
+  for (const mesh of meshes) {
+    const current = mesh.material;
+    if (!current) continue;
+    const target = mapping[current.name];
+    if (!target || target === current) continue;
+    replaced.add(current);
+    mesh.material = target;
+  }
+  for (const material of replaced) {
+    material.dispose();
+  }
+}
+
 const wayfarerVisualSpec = AUTHORED_VISUAL_ASSETS.find(
   (spec) => spec.slot === "wayfarer-player",
 );
@@ -358,11 +377,19 @@ if (wayfarerVisualResult.status === "authored") {
   }
   authoredWayfarerRoot.position.copyFrom(playerMesh.position);
   authoredWayfarerRoot.scaling.setAll(0.82);
+  remapImportedMaterials(wayfarerVisualResult.meshes, {
+    Mara_Suit: graphicsRoom.authoredPalette.shell,
+    Mara_Ceramic: graphicsRoom.authoredPalette.ceramic,
+    Mara_Resonance: graphicsRoom.authoredPalette.resonance,
+    Mara_Dark: graphicsRoom.authoredPalette.dark,
+    Mara_Fabric: graphicsRoom.authoredPalette.dark,
+  });
   for (const mesh of wayfarerVisualResult.meshes) {
     mesh.isPickable = false;
     graphicsRoom.shadowGenerator.addShadowCaster(mesh);
   }
   graphicsRoom.setProceduralWayfarerEnabled(false);
+  graphicsRoom.releaseProceduralWayfarerFallback();
   document.body.dataset.resonanceAuthoredWayfarer = "authored";
 } else {
   document.body.dataset.resonanceAuthoredWayfarer = "fallback";
@@ -393,6 +420,12 @@ if (scrapperVisualResult.status === "authored") {
   }
   authoredScrapperRoot.position.set(5.75, 0.93, 0.25);
   authoredScrapperRoot.rotation.z = -0.08;
+  remapImportedMaterials(scrapperVisualResult.meshes, {
+    Scrapper_Shell: graphicsRoom.authoredPalette.shell,
+    Scrapper_Joint: graphicsRoom.authoredPalette.dark,
+    Scrapper_Hostile: graphicsRoom.authoredPalette.hostile,
+    Scrapper_Damage: graphicsRoom.authoredPalette.damage,
+  });
   authoredScrapperEye =
     scrapperVisualResult.meshes.find((mesh) => mesh.name === "Scrapper_HostileEye")
     ?? null;
@@ -407,6 +440,7 @@ if (scrapperVisualResult.status === "authored") {
     graphicsRoom.shadowGenerator.addShadowCaster(mesh);
   }
   graphicsRoom.setProceduralScrapperEnabled(false);
+  graphicsRoom.releaseProceduralScrapperFallback();
   document.body.dataset.resonanceAuthoredScrapper = "authored";
 } else {
   document.body.dataset.resonanceAuthoredScrapper = "fallback";
