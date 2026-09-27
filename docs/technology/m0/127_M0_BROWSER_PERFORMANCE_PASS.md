@@ -139,6 +139,8 @@ These are **gates to measure**, not claims already achieved.
 Reference capture conditions:
 
 - physical Tier M machine recorded by exact CPU/GPU/RAM/OS/driver/browser;
+- WebGPU capture uses `?backend=webgpu` so silent fallback cannot contaminate the run;
+- WebGL2 capture uses `?backend=webgl2` so the same WebGPU-capable machine can exercise fallback deterministically;
 - 1920x1080 display;
 - Medium preset;
 - WebGPU primary run;
@@ -208,7 +210,7 @@ The client keeps an allocation-stable ring containing the latest two minutes of 
 
 The export includes:
 
-- backend and user agent;
+- active backend, requested backend preference and user agent;
 - camera/preset/render state;
 - dynamic-resolution state;
 - current Babylon performance counters;
