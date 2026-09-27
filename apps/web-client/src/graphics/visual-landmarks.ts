@@ -14,6 +14,10 @@ export const REQUIRED_VISUAL_LANDMARKS = [
   "scrapper-hostile-eye",
   "scrapper-loose-forearm-plate",
   "scrapper-threat-ring",
+  "wreck-spark-source",
+  "wreck-hanging-cable",
+  "wreck-air-leak-vent",
+  "wreck-fault-light",
 ] as const;
 
 export interface VisualLandmarkAudit {
