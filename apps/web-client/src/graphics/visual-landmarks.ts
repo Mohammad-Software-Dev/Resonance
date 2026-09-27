@@ -1,6 +1,8 @@
 export const REQUIRED_VISUAL_LANDMARKS = [
   "Mara_Helmet",
   "Mara_GauntletEmitter",
+  "orbital-parallax-ring",
+  "gas-giant",
   "gameplay-deck-edge-left",
   "gameplay-deck-edge-center",
   "gameplay-deck-edge-right",
