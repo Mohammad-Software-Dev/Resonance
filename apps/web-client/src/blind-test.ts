@@ -38,6 +38,8 @@ interface BlindTestTasks {
 
 const SAMPLE_INTERVAL_TICKS = 30;
 const MEANINGFUL_TARGET_TICKS = 6;
+const MEANINGFUL_REPLAY_TICKS = 120;
+const MEANINGFUL_REPLAY_DISTANCE = 2;
 
 function downloadJson(filename: string, value: unknown): void {
   const blob = new Blob([JSON.stringify(value, null, 2)], { type: "application/json" });
@@ -91,6 +93,13 @@ export class BlindMovementTestSession {
   private form: HTMLFormElement | null = null;
   private lastTaskSummary = "";
   private lastTick = 0;
+  private lastSample: BlindTestTickSample | null = null;
+  private questionnaireCaptured = false;
+  private replayAttempt: {
+    readonly startTick: number;
+    readonly startPosition: Vec3;
+    readonly repelUses: number;
+  } | null = null;
 
   public constructor(
     private readonly buildId: string,
@@ -107,6 +116,11 @@ export class BlindMovementTestSession {
   public recordTick(sample: BlindTestTickSample): void {
     if (!this.enabled) return;
     this.lastTick = sample.tick;
+    this.lastSample = {
+      ...sample,
+      position: { ...sample.position },
+      velocity: { ...sample.velocity },
+    };
 
     if (sample.tick % SAMPLE_INTERVAL_TICKS === 0) {
       this.samples.push({
@@ -149,6 +163,25 @@ export class BlindMovementTestSession {
       }
     }
 
+    const replayAttempt = this.replayAttempt;
+    if (replayAttempt) {
+      const elapsedTicks = sample.tick - replayAttempt.startTick;
+      const replayDistance = Math.hypot(
+        sample.position.x - replayAttempt.startPosition.x,
+        sample.position.y - replayAttempt.startPosition.y,
+      );
+      const replayAbilityUsed = sample.attractTargetId !== 0
+        || sample.repelUses > replayAttempt.repelUses;
+      if (
+        elapsedTicks >= MEANINGFUL_REPLAY_TICKS
+        && (replayDistance >= MEANINGFUL_REPLAY_DISTANCE || replayAbilityUsed)
+      ) {
+        this.questionnaire.voluntaryReplay = true;
+        this.replayAttempt = null;
+        this.recordEvent(sample.tick, "voluntary-replay-complete");
+      }
+    }
+
     this.refreshPrompt();
   }
 
@@ -166,6 +199,17 @@ export class BlindMovementTestSession {
 
   public showQuestionnaire(): void {
     if (!this.enabled || this.form) return;
+
+    if (this.questionnaireCaptured) {
+      if (this.replayAttempt) {
+        this.replayAttempt = null;
+        this.questionnaire.voluntaryReplay = false;
+        this.recordEvent(this.lastTick, "voluntary-replay-abandoned");
+      }
+      this.completeAndExport();
+      return;
+    }
+
     const form = document.createElement("form");
     form.id = "blind-questionnaire";
     form.innerHTML = "<h2>M0 movement check</h2><p>Answer from first impressions. 1 = poor/confusing, 5 = excellent/clear.</p>";
@@ -175,14 +219,6 @@ export class BlindMovementTestSession {
       ratingSelect("repelPredictability", "Repel predictability"),
     );
 
-    const replay = document.createElement("label");
-    replay.textContent = "Would you voluntarily replay a movement challenge?";
-    const replaySelect = document.createElement("select");
-    replaySelect.name = "voluntaryReplay";
-    replaySelect.innerHTML = '<option value="">—</option><option value="yes">Yes</option><option value="no">No</option>';
-    replay.append(replaySelect);
-    form.append(replay);
-
     const notes = document.createElement("label");
     notes.textContent = "What felt confusing or unpredictable?";
     const textarea = document.createElement("textarea");
@@ -191,10 +227,23 @@ export class BlindMovementTestSession {
     notes.append(textarea);
     form.append(notes);
 
-    const exportButton = document.createElement("button");
-    exportButton.type = "submit";
-    exportButton.textContent = "Save & export blind-test report";
-    form.append(exportButton);
+    const actions = document.createElement("div");
+    actions.className = "blind-questionnaire-actions";
+
+    const finishButton = document.createElement("button");
+    finishButton.type = "submit";
+    finishButton.name = "sessionAction";
+    finishButton.value = "finish";
+    finishButton.textContent = "Finish & export";
+
+    const replayButton = document.createElement("button");
+    replayButton.type = "submit";
+    replayButton.name = "sessionAction";
+    replayButton.value = "replay";
+    replayButton.textContent = "Replay a challenge";
+
+    actions.append(finishButton, replayButton);
+    form.append(actions);
 
     form.addEventListener("keydown", (event) => event.stopPropagation());
     form.addEventListener("keyup", (event) => event.stopPropagation());
@@ -205,18 +254,35 @@ export class BlindMovementTestSession {
         const raw = data.get(name);
         return typeof raw === "string" && raw ? Number(raw) : null;
       };
-      const replayValue = data.get("voluntaryReplay");
+      const submitter = event.submitter;
+      const sessionAction = submitter instanceof HTMLButtonElement
+        ? submitter.value
+        : "finish";
       this.questionnaire = {
         responsiveness: rating("responsiveness"),
         targetingClarity: rating("targetingClarity"),
         repelPredictability: rating("repelPredictability"),
-        voluntaryReplay: replayValue === "yes" ? true : replayValue === "no" ? false : null,
+        voluntaryReplay: sessionAction === "finish" ? false : null,
         confusionNotes: String(data.get("confusionNotes") ?? "").trim(),
       };
-      this.recordEvent(this.lastTick, "questionnaire-complete");
-      this.export();
+      this.questionnaireCaptured = true;
+      this.recordEvent(this.lastTick, "questionnaire-captured");
       form.remove();
       this.form = null;
+
+      if (sessionAction === "replay") {
+        const sample = this.lastSample;
+        this.replayAttempt = {
+          startTick: this.lastTick,
+          startPosition: sample ? { ...sample.position } : { ...this.startPosition },
+          repelUses: sample?.repelUses ?? 0,
+        };
+        this.recordEvent(this.lastTick, "voluntary-replay-start");
+        this.refreshPrompt();
+        return;
+      }
+
+      this.completeAndExport();
     });
 
     document.body.append(form);
@@ -247,6 +313,14 @@ export class BlindMovementTestSession {
     });
   }
 
+  private completeAndExport(): void {
+    if (this.questionnaire.voluntaryReplay === null) {
+      this.questionnaire.voluntaryReplay = false;
+    }
+    this.recordEvent(this.lastTick, "questionnaire-complete");
+    this.export();
+  }
+
   private recordEvent(tick: number, type: string, detail?: string): void {
     this.events.push({ tick, type, ...(detail ? { detail } : {}) });
   }
@@ -268,7 +342,11 @@ export class BlindMovementTestSession {
       "Move: A/D or arrows • Jump: Space • Evade: Left Shift",
       "Attract: hold E / RT • Repel: Q / LT • Aim: mouse/right stick",
       `Observed challenges: ${complete}/6`,
-      "F7 questionnaire • F8 export current report",
+      this.replayAttempt
+        ? "Voluntary replay in progress • F7 finish without counting replay"
+        : this.questionnaire.voluntaryReplay === true
+          ? "Voluntary replay observed • F7 finish & export"
+          : "F7 questionnaire • F8 export current report",
     ].join("\n");
     if (summary !== this.lastTaskSummary) {
       this.prompt.textContent = summary;
