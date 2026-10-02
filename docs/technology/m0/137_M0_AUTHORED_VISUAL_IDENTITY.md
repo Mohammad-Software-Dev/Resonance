@@ -1,6 +1,6 @@
 # M0.14 Authored Visual Identity Pass
 
-**Status:** IN PROGRESS — final hierarchy-regression fix pending deployment  
+**Status:** COMPLETE — deployed build `a63bf558569dcb4e974b0fc8e03ed2cad1a3b411`  
 **Purpose:** Move Wayfarer Scar from a recognizable prototype to a coherent first art-direction slice without requesting owner-run testing or entering M1.
 
 Deployment #29 proved the room now reads as a game space, but its retained screenshot still shows first-generation placeholder geometry: block-heavy environment dressing, a mannequin-like Wayfarer silhouette and oversized prototype-style Resonance targets.
@@ -106,3 +106,26 @@ Corrective work:
 - browser/deployed smoke contract advances to `data-resonance-presentation-hierarchy="authored-subject-v2"`.
 
 This correction is presentation-only. It does not alter target selection, physics, collision, deterministic state or authored asset slots.
+
+
+## Final completion record
+
+- PR #59 merged authored-v2 assets and runtime integration.
+- PR #60 refined subject/background hierarchy.
+- PR #61 fixed the render-loop hierarchy overrides and added regression tests.
+- final implementation commit: `a63bf558569dcb4e974b0fc8e03ed2cad1a3b411`.
+- post-merge CI #274: verify + Chromium + Firefox + WebKit PASS.
+- Deploy M0 Evidence Build #32 / run `37056256134`: PASS.
+- retained deployed-smoke artifact: `11247729486`.
+- artifact digest: `sha256:f01389481954459eb32ef9c4b9ab3c67fc5c7c048d76380ecfe0bdacbc0d0559`.
+- visual identity: `authored-v2`.
+- subject hierarchy: `authored-subject-v2`.
+- authored Wayfarer/Scrapper/setdress: all authored.
+- materials: 24 / 24.
+- deployed draw-call range: 185–196 / 250.
+- textures: 16.
+- runtime shader compilation after warmup: 0.0 ms.
+- page/console/request/HTTP failures: none.
+- deterministic replay/browser equivalence: unchanged and green.
+
+M0.14 is implementation-complete. The result is a coherent authored prototype slice, not shipping-final art. Physical/human acceptance remains deferred, not passed. No owner-run test is requested at this boundary.
