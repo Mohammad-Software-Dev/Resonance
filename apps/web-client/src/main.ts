@@ -73,6 +73,10 @@ import {
 } from "./graphics/presentation-camera";
 import { wayfarerPresentationPose } from "./graphics/wayfarer-presentation-motion";
 import {
+  scrapperPresentationPose,
+  targetPresentationScale,
+} from "./graphics/subject-presentation";
+import {
   BrowserPerformanceMonitor,
   warmCriticalShaders,
 } from "./performance/browser-performance";
@@ -525,7 +529,7 @@ if (!visualLandmarkAudit.ready) {
 document.body.dataset.resonanceTraversalCourse = "v2";
 document.body.dataset.resonanceCameraStaging = "follow-focus-v1";
 document.body.dataset.resonanceDepthComposition = "essential-v1";
-document.body.dataset.resonancePresentationHierarchy = "authored-subject-v1";
+document.body.dataset.resonancePresentationHierarchy = "authored-subject-v2";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
@@ -1274,15 +1278,18 @@ engine.runRenderLoop(() => {
     const selected = id === Number(selectedTargetId);
     const active = id === activeAttractTargetId;
     const repelFlash = now < repelFlashUntilMs && id === repelFlashTargetId;
-    const scale = repelFlash ? 0.65 : active ? 0.6 : selected ? 0.52 : 0.44;
-    mesh.scaling.setAll(scale);
+    mesh.scaling.setAll(targetPresentationScale({
+      selected,
+      active,
+      repelFlash,
+    }));
   }
 
   if (authoredScrapperRoot) {
     const elapsedSeconds = now / 1000;
-    const scrapperDrift = Math.sin(elapsedSeconds * 0.9) * 0.18;
-    authoredScrapperRoot.position.x = 5.75 + scrapperDrift;
-    authoredScrapperRoot.rotation.z = -0.08 + Math.sin(elapsedSeconds * 1.3) * 0.025;
+    const scrapperPose = scrapperPresentationPose(elapsedSeconds);
+    authoredScrapperRoot.position.x = scrapperPose.x;
+    authoredScrapperRoot.rotation.z = scrapperPose.rotationZ;
     if (authoredScrapperDamagedArm) {
       authoredScrapperDamagedArm.rotation.z =
         -0.48 + Math.sin(elapsedSeconds * 2.1) * 0.08;

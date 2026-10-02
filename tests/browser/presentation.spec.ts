@@ -47,7 +47,7 @@ test("Wayfarer Scar game-facing presentation boots cleanly", async ({
   );
   await expect(page.locator("body")).toHaveAttribute(
     "data-resonance-presentation-hierarchy",
-    "authored-subject-v1",
+    "authored-subject-v2",
   );
 
   await expect(page.locator("#game-hud")).toBeVisible();
