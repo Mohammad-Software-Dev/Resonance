@@ -17,7 +17,7 @@ The engineering implementation through M0.11 is merged. M0.12–M0.14 visual-rec
 | M0.9 browser performance instrumentation/pass | `b44d4a0006170f7e30e73ad22ebe7bfa50b77105` | IMPLEMENTED |
 | M0.10 deterministic replay/test harness | PR #9, squash `a2dced350f6d9d32863d8284213657ce62dad2d3`; final PR CI run 149 passed verify + Chromium + Firefox + WebKit | IMPLEMENTED / AUTOMATED GATE GREEN |
 | M0.11 blind movement test harness | PR #10, squash `da925b3dc49cd33c82f33156a460d7c2934ff774`; final PR CI run 159 passed | IMPLEMENTED / AUTOMATED GATE GREEN |
-| Current visual implementation candidate | `5cbc514c5b6e75030a28d55fcf648a281d447745`; Deploy M0 Evidence Build #31 run `37055112958`; retained smoke artifact `11248376619` | M0.14 IMPLEMENTATION COMPLETE / AUTOMATED SMOKE GREEN / HUMAN EVIDENCE DEFERRED |
+| Current visual implementation candidate | `a63bf558569dcb4e974b0fc8e03ed2cad1a3b411`; Deploy M0 Evidence Build #32 run `37056256134`; retained smoke artifact `11247729486` | M0.14 IMPLEMENTATION COMPLETE / AUTOMATED SMOKE GREEN / HUMAN EVIDENCE DEFERRED |
 
 These results prove that the test infrastructure and current automated regression gates work. They do **not** satisfy the physical-performance or blind-human acceptance requirements below.
 
