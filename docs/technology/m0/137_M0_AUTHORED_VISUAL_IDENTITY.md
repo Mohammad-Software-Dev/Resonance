@@ -66,3 +66,24 @@ M0.14 is green only when:
 - retained deployment screenshot is reviewed as the iteration loop.
 
 No owner-run test is requested.
+
+
+## Pass 2 — subject hierarchy refinement
+
+The first authored-v2 retained screenshot proved the asset-loading path but still exposed three presentation problems:
+
+- Mara shared too much value/material language with the wreck behind her;
+- the damaged Scrapper was staged too far toward the edge to read as a deliberate encounter subject;
+- long cyan infrastructure lines competed with Resonance anchors and route feedback.
+
+Pass 2 keeps the same authored-v2 GLBs and improves runtime composition without changing simulation:
+
+- dedicated Wayfarer suit/ceramic materials use the remaining two M0 material slots;
+- Mara is slightly rescaled for stronger side-view presence;
+- the Scrapper is moved into a clearer readable vignette position;
+- background service conduits are thinner and lower-emission;
+- Resonance anchor presentation is reduced from the previous prototype scale;
+- the boot-time objective banner no longer covers the center of the retained screenshot;
+- `data-resonance-presentation-hierarchy="authored-subject-v1"` is required by browser and deployed smoke.
+
+The material ceiling remains 24 and the draw-call ceiling remains 250.
