@@ -2,6 +2,7 @@ import type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
 import { GlowLayer } from "@babylonjs/core/Layers/glowLayer";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { HemisphericLight } from "@babylonjs/core/Lights/hemisphericLight";
+import { PointLight } from "@babylonjs/core/Lights/pointLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
 import type { Material } from "@babylonjs/core/Materials/material";
 import { NodeMaterial } from "@babylonjs/core/Materials/Node/nodeMaterial";
@@ -24,6 +25,7 @@ import {
   hardwareScalingLevel,
   type GraphicsPresetName,
 } from "./presets";
+import { wayfarerFillLightIntensity } from "./subject-presentation";
 
 const M0_ENVIRONMENT_URL =
   "/assets/environment/resonance-m0-orbital.env";
@@ -1428,7 +1430,7 @@ export function createRepresentativeGraphicsRoom(
   if (ambient) {
     ambient.diffuse = new Color3(0.32, 0.43, 0.55);
     ambient.groundColor = new Color3(0.025, 0.03, 0.045);
-    ambient.intensity = 0.36;
+    ambient.intensity = 0.3;
   }
 
   scene.environmentTexture = CubeTexture.CreateFromPrefilteredData(
@@ -1439,14 +1441,14 @@ export function createRepresentativeGraphicsRoom(
   const darkMetal = pbr(
     "orbital-dark-metal",
     scene,
-    new Color3(0.055, 0.075, 0.1),
+    new Color3(0.035, 0.052, 0.072),
     0.42,
     0.58,
   );
   const paintedMetal = pbr(
     "orbital-painted-metal",
     scene,
-    new Color3(0.14, 0.18, 0.2),
+    new Color3(0.085, 0.125, 0.145),
     0.28,
     0.58,
   );
@@ -1461,7 +1463,7 @@ export function createRepresentativeGraphicsRoom(
   const hullCeramic = pbr(
     "scar-hull-ceramic",
     scene,
-    new Color3(0.205, 0.22, 0.225),
+    new Color3(0.25, 0.235, 0.21),
     0.12,
     0.66,
   );
@@ -1692,8 +1694,11 @@ export function createRepresentativeGraphicsRoom(
   keyLight.shadowMinZ = 1;
   keyLight.shadowMaxZ = 28;
 
-  scene.imageProcessingConfiguration.contrast = 1.12;
-  scene.imageProcessingConfiguration.exposure = 1.02;
+  scene.imageProcessingConfiguration.contrast = 1.18;
+  scene.imageProcessingConfiguration.exposure = 1.04;
+  scene.imageProcessingConfiguration.vignetteEnabled = true;
+  scene.imageProcessingConfiguration.vignetteWeight = 1.12;
+  scene.imageProcessingConfiguration.vignetteColor = new Color4(0.005, 0.012, 0.02, 0);
 
   const rimLight = new DirectionalLight(
     "orbital-rim",
@@ -1703,7 +1708,21 @@ export function createRepresentativeGraphicsRoom(
   rimLight.position.set(-6.5, 5.2, 4.5);
   rimLight.diffuse = new Color3(1, 0.48, 0.24);
   rimLight.specular = new Color3(0.4, 0.16, 0.06);
-  rimLight.intensity = 0.28;
+  rimLight.intensity = 0.34;
+
+  const wayfarerFillLight = new PointLight(
+    "wayfarer-focal-fill",
+    new Vector3(
+      meshes.player.position.x - 0.35,
+      meshes.player.position.y + 0.72,
+      -1.1,
+    ),
+    scene,
+  );
+  wayfarerFillLight.diffuse = new Color3(0.34, 0.66, 0.76);
+  wayfarerFillLight.specular = new Color3(0.08, 0.16, 0.18);
+  wayfarerFillLight.range = 4.7;
+  wayfarerFillLight.intensity = wayfarerFillLightIntensity(0);
 
   const shadowGenerator = new ShadowGenerator(
     GRAPHICS_PRESETS[initialPreset].shadowMapSize,
@@ -1851,6 +1870,13 @@ export function createRepresentativeGraphicsRoom(
       for (const mesh of story.setdressMeshes) mesh.dispose(false, false);
     },
     update(elapsedSeconds: number): void {
+      wayfarerFillLight.position.set(
+        meshes.player.position.x - 0.35,
+        meshes.player.position.y + 0.72,
+        -1.1,
+      );
+      wayfarerFillLight.intensity = wayfarerFillLightIntensity(elapsedSeconds);
+
       const pulse = 0.5 + 0.5 * Math.sin(elapsedSeconds * 3.1);
       if (colorInput) {
         colorInput.value = new Color4(
