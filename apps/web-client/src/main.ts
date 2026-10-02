@@ -75,6 +75,7 @@ import { wayfarerPresentationPose } from "./graphics/wayfarer-presentation-motio
 import {
   scrapperPresentationPose,
   targetPresentationScale,
+  targetPresentationVisibility,
 } from "./graphics/subject-presentation";
 import {
   BrowserPerformanceMonitor,
@@ -530,6 +531,7 @@ document.body.dataset.resonanceTraversalCourse = "v2";
 document.body.dataset.resonanceCameraStaging = "follow-focus-v1";
 document.body.dataset.resonanceDepthComposition = "essential-v1";
 document.body.dataset.resonancePresentationHierarchy = "authored-subject-v2";
+document.body.dataset.resonanceLightingComposition = "focal-lighting-v1";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
@@ -1278,11 +1280,13 @@ engine.runRenderLoop(() => {
     const selected = id === Number(selectedTargetId);
     const active = id === activeAttractTargetId;
     const repelFlash = now < repelFlashUntilMs && id === repelFlashTargetId;
-    mesh.scaling.setAll(targetPresentationScale({
+    const presentationState = {
       selected,
       active,
       repelFlash,
-    }));
+    };
+    mesh.scaling.setAll(targetPresentationScale(presentationState));
+    mesh.visibility = targetPresentationVisibility(presentationState);
   }
 
   if (authoredScrapperRoot) {
