@@ -45,6 +45,10 @@ test("Wayfarer Scar game-facing presentation boots cleanly", async ({
     "data-resonance-slice-stage",
     "breach",
   );
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-resonance-presentation-hierarchy",
+    "authored-subject-v1",
+  );
 
   await expect(page.locator("#game-hud")).toBeVisible();
   await expect(page.locator(".hud-location strong")).toHaveText("WAYFARER SCAR");
@@ -52,6 +56,7 @@ test("Wayfarer Scar game-facing presentation boots cleanly", async ({
     "Move through the breach",
   );
   await expect(page.locator("#slice-complete")).not.toHaveClass(/visible/);
+  await expect(page.locator("#objective-event")).not.toHaveClass(/visible/);
   await expect(page.locator("#diagnostics")).toHaveCSS("opacity", "0");
 
   const canvasBox = await page.locator("#game").boundingBox();
