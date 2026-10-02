@@ -1,21 +1,18 @@
 # M0 Evidence Deployment Request
 
-**Request:** 31  
-**Requested from baseline:** `3484ba7ff1e43254e90fbc29cb15c996c0c2d95d`  
-**Purpose:** Publish the M0.14 authored-subject hierarchy refinement.
+**Request:** 32  
+**Requested from baseline:** `5cbc514c5b6e75030a28d55fcf648a281d447745`  
+**Purpose:** Publish the final M0.14 focal-hierarchy regression correction.
 
-Deployment #30 introduced the authored-v2 Mara, damaged Scrapper and Wayfarer Scar setdress slots. Automated screenshot review showed that the authored path works, but subject/background hierarchy can be improved without new gameplay or new authored binary assets.
+Deployment #31 passed all automated gates, but screenshot/code review found that two Pass 2 values were overwritten in the render loop: Scrapper staging reverted toward the old edge position and target scales were raised again after initialization.
 
 This request publishes:
 
-- dedicated Mara suit/ceramic runtime materials using the final two slots of the 24-material budget;
-- slightly stronger Mara screen presence;
-- clearer damaged-Scrapper staging;
-- thinner, lower-emission background service conduits;
-- reduced Resonance target visual dominance;
-- startup objective-banner suppression so the opening scene is visible immediately;
-- `data-resonance-presentation-hierarchy="authored-subject-v1"` browser/smoke contract.
+- tested target-presentation scale hierarchy: inactive 0.31, selected 0.42, active 0.49, Repel flash 0.54;
+- tested authored Scrapper drift around the intended x=4.9 focal position;
+- preserved authored Scrapper rotation baseline;
+- `data-resonance-presentation-hierarchy="authored-subject-v2"` browser/smoke contract.
 
-Deterministic movement, collision, target selection, replay semantics and authored-v2 asset slots are unchanged. Physical/human M0 acceptance remains deferred and no owner-run testing is requested.
+Deterministic movement, collision, target selection, authored-v2 assets and replay semantics are unchanged. Physical/human acceptance remains deferred and no owner-run testing is requested.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
