@@ -163,6 +163,14 @@ try {
   if (depthComposition !== "essential-v1") {
     throw new Error(`Expected essential depth composition, got: ${depthComposition}`);
   }
+  const presentationHierarchy = await root.locator("body").getAttribute(
+    "data-resonance-presentation-hierarchy",
+  );
+  if (presentationHierarchy !== "authored-subject-v1") {
+    throw new Error(
+      `Expected authored subject hierarchy, got: ${presentationHierarchy}`,
+    );
+  }
   await root.waitForFunction(
     () => ["idle", "run", "air", "evade", "attract", "repel"].includes(
       document.body.dataset.resonanceWayfarerMotion ?? "",
@@ -272,6 +280,7 @@ try {
     traversalCourse,
     cameraStaging,
     depthComposition,
+    presentationHierarchy,
     visualIdentity,
     initialWayfarerMotion,
     wayfarerMotion,

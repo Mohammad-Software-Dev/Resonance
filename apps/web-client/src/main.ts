@@ -385,7 +385,7 @@ let authoredWayfarerEmitter: AbstractMesh | null = null;
 let authoredWayfarerRootBaseRotationZ = 0;
 let authoredWayfarerHelmetBaseRotationZ = 0;
 let authoredWayfarerEmitterBaseScale = new Vector3(1, 1, 1);
-const AUTHORED_WAYFARER_SCALE = 0.68;
+const AUTHORED_WAYFARER_SCALE = 0.72;
 if (wayfarerVisualResult.status === "authored") {
   authoredWayfarerRoot =
     wayfarerVisualResult.meshes.find((mesh) => mesh.parent === null)
@@ -405,8 +405,8 @@ if (wayfarerVisualResult.status === "authored") {
   authoredWayfarerEmitterBaseScale = authoredWayfarerEmitter?.scaling.clone()
     ?? new Vector3(1, 1, 1);
   remapImportedMaterials(wayfarerVisualResult.meshes, {
-    Mara_Suit: graphicsRoom.authoredPalette.shell,
-    Mara_Ceramic: graphicsRoom.authoredPalette.ceramic,
+    Mara_Suit: graphicsRoom.authoredPalette.wayfarerSuit,
+    Mara_Ceramic: graphicsRoom.authoredPalette.wayfarerCeramic,
     Mara_Resonance: graphicsRoom.authoredPalette.resonance,
     Mara_Dark: graphicsRoom.authoredPalette.dark,
     Mara_Fabric: graphicsRoom.authoredPalette.dark,
@@ -445,8 +445,9 @@ if (scrapperVisualResult.status === "authored") {
   if (!authoredScrapperRoot) {
     throw new Error("Authored Scrapper GLB loaded without a root mesh");
   }
-  authoredScrapperRoot.position.set(5.75, 0.93, 0.25);
-  authoredScrapperRoot.rotation.z = -0.08;
+  authoredScrapperRoot.position.set(4.9, 0.96, 0.08);
+  authoredScrapperRoot.rotation.z = -0.11;
+  authoredScrapperRoot.scaling.setAll(0.86);
   remapImportedMaterials(scrapperVisualResult.meshes, {
     Scrapper_Shell: graphicsRoom.authoredPalette.shell,
     Scrapper_Joint: graphicsRoom.authoredPalette.dark,
@@ -524,6 +525,7 @@ if (!visualLandmarkAudit.ready) {
 document.body.dataset.resonanceTraversalCourse = "v2";
 document.body.dataset.resonanceCameraStaging = "follow-focus-v1";
 document.body.dataset.resonanceDepthComposition = "essential-v1";
+document.body.dataset.resonancePresentationHierarchy = "authored-subject-v1";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
@@ -533,6 +535,7 @@ const scarProgressBars = [...objectiveProgress.querySelectorAll("i")];
 
 function renderScarProgress(snapshot: WayfarerScarProgressSnapshot): void {
   if (snapshot.stage === lastScarStage) return;
+  const isInitialStage = lastScarStage === "";
   lastScarStage = snapshot.stage;
   objectiveTitle.textContent = snapshot.title;
   objectiveDetail.textContent = snapshot.detail;
@@ -545,11 +548,15 @@ function renderScarProgress(snapshot: WayfarerScarProgressSnapshot): void {
   objectiveEventKicker.textContent = stagePresentation.kicker;
   objectiveEventTitle.textContent = stagePresentation.title;
   objectiveEventDetail.textContent = stagePresentation.detail;
-  objectiveEvent.classList.add("visible");
   window.clearTimeout(objectiveEventTimer);
-  objectiveEventTimer = window.setTimeout(() => {
+  if (isInitialStage) {
     objectiveEvent.classList.remove("visible");
-  }, snapshot.complete ? 2200 : 1450);
+  } else {
+    objectiveEvent.classList.add("visible");
+    objectiveEventTimer = window.setTimeout(() => {
+      objectiveEvent.classList.remove("visible");
+    }, snapshot.complete ? 2200 : 1450);
+  }
 
   sliceComplete.classList.toggle("visible", snapshot.complete);
   document.body.dataset.resonanceSliceStage = snapshot.stage;

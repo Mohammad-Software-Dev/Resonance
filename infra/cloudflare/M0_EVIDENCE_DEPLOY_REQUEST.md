@@ -1,20 +1,21 @@
 # M0 Evidence Deployment Request
 
-**Request:** 30  
-**Requested from baseline:** `a7b3ea2f709757675a38fe0efedba5e311043982`  
-**Purpose:** Publish the first M0.14 authored-v2 visual identity candidate.
+**Request:** 31  
+**Requested from baseline:** `3484ba7ff1e43254e90fbc29cb15c996c0c2d95d`  
+**Purpose:** Publish the M0.14 authored-subject hierarchy refinement.
 
-Deployment #29 completed M0.13 presentation motion/depth. Its retained screenshot is recognizably game-like but still dominated by first-generation placeholder geometry.
+Deployment #30 introduced the authored-v2 Mara, damaged Scrapper and Wayfarer Scar setdress slots. Automated screenshot review showed that the authored path works, but subject/background hierarchy can be improved without new gameplay or new authored binary assets.
 
 This request publishes:
 
-- versioned v2 authored Mara Wayfarer GLB;
-- versioned v2 damaged Scrapper GLB;
-- versioned v2 Wayfarer Scar setdress GLB;
-- `data-resonance-visual-identity="authored-v2"` runtime/smoke contract;
-- reduced prototype target-scale dominance;
-- corrected smoke HTTP semantics so cache 304s are not reported as failures while genuine request/HTTP failures are fatal.
+- dedicated Mara suit/ceramic runtime materials using the final two slots of the 24-material budget;
+- slightly stronger Mara screen presence;
+- clearer damaged-Scrapper staging;
+- thinner, lower-emission background service conduits;
+- reduced Resonance target visual dominance;
+- startup objective-banner suppression so the opening scene is visible immediately;
+- `data-resonance-presentation-hierarchy="authored-subject-v1"` browser/smoke contract.
 
-Deterministic gameplay, collision, target selection and replay semantics are unchanged. M0 physical/human acceptance remains deferred and no owner-run testing is requested.
+Deterministic movement, collision, target selection, replay semantics and authored-v2 asset slots are unchanged. Physical/human M0 acceptance remains deferred and no owner-run testing is requested.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
