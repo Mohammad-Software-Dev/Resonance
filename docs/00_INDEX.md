@@ -173,6 +173,7 @@ Detailed Periapsis topology, Anchor Zero, four final configurations, world-state
 - `134_M0_FIELD_EVIDENCE_KIT.md` — private evidence layout, physical/blind handoff procedure and combined preflight command.
 - `135_M0_VISUAL_READABILITY_RECOVERY.md` — M0.12 visual-readability recovery; implementation complete, physical/human acceptance deferred.
 - `136_M0_PRESENTATION_MOTION_AND_DEPTH.md` — M0.13 state-driven authored motion and scene-depth polish while acceptance remains deferred.
+- `137_M0_AUTHORED_VISUAL_IDENTITY.md` — M0.14 authored-v2 Wayfarer/Scrapper/setdress integration and subject-hierarchy refinement.
 
 ### 118 — Browser architecture lock
 
