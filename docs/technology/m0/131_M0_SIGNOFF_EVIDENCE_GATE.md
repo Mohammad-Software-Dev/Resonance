@@ -1,6 +1,6 @@
 # M0 Signoff Evidence Gate
 
-**Status:** BLOCKED / M0.12 IMPLEMENTATION COMPLETE / PHYSICAL+HUMAN EVIDENCE DEFERRED  
+**Status:** BLOCKED / M0.14 VISUAL IMPLEMENTATION COMPLETE / PHYSICAL+HUMAN EVIDENCE DEFERRED  
 **Milestone:** M0 final acceptance / M1 entry gate  
 **Repository baseline:** `da925b3dc49cd33c82f33156a460d7c2934ff774` (M0.11 merged)  
 **Purpose:** Keep implemented engineering evidence separate from acceptance evidence that must come from real hardware and real blind testers.
@@ -10,14 +10,14 @@
 
 ## Current repository state
 
-The engineering implementation through M0.11 is merged. M0.12 visual-readability recovery is also implementation-complete, but acceptance remains blocked on real physical and human evidence.
+The engineering implementation through M0.11 is merged. M0.12–M0.14 visual-recovery/presentation work is implementation-complete, but acceptance remains blocked on real physical and human evidence.
 
 | Item | Repository evidence | Status |
 | --- | --- | --- |
 | M0.9 browser performance instrumentation/pass | `b44d4a0006170f7e30e73ad22ebe7bfa50b77105` | IMPLEMENTED |
 | M0.10 deterministic replay/test harness | PR #9, squash `a2dced350f6d9d32863d8284213657ce62dad2d3`; final PR CI run 149 passed verify + Chromium + Firefox + WebKit | IMPLEMENTED / AUTOMATED GATE GREEN |
 | M0.11 blind movement test harness | PR #10, squash `da925b3dc49cd33c82f33156a460d7c2934ff774`; final PR CI run 159 passed | IMPLEMENTED / AUTOMATED GATE GREEN |
-| Current M0.12 implementation candidate | `ab043ace342c66f19e4c71c2d62092864bf6eed2`; Deploy M0 Evidence Build #27 run `36342810612`; retained smoke artifact `10939197148` | IMPLEMENTATION COMPLETE / AUTOMATED SMOKE GREEN / HUMAN EVIDENCE DEFERRED |
+| Current visual implementation candidate | `5cbc514c5b6e75030a28d55fcf648a281d447745`; Deploy M0 Evidence Build #31 run `37055112958`; retained smoke artifact `11248376619` | M0.14 IMPLEMENTATION COMPLETE / AUTOMATED SMOKE GREEN / HUMAN EVIDENCE DEFERRED |
 
 These results prove that the test infrastructure and current automated regression gates work. They do **not** satisfy the physical-performance or blind-human acceptance requirements below.
 
@@ -98,7 +98,7 @@ M1 may begin only when:
 
 Until then, the repository state is:
 
-> **M0 engineering implementation through M0.11 is complete; M0.12 visual-readability recovery is in progress; physical/human acceptance is deferred and M0/M1 signoff is not claimed.**
+> **M0 engineering implementation through M0.11 and visual recovery through M0.14 are implementation-complete; physical/human acceptance is deferred and M0/M1 signoff is not claimed.**
 
 ## Signoff record
 
