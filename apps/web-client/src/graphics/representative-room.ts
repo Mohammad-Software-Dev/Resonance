@@ -57,6 +57,8 @@ export interface AuthoredPresentationPalette {
   readonly resonance: Material;
   readonly hostile: Material;
   readonly damage: Material;
+  readonly wayfarerSuit: Material;
+  readonly wayfarerCeramic: Material;
 }
 
 export interface RepresentativeGraphicsRoom {
@@ -303,7 +305,7 @@ function addIndustrialBackdrop(
   for (const y of [1.1, 3.1, 5.1, 7.1]) {
     const conduit = CreateBox(
       `service-conduit-${y}`,
-      { width: 18, height: 0.1, depth: 0.12 },
+      { width: 18, height: 0.045, depth: 0.1 },
       scene,
     );
     conduit.position.set(0, y, 4.05);
@@ -528,7 +530,7 @@ function decorateResonanceTargets(
   for (let index = 0; index < targets.length; index += 1) {
     const target = targets[index];
     if (!target) continue;
-    target.scaling.setAll(0.5);
+    target.scaling.setAll(0.42);
 
     const outer = CreateTorus(
       `anchor-ring-outer-${index}`,
@@ -1451,10 +1453,10 @@ export function createRepresentativeGraphicsRoom(
   const emissive = pbr(
     "orbital-emissive",
     scene,
-    new Color3(0.015, 0.08, 0.095),
+    new Color3(0.01, 0.035, 0.045),
     0.18,
-    0.28,
-    new Color3(0.08, 0.72, 0.9),
+    0.34,
+    new Color3(0.025, 0.24, 0.3),
   );
   const hullCeramic = pbr(
     "scar-hull-ceramic",
@@ -1534,6 +1536,20 @@ export function createRepresentativeGraphicsRoom(
     new Color3(0.02, 0.18, 0.2),
     new Color3(0.04, 0.72, 0.88),
   );
+  const authoredWayfarerSuit = semanticMaterial(
+    "authored-wayfarer-suit",
+    scene,
+    new Color3(0.20, 0.245, 0.27),
+    new Color3(0.012, 0.018, 0.024),
+  );
+  authoredWayfarerSuit.specularColor = new Color3(0.08, 0.11, 0.13);
+  const authoredWayfarerCeramic = semanticMaterial(
+    "authored-wayfarer-ceramic",
+    scene,
+    new Color3(0.62, 0.67, 0.65),
+    new Color3(0.012, 0.018, 0.018),
+  );
+  authoredWayfarerCeramic.specularColor = new Color3(0.15, 0.17, 0.16);
 
   const deckPattern = createSurfacePatternTexture(
     "gameplay-deck-pattern",
@@ -1659,6 +1675,8 @@ export function createRepresentativeGraphicsRoom(
     anchorAccent,
     suit,
     suitAccent,
+    authoredWayfarerSuit,
+    authoredWayfarerCeramic,
   ]) {
     material.freeze();
   }
@@ -1778,6 +1796,8 @@ export function createRepresentativeGraphicsRoom(
       resonance: relayMaterial,
       hostile: emergency,
       damage: hazardAccent,
+      wayfarerSuit: authoredWayfarerSuit,
+      wayfarerCeramic: authoredWayfarerCeramic,
     },
     getPreset: () => presetName,
     getRenderScale: () => currentRenderScale,
