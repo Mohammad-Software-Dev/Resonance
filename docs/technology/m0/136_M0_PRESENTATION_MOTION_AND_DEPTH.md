@@ -1,6 +1,6 @@
 # M0.13 Presentation Motion and Depth Polish
 
-**Status:** IN PROGRESS  
+**Status:** COMPLETE — deployed build `a7b3ea2f709757675a38fe0efedba5e311043982`  
 **Purpose:** Continue improving the browser prototype without asking for physical/human acceptance while M1 remains gated.
 
 M0.12 made Wayfarer Scar recognizable as a game space. M0.13 addresses the next visible prototype cues: static authored subjects, over-uniform teal presentation and weak pose/grounding feedback.
@@ -67,3 +67,17 @@ Pass 2 keeps **essential composition** independent of optional distant detail:
 The new automated contract is `data-resonance-depth-composition="essential-v1"`. The visual-landmark audit now requires both `orbital-parallax-ring` and `gas-giant`.
 
 This pass adds no materials, collision, gameplay rules or deterministic state.
+
+
+## Completion record
+
+- PR #56: state-driven authored Wayfarer motion and scene presentation.
+- PR #57: essential world depth retained on fallback.
+- Deploy M0 Evidence Build #29 / run `36346612600`: PASS.
+- CI #254: PASS.
+- retained smoke artifact: `10941091896`.
+- material count: 22 / 24 budget.
+- deployed draw-call range: 168–182 / 250 budget.
+- canonical deterministic replay: `266484aa` unchanged.
+
+Owner-run testing was not requested. Physical/human M0 acceptance remains deferred, not passed.
