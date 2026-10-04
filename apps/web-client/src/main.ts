@@ -124,6 +124,7 @@ document.body.dataset.resonanceAuthoredWayfarer = "loading";
 document.body.dataset.resonanceAuthoredScrapper = "loading";
 document.body.dataset.resonanceWayfarerMotion = "loading";
 document.body.dataset.resonanceVisualIdentity = "loading";
+document.body.dataset.resonanceAuthoredAssetFidelity = "loading";
 
 async function createEngine(): Promise<{ engine: AbstractEngine; backend: Backend }> {
   if (backendPreference !== "webgl2" && "gpu" in navigator) {
@@ -556,6 +557,12 @@ document.body.dataset.resonanceVisualIdentity =
   && scrapperVisualResult.status === "authored"
   && setdressVisualResult.status === "authored"
     ? "authored-v2"
+    : "fallback";
+document.body.dataset.resonanceAuthoredAssetFidelity =
+  wayfarerVisualResult.status === "authored"
+  && scrapperVisualResult.status === "authored"
+  && setdressVisualResult.status === "authored"
+    ? "v3"
     : "fallback";
 
 const visualLandmarkAudit = auditVisualLandmarks(scene.meshes.map((mesh) => mesh.name));
