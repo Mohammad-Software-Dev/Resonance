@@ -75,7 +75,7 @@ describe("targetPresentationVisibility", () => {
       selected: false,
       active: false,
       repelFlash: false,
-    })).toBe(0.38);
+    })).toBe(0.3);
     expect(targetPresentationVisibility({
       selected: true,
       active: false,
