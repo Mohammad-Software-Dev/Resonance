@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { encounterPresentation } from "./encounter-presentation";
+import { encounterCameraFocus, encounterPresentation } from "./encounter-presentation";
 
 describe("encounterPresentation", () => {
   it("keeps the hostile staged on the readable right-side gameplay plane", () => {
@@ -21,5 +21,20 @@ describe("encounterPresentation", () => {
     expect(near.bracketAlpha).toBeLessThanOrEqual(0.62);
     expect(far.scanAlphaFloor).toBeLessThan(far.bracketAlpha);
     expect(near.scanAlphaFloor).toBeLessThanOrEqual(0.22);
+  });
+});
+
+
+describe("encounterCameraFocus", () => {
+  it("keeps encounter staging when a target is merely selected", () => {
+    expect(encounterCameraFocus(2.35, -4.2, false)).toBeCloseTo(2.35);
+  });
+
+  it("gives an actively used Resonance target camera priority", () => {
+    expect(encounterCameraFocus(2.35, 1.5, true)).toBeCloseTo(1.5);
+  });
+
+  it("retains the normal player camera when neither focus exists", () => {
+    expect(encounterCameraFocus(null, null, false)).toBeNull();
   });
 });
