@@ -176,7 +176,7 @@ Detailed Periapsis topology, Anchor Zero, four final configurations, world-state
 - `137_M0_AUTHORED_VISUAL_IDENTITY.md` — M0.14 authored-v2 Wayfarer/Scrapper/setdress integration and subject-hierarchy refinement.
 - `138_M0_FOCAL_LIGHTING_AND_ATMOSPHERE.md` — M0.15 focal player lighting, atmospheric palette separation and target-visibility polish.
 - `139_M0_HERO_AND_HOSTILE_SUBJECT_READABILITY.md` — M0.16 hero silhouette, damaged-Scrapper staging and hostile encounter readability.
-- `140_M0_ENCOUNTER_STAGING_AND_PATH_READABILITY.md` — M0.17 encounter framing, hostile-origin readability and traversal-plane hierarchy.
+- `140_M0_ENCOUNTER_STAGING_AND_PATH_READABILITY.md` — M0.17 hostile-first encounter framing, scan-origin readability and traversal-plane hierarchy.
 
 ### 118 — Browser architecture lock
 
