@@ -56,3 +56,21 @@ M0.18 is green only when:
 - no page/console/request/HTTP failures occur.
 
 The retained deployment screenshot remains the visual iteration loop.
+
+## Implementation candidate
+
+The first M0.18 implementation deliberately **augments** the existing authored-v2 GLB rather than pretending a new binary asset has been authored. The runtime v3 identity adds machine-specific silhouette parts parented to the authored Scrapper root while reusing the existing shell/dark/hostile/damage material families.
+
+Added v3 reads:
+
+- forward sensor hood;
+- separate left/right locomotion pods;
+- intact maintenance tool arm + tool head;
+- damaged opposite tool arm + broken fork;
+- wider/lower body proportions;
+- enlarged horizontal hostile sensor read;
+- expanded hostile bracket sized around the articulated subject.
+
+The authored asset slot publishes `presentationIdentity: "scrapper-v3"`, and the page publishes `data-resonance-hostile-identity="scrapper-v3"` only when the authored Scrapper loads successfully and the v3 augmentation is assembled.
+
+This is presentation-only. No collision, AI, combat, target, force or deterministic simulation semantics are changed.

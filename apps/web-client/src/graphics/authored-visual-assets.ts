@@ -11,6 +11,7 @@ export interface AuthoredVisualAssetSpec {
   readonly slot: AuthoredVisualSlot;
   readonly url: string | null;
   readonly fallback: "procedural";
+  readonly presentationIdentity?: string;
 }
 
 export interface AuthoredVisualLoadResult {
@@ -30,6 +31,7 @@ export const AUTHORED_VISUAL_ASSETS: readonly AuthoredVisualAssetSpec[] = [
     slot: "scrapper-damaged",
     url: "/assets/visual/enemies/scrapper-damaged-m0-v2.glb",
     fallback: "procedural",
+    presentationIdentity: "scrapper-v3",
   },
   {
     slot: "wayfarer-scar-setdress",
