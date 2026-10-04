@@ -32,3 +32,13 @@ export function encounterPresentation(
     scanAlphaFloor: encounterActive ? 0.10 + approach * 0.12 : 0.08,
   };
 }
+
+
+export function encounterCameraFocus(
+  encounterFocusX: number | null,
+  selectedTargetX: number | null,
+  interactionActive: boolean,
+): number | null {
+  if (interactionActive && selectedTargetX !== null) return selectedTargetX;
+  return encounterFocusX;
+}

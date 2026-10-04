@@ -16,7 +16,7 @@ Presentation-only:
 - brighten the walkable deck and route accents slightly;
 - reduce long distant conduit dominance;
 - reduce idle Resonance-anchor visibility while retaining selected/active/Repel hierarchy;
-- publish `data-resonance-encounter-composition="encounter-path-v2"`;
+- publish `data-resonance-encounter-composition="encounter-path-v3"`;
 - retain `hero-hostile-v2`, `focal-lighting-v1`, `authored-subject-v2` and `authored-v2`.
 
 ## Hard constraints
@@ -37,7 +37,7 @@ M0.17 is green only when:
 - unit tests cover encounter staging/camera-bias bounds;
 - target-presentation tests lock the quieter idle-anchor hierarchy;
 - Chromium presentation screenshot is retained;
-- browser and deployed smoke require `encounter-path-v2`;
+- browser and deployed smoke require `encounter-path-v3`;
 - `hero-hostile-v2`, `focal-lighting-v1`, `authored-subject-v2` and `authored-v2` remain active;
 - materials <=24 and draw calls <=250;
 - runtime shader compilation after warmup is 0;
@@ -70,6 +70,20 @@ The final M0.17 candidate:
 - widens the reused-material hostile bracket around the actual subject;
 - biases the encounter camera earlier once the player begins moving into the breach;
 - reduces scan opacity so the scan supports, rather than replaces, the hostile;
-- advances the runtime contract to `encounter-path-v2`.
+- advances the runtime contract to `encounter-path-v3`.
 
 Deterministic gameplay, collision, targeting, force semantics and AI remain unchanged.
+
+
+## Deployment #38 retained-frame review
+
+Deployment #38 successfully moved and enlarged the Scrapper presentation, but the retained frame exposed the true camera bug: idle target selection still overrode encounter focus. Because the nearby low Repel node is selected immediately, the camera remained centered on the player/anchor while the hostile stayed beyond the right edge.
+
+The final correction changes camera priority only:
+
+- active Attract/Repel interaction may override encounter focus;
+- idle target selection does not;
+- encounter staging therefore owns the opening breach composition;
+- the runtime contract advances to `encounter-path-v3`.
+
+This is presentation-only and leaves target selection itself unchanged.

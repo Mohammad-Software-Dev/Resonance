@@ -78,7 +78,10 @@ import {
   targetPresentationVisibility,
   wayfarerSubjectProfile,
 } from "./graphics/subject-presentation";
-import { encounterPresentation } from "./graphics/encounter-presentation";
+import {
+  encounterCameraFocus,
+  encounterPresentation,
+} from "./graphics/encounter-presentation";
 import {
   BrowserPerformanceMonitor,
   warmCriticalShaders,
@@ -573,7 +576,7 @@ document.body.dataset.resonanceDepthComposition = "essential-v1";
 document.body.dataset.resonancePresentationHierarchy = "authored-subject-v2";
 document.body.dataset.resonanceLightingComposition = "focal-lighting-v1";
 document.body.dataset.resonanceSubjectReadability = "hero-hostile-v2";
-document.body.dataset.resonanceEncounterComposition = "encounter-path-v2";
+document.body.dataset.resonanceEncounterComposition = "encounter-path-v3";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
@@ -1228,11 +1231,17 @@ engine.runRenderLoop(() => {
     const selectedCameraFocus = selectedTargetId === 0
       ? null
       : targetMeshes.get(Number(selectedTargetId))?.position.x ?? null;
+    const resonanceCameraPriority =
+      attractRuntime.targetId !== 0 || state.repelRecoveryTicksRemaining > 0;
     const cameraGoal = presentationCameraGoal({
       playerX: state.position.x,
       playerY: state.position.y,
       velocityX: state.velocity.x,
-      focusX: selectedCameraFocus ?? encounter.cameraFocusX,
+      focusX: encounterCameraFocus(
+        encounter.cameraFocusX,
+        selectedCameraFocus,
+        resonanceCameraPriority,
+      ),
       stage: progressStage,
     });
     const cameraEase = cameraSmoothingFactor(frameSeconds);

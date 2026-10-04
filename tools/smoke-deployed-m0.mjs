@@ -190,7 +190,7 @@ try {
   const encounterComposition = await root.locator("body").getAttribute(
     "data-resonance-encounter-composition",
   );
-  if (encounterComposition !== "encounter-path-v2") {
+  if (encounterComposition !== "encounter-path-v3") {
     throw new Error(
       `Expected encounter/path composition contract, got: ${encounterComposition}`,
     );
