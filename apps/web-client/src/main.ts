@@ -78,6 +78,7 @@ import {
   targetPresentationVisibility,
   wayfarerSubjectProfile,
 } from "./graphics/subject-presentation";
+import { encounterPresentation } from "./graphics/encounter-presentation";
 import {
   BrowserPerformanceMonitor,
   warmCriticalShaders,
@@ -341,6 +342,30 @@ repelShockwave.color = new Color3(1, 0.46, 0.12);
 repelShockwave.isPickable = false;
 repelShockwave.isVisible = false;
 
+const scrapperBracketSeed = [
+  new Vector3(-0.72, 0.48, -0.46),
+  new Vector3(-0.88, 0.48, -0.46),
+  new Vector3(-0.88, 0.18, -0.46),
+  new Vector3(-0.88, 0.18, -0.46),
+  new Vector3(-0.88, -0.18, -0.46),
+  new Vector3(-0.88, -0.48, -0.46),
+  new Vector3(-0.72, -0.48, -0.46),
+  new Vector3(0.72, -0.48, -0.46),
+  new Vector3(0.88, -0.48, -0.46),
+  new Vector3(0.88, -0.18, -0.46),
+  new Vector3(0.88, 0.18, -0.46),
+  new Vector3(0.88, 0.48, -0.46),
+  new Vector3(0.72, 0.48, -0.46),
+];
+const scrapperEncounterBracket = CreateLines(
+  "scrapper-encounter-bracket",
+  { points: scrapperBracketSeed, updatable: true },
+  scene,
+);
+scrapperEncounterBracket.color = new Color3(1, 0.27, 0.055);
+scrapperEncounterBracket.alpha = 0.3;
+scrapperEncounterBracket.isPickable = false;
+scrapperEncounterBracket.isVisible = false;
 
 const { createRepresentativeGraphicsRoom } = await import(
   "./graphics/representative-room"
@@ -557,6 +582,7 @@ document.body.dataset.resonanceDepthComposition = "essential-v1";
 document.body.dataset.resonancePresentationHierarchy = "authored-subject-v2";
 document.body.dataset.resonanceLightingComposition = "focal-lighting-v1";
 document.body.dataset.resonanceSubjectReadability = "hero-hostile-v2";
+document.body.dataset.resonanceEncounterComposition = "encounter-path-v1";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
@@ -1206,15 +1232,17 @@ engine.runRenderLoop(() => {
       repelUses: repelRuntime.uses,
     }));
 
-    const cameraFocusTarget = selectedTargetId === 0
+    const progressStage = scarProgress.snapshot().stage;
+    const encounter = encounterPresentation(state.position.x, progressStage);
+    const selectedCameraFocus = selectedTargetId === 0
       ? null
       : targetMeshes.get(Number(selectedTargetId))?.position.x ?? null;
     const cameraGoal = presentationCameraGoal({
       playerX: state.position.x,
       playerY: state.position.y,
       velocityX: state.velocity.x,
-      focusX: cameraFocusTarget,
-      stage: scarProgress.snapshot().stage,
+      focusX: selectedCameraFocus ?? encounter.cameraFocusX,
+      stage: progressStage,
     });
     const cameraEase = cameraSmoothingFactor(frameSeconds);
     camera.position.x += (cameraGoal.x - camera.position.x) * cameraEase;
@@ -1323,7 +1351,9 @@ engine.runRenderLoop(() => {
 
   if (authoredScrapperRoot) {
     const elapsedSeconds = now / 1000;
-    const scrapperPose = scrapperPresentationPose(elapsedSeconds);
+    const progressStage = scarProgress.snapshot().stage;
+    const encounter = encounterPresentation(state?.position.x ?? -5, progressStage);
+    const scrapperPose = scrapperPresentationPose(elapsedSeconds, encounter.hostileBaseX);
     authoredScrapperRoot.position.x = scrapperPose.x;
     authoredScrapperRoot.position.y = scrapperPose.y;
     authoredScrapperRoot.rotation.z = scrapperPose.rotationZ;
@@ -1344,6 +1374,19 @@ engine.runRenderLoop(() => {
       authoredScrapperEye.scaling.y = 0.65 * scrapperPose.eyeScale;
     }
 
+    const bracketPoints = scrapperBracketSeed.map((point) => new Vector3(
+      point.x + scrapperPose.x,
+      point.y + scrapperPose.y + 0.12,
+      point.z,
+    ));
+    CreateLines(
+      "scrapper-encounter-bracket",
+      { points: bracketPoints, instance: scrapperEncounterBracket },
+      scene,
+    );
+    scrapperEncounterBracket.alpha = encounter.bracketAlpha;
+    scrapperEncounterBracket.isVisible = progressStage !== "complete";
+
     const playerScanTarget = state
       ? new Vector3(state.position.x, state.position.y + 0.22, -0.42)
       : new Vector3(3.2, 0.82, -0.40);
@@ -1357,7 +1400,10 @@ engine.runRenderLoop(() => {
         scene,
       );
       resonanceTether.color = new Color3(1, 0.24, 0.055);
-      resonanceTether.alpha = Math.min(0.62, scrapperPose.scanStrength * 0.62);
+      resonanceTether.alpha = Math.min(
+        0.62,
+        Math.max(encounter.scanAlphaFloor, scrapperPose.scanStrength * 0.62),
+      );
       resonanceTether.isVisible = true;
     } else {
       resonanceTether.alpha = 1;
