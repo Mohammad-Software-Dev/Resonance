@@ -187,6 +187,14 @@ try {
       `Expected hero/hostile subject readability contract, got: ${subjectReadability}`,
     );
   }
+  const encounterComposition = await root.locator("body").getAttribute(
+    "data-resonance-encounter-composition",
+  );
+  if (encounterComposition !== "encounter-path-v1") {
+    throw new Error(
+      `Expected encounter/path composition contract, got: ${encounterComposition}`,
+    );
+  }
   await root.waitForFunction(
     () => ["idle", "run", "air", "evade", "attract", "repel"].includes(
       document.body.dataset.resonanceWayfarerMotion ?? "",
@@ -299,6 +307,7 @@ try {
     presentationHierarchy,
     lightingComposition,
     subjectReadability,
+    encounterComposition,
     visualIdentity,
     initialWayfarerMotion,
     wayfarerMotion,
