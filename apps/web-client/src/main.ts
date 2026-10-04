@@ -341,21 +341,6 @@ repelShockwave.color = new Color3(1, 0.46, 0.12);
 repelShockwave.isPickable = false;
 repelShockwave.isVisible = false;
 
-const scrapperScan = CreateLines(
-  "scrapper-hostile-scan",
-  {
-    points: [
-      new Vector3(4.9, 1.12, -0.44),
-      new Vector3(4.0, 0.95, -0.42),
-      new Vector3(3.2, 0.82, -0.40),
-    ],
-    updatable: true,
-  },
-  scene,
-);
-scrapperScan.color = new Color3(1, 0.24, 0.055);
-scrapperScan.isPickable = false;
-scrapperScan.isVisible = false;
 
 const { createRepresentativeGraphicsRoom } = await import(
   "./graphics/representative-room"
@@ -1359,15 +1344,18 @@ engine.runRenderLoop(() => {
     const scanStart = new Vector3(scrapperPose.x - 0.02, scrapperPose.y + 0.15, -0.44);
     const scanMid = Vector3.Lerp(scanStart, playerScanTarget, 0.52);
     scanMid.y += 0.08;
-    CreateLines(
-      "scrapper-hostile-scan",
-      { points: [scanStart, scanMid, playerScanTarget], instance: scrapperScan },
-      scene,
-    );
-    scrapperScan.isVisible = scrapperPose.scanStrength > 0.05;
-    scrapperScan.alpha = Math.min(0.7, scrapperPose.scanStrength * 0.7);
-  } else {
-    scrapperScan.isVisible = false;
+    if (!visualTarget && scrapperPose.scanStrength > 0.05) {
+      CreateLines(
+        "resonance-field-tether",
+        { points: [scanStart, scanMid, playerScanTarget], instance: resonanceTether },
+        scene,
+      );
+      resonanceTether.color = new Color3(1, 0.24, 0.055);
+      resonanceTether.alpha = Math.min(0.62, scrapperPose.scanStrength * 0.62);
+      resonanceTether.isVisible = true;
+    } else {
+      resonanceTether.alpha = 1;
+    }
   }
 
   graphicsRoom.update(now / 1000);
