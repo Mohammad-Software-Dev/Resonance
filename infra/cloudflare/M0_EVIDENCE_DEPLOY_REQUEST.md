@@ -1,19 +1,23 @@
 # M0 Evidence Deployment Request
 
-**Request:** 37  
-**Requested from baseline:** `6fbe6de0f7ac0503379750b5c1b19b32a220e9f1`  
-**Purpose:** Republish M0.17 after restoring the hard 24-material ceiling.
+**Request:** 38  
+**Requested from baseline:** `9376756902351366c86c214f846443df0b9ea6a1`  
+**Purpose:** Publish the final M0.17 hostile-first encounter-composition candidate.
 
-Deployment #36 reached the live runtime and visually proved the new encounter composition, but deployed smoke correctly rejected the build because the additional `CreateLines` hostile bracket allocated one implicit Babylon line material, producing 25 materials instead of the hard limit of 24.
+Deployment #37 restored the 24-material budget and passed automated smoke, but its retained screenshot showed that the hostile scan telegraph remained more readable than the damaged Scrapper itself.
 
-This request retains the successful M0.17 composition and changes only the bracket implementation:
+This candidate is presentation-only and:
 
-- remove the extra line mesh/material;
-- render the same orange hostile bracket as eight small corner bars;
-- reuse the existing authored hostile material;
-- preserve `data-resonance-encounter-composition="encounter-path-v1"`;
-- preserve hostile staging, camera bias, route contrast, quieter background conduits and lower idle-anchor visibility.
+- shifts the Scrapper focal position farther into the opening composition;
+- raises/enlarges the authored hostile silhouette;
+- strengthens three-quarter subject staging;
+- widens the existing hostile-material corner bracket;
+- biases camera focus earlier during the breach;
+- reduces scan-line dominance;
+- advances the contract to `encounter-path-v2`.
 
-Expected result: materials return to 24; draw calls remain below 250. Gameplay, collision, target selection, Attract/Repel semantics, objective progression and deterministic replay are unchanged. Physical/human acceptance remains deferred; no owner-run testing is requested.
+No gameplay, physics, collision, TargetID, Attract/Repel, objective or deterministic simulation semantics change.
+
+Physical/human acceptance remains deferred and no owner-run testing is requested.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.

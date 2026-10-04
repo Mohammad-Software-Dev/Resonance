@@ -59,7 +59,7 @@ test("Wayfarer Scar game-facing presentation boots cleanly", async ({
   );
   await expect(page.locator("body")).toHaveAttribute(
     "data-resonance-encounter-composition",
-    "encounter-path-v1",
+    "encounter-path-v2",
   );
 
   await expect(page.locator("#game-hud")).toBeVisible();

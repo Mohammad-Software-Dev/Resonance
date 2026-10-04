@@ -362,14 +362,14 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
 );
 
 const scrapperEncounterBracket = [
-  { mesh: CreateBox("scrapper-bracket-tl-h", { width: 0.3, height: 0.035, depth: 0.05 }, scene), x: -0.72, y: 0.48 },
-  { mesh: CreateBox("scrapper-bracket-tl-v", { width: 0.035, height: 0.28, depth: 0.05 }, scene), x: -0.88, y: 0.34 },
-  { mesh: CreateBox("scrapper-bracket-bl-h", { width: 0.3, height: 0.035, depth: 0.05 }, scene), x: -0.72, y: -0.48 },
-  { mesh: CreateBox("scrapper-bracket-bl-v", { width: 0.035, height: 0.28, depth: 0.05 }, scene), x: -0.88, y: -0.34 },
-  { mesh: CreateBox("scrapper-bracket-tr-h", { width: 0.3, height: 0.035, depth: 0.05 }, scene), x: 0.72, y: 0.48 },
-  { mesh: CreateBox("scrapper-bracket-tr-v", { width: 0.035, height: 0.28, depth: 0.05 }, scene), x: 0.88, y: 0.34 },
-  { mesh: CreateBox("scrapper-bracket-br-h", { width: 0.3, height: 0.035, depth: 0.05 }, scene), x: 0.72, y: -0.48 },
-  { mesh: CreateBox("scrapper-bracket-br-v", { width: 0.035, height: 0.28, depth: 0.05 }, scene), x: 0.88, y: -0.34 },
+  { mesh: CreateBox("scrapper-bracket-tl-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: -0.9, y: 0.66 },
+  { mesh: CreateBox("scrapper-bracket-tl-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: -1.08, y: 0.49 },
+  { mesh: CreateBox("scrapper-bracket-bl-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: -0.9, y: -0.66 },
+  { mesh: CreateBox("scrapper-bracket-bl-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: -1.08, y: -0.49 },
+  { mesh: CreateBox("scrapper-bracket-tr-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: 0.9, y: 0.66 },
+  { mesh: CreateBox("scrapper-bracket-tr-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: 1.08, y: 0.49 },
+  { mesh: CreateBox("scrapper-bracket-br-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: 0.9, y: -0.66 },
+  { mesh: CreateBox("scrapper-bracket-br-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: 1.08, y: -0.49 },
 ] as const;
 for (const bracket of scrapperEncounterBracket) {
   bracket.mesh.material = graphicsRoom.authoredPalette.hostile;
@@ -573,7 +573,7 @@ document.body.dataset.resonanceDepthComposition = "essential-v1";
 document.body.dataset.resonancePresentationHierarchy = "authored-subject-v2";
 document.body.dataset.resonanceLightingComposition = "focal-lighting-v1";
 document.body.dataset.resonanceSubjectReadability = "hero-hostile-v2";
-document.body.dataset.resonanceEncounterComposition = "encounter-path-v1";
+document.body.dataset.resonanceEncounterComposition = "encounter-path-v2";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
@@ -1368,7 +1368,7 @@ engine.runRenderLoop(() => {
     for (const bracket of scrapperEncounterBracket) {
       bracket.mesh.position.set(
         scrapperPose.x + bracket.x,
-        scrapperPose.y + 0.12 + bracket.y,
+        scrapperPose.y + 0.16 + bracket.y,
         -0.46,
       );
       bracket.mesh.visibility = encounter.bracketAlpha;

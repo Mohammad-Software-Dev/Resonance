@@ -16,7 +16,7 @@ Presentation-only:
 - brighten the walkable deck and route accents slightly;
 - reduce long distant conduit dominance;
 - reduce idle Resonance-anchor visibility while retaining selected/active/Repel hierarchy;
-- publish `data-resonance-encounter-composition="encounter-path-v1"`;
+- publish `data-resonance-encounter-composition="encounter-path-v2"`;
 - retain `hero-hostile-v2`, `focal-lighting-v1`, `authored-subject-v2` and `authored-v2`.
 
 ## Hard constraints
@@ -37,7 +37,7 @@ M0.17 is green only when:
 - unit tests cover encounter staging/camera-bias bounds;
 - target-presentation tests lock the quieter idle-anchor hierarchy;
 - Chromium presentation screenshot is retained;
-- browser and deployed smoke require `encounter-path-v1`;
+- browser and deployed smoke require `encounter-path-v2`;
 - `hero-hostile-v2`, `focal-lighting-v1`, `authored-subject-v2` and `authored-v2` remain active;
 - materials <=24 and draw calls <=250;
 - runtime shader compilation after warmup is 0;
@@ -52,3 +52,24 @@ The retained deployed screenshot remains the iteration loop. Do not request owne
 The first live M0.17 candidate proved the encounter composition visually, but deployed smoke rejected it because Babylon's additional `CreateLines` bracket allocated an implicit line material, raising the scene from 24 to 25 materials. The retained frame confirmed the intended hostile staging and scan origin.
 
 The correction keeps the composition and replaces that bracket with eight tiny corner bars using the already-existing hostile material. This preserves the 24-material ceiling at the cost of a small, bounded draw-call increase that remains well below 250.
+
+
+## Deployment #37 retained-frame review
+
+Deployment #37 restored the 24-material ceiling and passed all automated runtime gates, but the retained screenshot exposed a remaining composition defect: the orange scan telegraph was more legible than the damaged Scrapper that generated it. The hostile could still read as peripheral/off-screen even though the runtime contract was green.
+
+M0.17 therefore remains open for one final presentation-only correction rather than closing on counters alone.
+
+## Final hostile-first correction
+
+The final M0.17 candidate:
+
+- moves the Scrapper focal position leftward onto the opening composition;
+- raises and enlarges the authored Scrapper silhouette;
+- strengthens its three-quarter rotation and hostile eye read;
+- widens the reused-material hostile bracket around the actual subject;
+- biases the encounter camera earlier once the player begins moving into the breach;
+- reduces scan opacity so the scan supports, rather than replaces, the hostile;
+- advances the runtime contract to `encounter-path-v2`.
+
+Deterministic gameplay, collision, targeting, force semantics and AI remain unchanged.

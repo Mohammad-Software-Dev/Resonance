@@ -51,17 +51,17 @@ export function scrapperPresentationPose(
 ): ScrapperPresentationPose {
   const scanWave = 0.5 + 0.5 * Math.sin(elapsedSeconds * 2.4 - 0.6);
   return {
-    x: baseX + Math.sin(elapsedSeconds * 0.9) * 0.16,
-    y: 1.08 + Math.sin(elapsedSeconds * 1.55) * 0.035,
-    rotationZ: -0.11 + Math.sin(elapsedSeconds * 1.3) * 0.025,
-    rotationY: -0.2,
-    scaleX: 1.04,
-    scaleY: 0.72,
-    scaleZ: 0.9,
-    eyeScale: 0.9 + Math.sin(elapsedSeconds * 6.2) * 0.1,
-    damagedArmRotationZ: -0.52 + Math.sin(elapsedSeconds * 2.1) * 0.1,
-    loosePlateRotationZ: 0.26 + Math.sin(elapsedSeconds * 4.2) * 0.1,
-    scanStrength: 0.18 + scanWave * 0.62,
+    x: baseX + Math.sin(elapsedSeconds * 0.9) * 0.12,
+    y: 1.34 + Math.sin(elapsedSeconds * 1.55) * 0.035,
+    rotationZ: -0.08 + Math.sin(elapsedSeconds * 1.3) * 0.02,
+    rotationY: -0.32,
+    scaleX: 1.22,
+    scaleY: 0.9,
+    scaleZ: 1.04,
+    eyeScale: 1.04 + Math.sin(elapsedSeconds * 6.2) * 0.08,
+    damagedArmRotationZ: -0.58 + Math.sin(elapsedSeconds * 2.1) * 0.1,
+    loosePlateRotationZ: 0.31 + Math.sin(elapsedSeconds * 4.2) * 0.1,
+    scanStrength: 0.14 + scanWave * 0.42,
   };
 }
 
