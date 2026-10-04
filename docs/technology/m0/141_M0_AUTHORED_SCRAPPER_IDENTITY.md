@@ -74,3 +74,30 @@ Added v3 reads:
 The authored asset slot publishes `presentationIdentity: "scrapper-v3"`, and the page publishes `data-resonance-hostile-identity="scrapper-v3"` only when the authored Scrapper loads successfully and the v3 augmentation is assembled.
 
 This is presentation-only. No collision, AI, combat, target, force or deterministic simulation semantics are changed.
+
+
+## Deployment #40 retained-frame review
+
+Deployment #40 / `32b4236a2ac336cbfaebce186cfb50ddea202a11` passed all objective runtime gates:
+
+- `scrapper-v3` contract active;
+- materials: 24;
+- draw calls: 181–201;
+- textures: 16;
+- runtime shader compilation after warmup: 0 ms;
+- no page/console/request/HTTP failures;
+- CI #296 green.
+
+The retained frame was **not visually accepted**. The hostile remained dominated by the old rectangular shell and orange slit; the added appendages were too subtle/occluded to change the gameplay-camera read.
+
+The second candidate therefore suppresses the crate-like v2 child geometry after the authored slot loads and uses the same reviewed root/material palette to present a stronger v3 subject:
+
+- rounded low service chassis;
+- protruding forward sensor head with localized hostile eye;
+- two grounded locomotion pods + feet;
+- intact forward maintenance arm/tool head;
+- damaged rear arm/fork;
+- visible maintenance pack;
+- larger encounter bracket around the new silhouette.
+
+This remains presentation-only and introduces no new materials or gameplay semantics.
