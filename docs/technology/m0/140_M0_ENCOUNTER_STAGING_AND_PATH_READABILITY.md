@@ -11,7 +11,7 @@ Presentation-only:
 
 - move the damaged Scrapper's presentation staging onto the visible right-side gameplay plane;
 - bias the follow camera toward the hostile only after the player approaches, while selected Resonance targets keep priority;
-- add one low-cost orange hostile bracket using line rendering rather than a new material;
+- add one low-cost orange hostile bracket using tiny corner geometry that reuses the existing hostile material;
 - keep the hostile scan faint but visible enough to originate from a readable subject;
 - brighten the walkable deck and route accents slightly;
 - reduce long distant conduit dominance;
@@ -45,3 +45,10 @@ M0.17 is green only when:
 - no page/console/request/HTTP failures occur.
 
 The retained deployed screenshot remains the iteration loop. Do not request owner-run testing at this milestone.
+
+
+## Deployment #36 budget correction
+
+The first live M0.17 candidate proved the encounter composition visually, but deployed smoke rejected it because Babylon's additional `CreateLines` bracket allocated an implicit line material, raising the scene from 24 to 25 materials. The retained frame confirmed the intended hostile staging and scan origin.
+
+The correction keeps the composition and replaces that bracket with eight tiny corner bars using the already-existing hostile material. This preserves the 24-material ceiling at the cost of a small, bounded draw-call increase that remains well below 250.
