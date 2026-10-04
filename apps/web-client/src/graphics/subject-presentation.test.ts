@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   scrapperPresentationPose,
   targetPresentationScale,
+  wayfarerSubjectProfile,
   targetPresentationVisibility,
   wayfarerFillLightIntensity,
 } from "./subject-presentation";
@@ -43,7 +44,24 @@ describe("scrapperPresentationPose", () => {
       expect(pose.x).toBeLessThanOrEqual(5.08);
       expect(pose.rotationZ).toBeGreaterThanOrEqual(-0.135);
       expect(pose.rotationZ).toBeLessThanOrEqual(-0.085);
+      expect(pose.y).toBeGreaterThanOrEqual(0.925);
+      expect(pose.y).toBeLessThanOrEqual(0.995);
+      expect(pose.eyeScale).toBeGreaterThanOrEqual(0.72);
+      expect(pose.eyeScale).toBeLessThanOrEqual(1);
+      expect(pose.scanStrength).toBeGreaterThanOrEqual(0);
+      expect(pose.scanStrength).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+describe("wayfarerSubjectProfile", () => {
+  it("keeps Mara tall, human-readable and slightly three-quarter staged", () => {
+    const profile = wayfarerSubjectProfile();
+    expect(profile.scaleY).toBeGreaterThan(profile.scaleX);
+    expect(profile.scaleZ).toBeGreaterThanOrEqual(profile.scaleX);
+    expect(Math.abs(profile.yawY)).toBeGreaterThan(0.05);
+    expect(profile.helmetScale).toBeLessThan(1);
+    expect(profile.visorScaleX).toBeGreaterThan(1);
   });
 });
 
