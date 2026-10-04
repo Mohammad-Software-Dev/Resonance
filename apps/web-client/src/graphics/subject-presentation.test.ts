@@ -40,16 +40,19 @@ describe("scrapperPresentationPose", () => {
 
     for (const seconds of [0, 1, 2, 5, 10]) {
       const pose = scrapperPresentationPose(seconds);
-      expect(pose.x).toBeGreaterThanOrEqual(4.72);
-      expect(pose.x).toBeLessThanOrEqual(5.08);
+      expect(pose.x).toBeGreaterThanOrEqual(4.74);
+      expect(pose.x).toBeLessThanOrEqual(5.06);
       expect(pose.rotationZ).toBeGreaterThanOrEqual(-0.135);
       expect(pose.rotationZ).toBeLessThanOrEqual(-0.085);
-      expect(pose.y).toBeGreaterThanOrEqual(0.925);
-      expect(pose.y).toBeLessThanOrEqual(0.995);
-      expect(pose.eyeScale).toBeGreaterThanOrEqual(0.72);
+      expect(pose.y).toBeGreaterThanOrEqual(1.045);
+      expect(pose.y).toBeLessThanOrEqual(1.115);
+      expect(pose.rotationY).toBeCloseTo(-0.2);
+      expect(pose.scaleX).toBeGreaterThan(pose.scaleY);
+      expect(pose.scaleZ).toBeGreaterThan(pose.scaleY);
+      expect(pose.eyeScale).toBeGreaterThanOrEqual(0.8);
       expect(pose.eyeScale).toBeLessThanOrEqual(1);
-      expect(pose.scanStrength).toBeGreaterThanOrEqual(0);
-      expect(pose.scanStrength).toBeLessThanOrEqual(1);
+      expect(pose.scanStrength).toBeGreaterThanOrEqual(0.18);
+      expect(pose.scanStrength).toBeLessThanOrEqual(0.8);
     }
   });
 });
