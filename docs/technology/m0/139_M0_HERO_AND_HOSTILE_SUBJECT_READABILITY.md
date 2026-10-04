@@ -16,7 +16,7 @@ Presentation-only:
 - add a subtle Scrapper hover/damage pose;
 - make the hostile sensor pulse more clearly;
 - reuse the existing Resonance tether mesh as a periodic hostile scan telegraph when the player is not actively using Resonance;
-- publish `data-resonance-subject-readability="hero-hostile-v1"`;
+- publish `data-resonance-subject-readability="hero-hostile-v2"`;
 - retain authored-v2, authored-subject-v2 and focal-lighting-v1 contracts.
 
 ## Hard constraints
@@ -35,7 +35,7 @@ M0.16 is green only when:
 
 - unit tests cover Mara's subject profile and Scrapper presentation bounds;
 - Chromium presentation screenshot is retained;
-- browser and deployed smoke require `hero-hostile-v1`;
+- browser and deployed smoke require `hero-hostile-v2`;
 - authored-v2, authored-subject-v2 and focal-lighting-v1 remain active;
 - materials <=24 and draw calls <=250;
 - runtime shader compilation after warmup is 0;
@@ -43,3 +43,19 @@ M0.16 is green only when:
 - no page/console/request/HTTP failures occur.
 
 The retained deployed screenshot is the iteration loop for this milestone.
+
+
+## Pass 2 — hostile silhouette refinement
+
+Deployment #34 proved the first hero-profile change but its retained frame still left the damaged Scrapper too crate-like and made the scan telegraph timing-dependent.
+
+Pass 2 keeps the same authored-v2 asset and changes only presentation:
+
+- Scrapper root is scaled lower/wider to expose the intended maintenance-drone silhouette;
+- the enemy is raised slightly and yawed into a three-quarter view so articulated parts read against the deck;
+- damaged arm and loose plate motion are strengthened within restrained bounds;
+- hostile sensor pulse remains bounded;
+- hostile scan now has a faint persistent floor and a stronger pulse rather than disappearing for most retained screenshots;
+- the contract advances to `hero-hostile-v2`.
+
+No material, collision, targeting, AI or deterministic-state changes are introduced.
