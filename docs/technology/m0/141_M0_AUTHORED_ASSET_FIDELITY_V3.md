@@ -35,7 +35,7 @@ Deployment #37 proves the camera, hierarchy, interaction language and traversal 
 
 ## Runtime contract
 
-- new GLBs live under the existing canonical `/assets/visual/` roots;
+- v3 GLBs are deterministic build artifacts generated from the versioned Python authoring source and emitted under the existing canonical `/assets/visual/` roots;
 - publish v3 URLs through `AUTHORED_VISUAL_ASSETS`;
 - preserve material remap names:
   - Mara: `Mara_Suit`, `Mara_Ceramic`, `Mara_Resonance`, `Mara_Dark`, `Mara_Fabric`;
@@ -60,10 +60,17 @@ Deployment #37 proves the camera, hierarchy, interaction language and traversal 
 
 M0.18 completes only when:
 
-- v3 GLBs and metadata are present and asset-manifest tests require them;
-- automated asset validation can load all v3 GLBs and verify expected named nodes/material slots;
+- the versioned generator produces all three v3 GLBs in CI/deployment and asset-manifest tests require their v3 URLs;
+- automated asset validation loads all generated v3 GLBs and verifies expected named nodes, material slots and bounded file sizes;
 - normal Chromium presentation smoke retains a screenshot;
 - deployed smoke proves v3 authored assets loaded;
 - materials <=24, draw calls <=250, runtime shader compile 0;
 - verify + Chromium + Firefox + WebKit are green;
 - no page/console/request/HTTP failures occur.
+
+
+## Reproducible authoring pipeline
+
+M0.18 does not treat generated binary GLBs as hand-maintained source. The repository versions `tools/asset-pipeline/generate_m0_v3_assets.py`; CI and deployment use Python 3.12 with numpy 2.3.5 and trimesh 4.11.1 to emit the three GLBs before the browser build.
+
+`tools/asset-pipeline/validate_m0_v3_assets.py` then requires the named geometry/material contracts and expected size bands. A missing, malformed or fallback asset therefore fails automation before the presentation build can be accepted.
