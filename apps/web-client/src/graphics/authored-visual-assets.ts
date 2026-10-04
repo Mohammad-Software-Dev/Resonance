@@ -23,17 +23,17 @@ export interface AuthoredVisualLoadResult {
 export const AUTHORED_VISUAL_ASSETS: readonly AuthoredVisualAssetSpec[] = [
   {
     slot: "wayfarer-player",
-    url: "/assets/visual/characters/wayfarer-mara-m0-v2.glb",
+    url: "/assets/visual/characters/wayfarer-mara-m0-v3.glb",
     fallback: "procedural",
   },
   {
     slot: "scrapper-damaged",
-    url: "/assets/visual/enemies/scrapper-damaged-m0-v2.glb",
+    url: "/assets/visual/enemies/scrapper-damaged-m0-v3.glb",
     fallback: "procedural",
   },
   {
     slot: "wayfarer-scar-setdress",
-    url: "/assets/visual/environment/wayfarer-scar-setdress-m0-v2.glb",
+    url: "/assets/visual/environment/wayfarer-scar-setdress-m0-v3.glb",
     fallback: "procedural",
   },
 ];
