@@ -1,22 +1,19 @@
 # M0 Evidence Deployment Request
 
-**Request:** 38  
-**Requested from baseline:** `9376756902351366c86c214f846443df0b9ea6a1`  
-**Purpose:** Publish the final M0.17 hostile-first encounter-composition candidate.
+**Request:** 39  
+**Requested from baseline:** `661016e361ca11a67c1896b35fc0499161ee50c8`  
+**Purpose:** Publish the final M0.17 camera-priority correction.
 
-Deployment #37 restored the 24-material budget and passed automated smoke, but its retained screenshot showed that the hostile scan telegraph remained more readable than the damaged Scrapper itself.
+Deployment #38 proved the hostile presentation changes but its retained screenshot showed the Scrapper still off-screen. Root cause: idle Resonance target selection always overrode the encounter camera focus.
 
-This candidate is presentation-only and:
+This candidate changes only presentation-camera priority:
 
-- shifts the Scrapper focal position farther into the opening composition;
-- raises/enlarges the authored hostile silhouette;
-- strengthens three-quarter subject staging;
-- widens the existing hostile-material corner bracket;
-- biases camera focus earlier during the breach;
-- reduces scan-line dominance;
-- advances the contract to `encounter-path-v2`.
+- encounter focus owns the opening breach composition;
+- an actively used Attract/Repel target may override encounter focus;
+- idle selected targets no longer suppress hostile staging;
+- runtime contract advances to `encounter-path-v3`.
 
-No gameplay, physics, collision, TargetID, Attract/Repel, objective or deterministic simulation semantics change.
+No target-selection, physics, collision, gameplay, AI, objective or deterministic simulation behavior changes.
 
 Physical/human acceptance remains deferred and no owner-run testing is requested.
 
