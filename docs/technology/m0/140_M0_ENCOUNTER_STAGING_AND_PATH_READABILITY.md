@@ -1,6 +1,6 @@
 # M0.17 Encounter Staging and Traversal-Path Readability
 
-**Status:** IN PROGRESS  
+**Status:** COMPLETE — deployed build `d7c23da1fb95e7f1ad6771bd126a6b414ebb5c4c`  
 **Purpose:** Convert the latest retained Wayfarer Scar frame from a readable subject study into a deliberate traversal encounter composition, while preserving deterministic gameplay and the hard rendering budgets.
 
 M0.16 made Mara human-readable and improved the damaged Scrapper silhouette. Deployment #35 exposed the next bottleneck: the hostile can sit outside the opening camera composition while its scan line enters from off-screen, and long cyan/background elements still compete with the playable route.
@@ -87,3 +87,22 @@ The final correction changes camera priority only:
 - the runtime contract advances to `encounter-path-v3`.
 
 This is presentation-only and leaves target selection itself unchanged.
+
+
+## Completion record
+
+- final implementation commit: `d7c23da1fb95e7f1ad6771bd126a6b414ebb5c4c`;
+- post-merge CI #292: PASS;
+- Deploy M0 Evidence Build #39 / run `37217699067`: PASS;
+- retained deployed-smoke artifact: `11308958469`;
+- artifact digest: `sha256:2eac640ed9bd295cbed0b05dbc5913837a032ee4132a202a622f9a8df1d408f3`;
+- encounter composition contract: `encounter-path-v3`;
+- materials: 24 / 24;
+- deployed draw-call range: 176–194 / 250;
+- textures: 16;
+- page/console/request/HTTP failures: none;
+- deterministic replay/browser equivalence: unchanged and green.
+
+Retained-frame review confirms that M0.17 corrected the camera/encounter priority problem: idle target selection no longer suppresses encounter framing. The remaining visual bottleneck is now the Scrapper asset itself, which still reads too much like a dark maintenance crate with an orange slit. That is explicitly handed to M0.18 rather than extending camera/path work further.
+
+Physical/human acceptance remains deferred, not passed. No owner-run test is requested.
