@@ -16,9 +16,14 @@ describe("Scrapper v3 identity", () => {
 
   it("requires articulated locomotion, sensor and asymmetric tool parts", () => {
     expect(scrapperV3RequiredParts()).toEqual([
+      "ScrapperV3_Chassis",
+      "ScrapperV3_SensorHead",
+      "ScrapperV3_HostileSensor",
       "ScrapperV3_SensorHood",
       "ScrapperV3_LeftLocomotionPod",
       "ScrapperV3_RightLocomotionPod",
+      "ScrapperV3_LeftFoot",
+      "ScrapperV3_RightFoot",
       "ScrapperV3_IntactToolArm",
       "ScrapperV3_IntactToolHead",
       "ScrapperV3_DamagedToolArm",
@@ -28,7 +33,7 @@ describe("Scrapper v3 identity", () => {
 
   it("keeps the encounter bracket large enough to frame the articulated subject", () => {
     const profile = scrapperV3IdentityProfile();
-    expect(profile.bracketHalfWidth).toBeGreaterThanOrEqual(1.1);
-    expect(profile.bracketHalfHeight).toBeGreaterThanOrEqual(0.75);
+    expect(profile.bracketHalfWidth).toBeGreaterThanOrEqual(1.3);
+    expect(profile.bracketHalfHeight).toBeGreaterThanOrEqual(0.85);
   });
 });
