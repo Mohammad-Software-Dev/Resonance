@@ -195,6 +195,14 @@ try {
       `Expected encounter/path composition contract, got: ${encounterComposition}`,
     );
   }
+  const hostileIdentity = await root.locator("body").getAttribute(
+    "data-resonance-hostile-identity",
+  );
+  if (hostileIdentity !== "scrapper-v3") {
+    throw new Error(
+      `Expected Scrapper v3 hostile identity, got: ${hostileIdentity}`,
+    );
+  }
   await root.waitForFunction(
     () => ["idle", "run", "air", "evade", "attract", "repel"].includes(
       document.body.dataset.resonanceWayfarerMotion ?? "",
@@ -291,6 +299,21 @@ try {
       `M0 presentation material budget exceeded: ${performance.graphics.materials} > 24`,
     );
   }
+  if (frameSummary.drawCallsMax > 250) {
+    throw new Error(
+      `M0 presentation draw-call budget exceeded: ${frameSummary.drawCallsMax} > 250`,
+    );
+  }
+  if (performance.graphics?.textures > 24) {
+    throw new Error(
+      `M0 presentation texture budget exceeded: ${performance.graphics.textures} > 24`,
+    );
+  }
+  if ((performance.performance?.runtimeShaderCompilationMs ?? 0) > 0) {
+    throw new Error(
+      `Runtime shader compilation observed after warmup: ${performance.performance.runtimeShaderCompilationMs} ms`,
+    );
+  }
 
   report.root = {
     status: rootResponse.status(),
@@ -308,6 +331,7 @@ try {
     lightingComposition,
     subjectReadability,
     encounterComposition,
+    hostileIdentity,
     visualIdentity,
     initialWayfarerMotion,
     wayfarerMotion,
