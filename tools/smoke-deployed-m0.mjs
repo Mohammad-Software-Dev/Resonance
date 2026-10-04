@@ -179,6 +179,14 @@ try {
       `Expected focal lighting composition, got: ${lightingComposition}`,
     );
   }
+  const subjectReadability = await root.locator("body").getAttribute(
+    "data-resonance-subject-readability",
+  );
+  if (subjectReadability !== "hero-hostile-v1") {
+    throw new Error(
+      `Expected hero/hostile subject readability contract, got: ${subjectReadability}`,
+    );
+  }
   await root.waitForFunction(
     () => ["idle", "run", "air", "evade", "attract", "repel"].includes(
       document.body.dataset.resonanceWayfarerMotion ?? "",
@@ -290,6 +298,7 @@ try {
     depthComposition,
     presentationHierarchy,
     lightingComposition,
+    subjectReadability,
     visualIdentity,
     initialWayfarerMotion,
     wayfarerMotion,
