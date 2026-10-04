@@ -171,6 +171,14 @@ try {
       `Expected authored subject hierarchy, got: ${presentationHierarchy}`,
     );
   }
+  const lightingComposition = await root.locator("body").getAttribute(
+    "data-resonance-lighting-composition",
+  );
+  if (lightingComposition !== "focal-lighting-v1") {
+    throw new Error(
+      `Expected focal lighting composition, got: ${lightingComposition}`,
+    );
+  }
   await root.waitForFunction(
     () => ["idle", "run", "air", "evade", "attract", "repel"].includes(
       document.body.dataset.resonanceWayfarerMotion ?? "",
@@ -281,6 +289,7 @@ try {
     cameraStaging,
     depthComposition,
     presentationHierarchy,
+    lightingComposition,
     visualIdentity,
     initialWayfarerMotion,
     wayfarerMotion,

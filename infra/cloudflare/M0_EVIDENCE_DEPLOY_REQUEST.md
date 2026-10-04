@@ -1,18 +1,20 @@
 # M0 Evidence Deployment Request
 
-**Request:** 32  
-**Requested from baseline:** `5cbc514c5b6e75030a28d55fcf648a281d447745`  
-**Purpose:** Publish the final M0.14 focal-hierarchy regression correction.
+**Request:** 33  
+**Requested from baseline:** `f222ac273ef1a027bda88c5ac04b1c11ccb8b9b2`  
+**Purpose:** Publish the first M0.15 focal-lighting and atmospheric-composition candidate.
 
-Deployment #31 passed all automated gates, but screenshot/code review found that two Pass 2 values were overwritten in the render loop: Scrapper staging reverted toward the old edge position and target scales were raised again after initialization.
+M0.14 established authored-v2 assets and the corrected authored-subject-v2 hierarchy. Its final screenshot is readable but still flat compared with the intended orbital-industrial presentation.
 
 This request publishes:
 
-- tested target-presentation scale hierarchy: inactive 0.31, selected 0.42, active 0.49, Repel flash 0.54;
-- tested authored Scrapper drift around the intended x=4.9 focal position;
-- preserved authored Scrapper rotation baseline;
-- `data-resonance-presentation-hierarchy="authored-subject-v2"` browser/smoke contract.
+- one localized Wayfarer fill light, keeping the scene at four simultaneous lights;
+- stronger warm/cool separation across wreck metal, ceramic structure and Mara's field rig;
+- slightly stronger contrast/exposure with a restrained vignette;
+- lower ambient illumination and stronger warm rim separation;
+- target visibility hierarchy that dims inactive Resonance nodes while preserving selected/active/Repel feedback;
+- `data-resonance-lighting-composition="focal-lighting-v1"` browser/smoke contract.
 
-Deterministic movement, collision, target selection, authored-v2 assets and replay semantics are unchanged. Physical/human acceptance remains deferred and no owner-run testing is requested.
+No new materials are added; the 24-material ceiling remains hard. Deterministic movement, collision, target selection, authored-v2 assets and replay semantics are unchanged. Physical/human acceptance remains deferred and no owner-run testing is requested.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.

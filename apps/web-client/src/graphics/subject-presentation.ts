@@ -25,3 +25,16 @@ export function scrapperPresentationPose(
     rotationZ: -0.11 + Math.sin(elapsedSeconds * 1.3) * 0.025,
   };
 }
+
+
+export function targetPresentationVisibility(
+  state: TargetPresentationState,
+): number {
+  if (state.repelFlash || state.active) return 1;
+  if (state.selected) return 0.82;
+  return 0.38;
+}
+
+export function wayfarerFillLightIntensity(elapsedSeconds: number): number {
+  return 0.38 + Math.sin(elapsedSeconds * 1.6) * 0.035;
+}

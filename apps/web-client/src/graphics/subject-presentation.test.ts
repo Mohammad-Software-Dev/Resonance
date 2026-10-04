@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   scrapperPresentationPose,
   targetPresentationScale,
+  targetPresentationVisibility,
+  wayfarerFillLightIntensity,
 } from "./subject-presentation";
 
 describe("targetPresentationScale", () => {
@@ -41,6 +43,42 @@ describe("scrapperPresentationPose", () => {
       expect(pose.x).toBeLessThanOrEqual(5.08);
       expect(pose.rotationZ).toBeGreaterThanOrEqual(-0.135);
       expect(pose.rotationZ).toBeLessThanOrEqual(-0.085);
+    }
+  });
+});
+
+
+describe("targetPresentationVisibility", () => {
+  it("dims idle anchors while retaining strong interaction feedback", () => {
+    expect(targetPresentationVisibility({
+      selected: false,
+      active: false,
+      repelFlash: false,
+    })).toBe(0.38);
+    expect(targetPresentationVisibility({
+      selected: true,
+      active: false,
+      repelFlash: false,
+    })).toBe(0.82);
+    expect(targetPresentationVisibility({
+      selected: false,
+      active: true,
+      repelFlash: false,
+    })).toBe(1);
+    expect(targetPresentationVisibility({
+      selected: false,
+      active: false,
+      repelFlash: true,
+    })).toBe(1);
+  });
+});
+
+describe("wayfarerFillLightIntensity", () => {
+  it("stays inside a restrained focal-light range", () => {
+    for (const seconds of [0, 0.5, 1, 2, 5, 10]) {
+      const intensity = wayfarerFillLightIntensity(seconds);
+      expect(intensity).toBeGreaterThanOrEqual(0.345);
+      expect(intensity).toBeLessThanOrEqual(0.415);
     }
   });
 });
