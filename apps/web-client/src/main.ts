@@ -1520,9 +1520,10 @@ engine.runRenderLoop(() => {
     }
     if (authoredScrapperEye) {
       authoredScrapperEye.scaling.x =
-        SCRAPPER_V3_PROFILE.hostileSensorScaleX * scrapperPose.eyeScale;
+        0.20 * SCRAPPER_V3_PROFILE.hostileSensorScaleX * scrapperPose.eyeScale;
       authoredScrapperEye.scaling.y =
-        SCRAPPER_V3_PROFILE.hostileSensorScaleY * scrapperPose.eyeScale;
+        0.14 * SCRAPPER_V3_PROFILE.hostileSensorScaleY * scrapperPose.eyeScale;
+      authoredScrapperEye.scaling.z = 0.11;
     }
 
     for (const bracket of scrapperEncounterBracket) {
