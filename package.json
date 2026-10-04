@@ -23,7 +23,9 @@
     "deploy:m0:evidence": "wrangler deploy --config infra/cloudflare/wrangler.m0.jsonc",
     "deploy:m0:evidence:dry-run": "wrangler deploy --dry-run --config infra/cloudflare/wrangler.m0.jsonc",
     "smoke:m0:evidence": "node tools/smoke-deployed-m0.mjs",
-    "evidence:preflight": "pnpm --filter @resonance/evidence-preflight preflight"
+    "evidence:preflight": "pnpm --filter @resonance/evidence-preflight preflight",
+    "assets:m0:v3": "python tools/asset-pipeline/generate_m0_v3_assets.py apps/web-client/public/assets/visual",
+    "assets:m0:v3:validate": "python tools/asset-pipeline/validate_m0_v3_assets.py apps/web-client/public/assets/visual"
   },
   "devDependencies": {
     "@types/node": "24.10.0",
