@@ -76,6 +76,7 @@ import {
   scrapperPresentationPose,
   targetPresentationScale,
   targetPresentationVisibility,
+  wayfarerSubjectProfile,
 } from "./graphics/subject-presentation";
 import {
   BrowserPerformanceMonitor,
@@ -340,6 +341,22 @@ repelShockwave.color = new Color3(1, 0.46, 0.12);
 repelShockwave.isPickable = false;
 repelShockwave.isVisible = false;
 
+const scrapperScan = CreateLines(
+  "scrapper-hostile-scan",
+  {
+    points: [
+      new Vector3(4.9, 1.12, -0.44),
+      new Vector3(4.0, 0.95, -0.42),
+      new Vector3(3.2, 0.82, -0.40),
+    ],
+    updatable: true,
+  },
+  scene,
+);
+scrapperScan.color = new Color3(1, 0.24, 0.055);
+scrapperScan.isPickable = false;
+scrapperScan.isVisible = false;
+
 const { createRepresentativeGraphicsRoom } = await import(
   "./graphics/representative-room"
 );
@@ -386,11 +403,15 @@ if (!wayfarerVisualSpec) {
 const wayfarerVisualResult = await loadAuthoredVisualAsset(scene, wayfarerVisualSpec);
 let authoredWayfarerRoot: AbstractMesh | null = null;
 let authoredWayfarerHelmet: AbstractMesh | null = null;
+let authoredWayfarerVisor: AbstractMesh | null = null;
 let authoredWayfarerEmitter: AbstractMesh | null = null;
 let authoredWayfarerRootBaseRotationZ = 0;
+let authoredWayfarerRootBaseRotationY = 0;
 let authoredWayfarerHelmetBaseRotationZ = 0;
+let authoredWayfarerHelmetBaseScale = new Vector3(1, 1, 1);
+let authoredWayfarerVisorBaseScale = new Vector3(1, 1, 1);
 let authoredWayfarerEmitterBaseScale = new Vector3(1, 1, 1);
-const AUTHORED_WAYFARER_SCALE = 0.72;
+const WAYFARER_SUBJECT_PROFILE = wayfarerSubjectProfile();
 if (wayfarerVisualResult.status === "authored") {
   authoredWayfarerRoot =
     wayfarerVisualResult.meshes.find((mesh) => mesh.parent === null)
@@ -400,15 +421,33 @@ if (wayfarerVisualResult.status === "authored") {
     throw new Error("Authored Wayfarer GLB loaded without a root mesh");
   }
   authoredWayfarerRoot.position.copyFrom(playerMesh.position);
-  authoredWayfarerRoot.scaling.setAll(AUTHORED_WAYFARER_SCALE);
+  authoredWayfarerRoot.scaling.set(
+    WAYFARER_SUBJECT_PROFILE.scaleX,
+    WAYFARER_SUBJECT_PROFILE.scaleY,
+    WAYFARER_SUBJECT_PROFILE.scaleZ,
+  );
   authoredWayfarerRootBaseRotationZ = authoredWayfarerRoot.rotation.z;
+  authoredWayfarerRootBaseRotationY = authoredWayfarerRoot.rotation.y;
   authoredWayfarerHelmet =
     wayfarerVisualResult.meshes.find((mesh) => mesh.name === "Mara_Helmet") ?? null;
+  authoredWayfarerVisor =
+    wayfarerVisualResult.meshes.find((mesh) => mesh.name === "Mara_Visor") ?? null;
   authoredWayfarerEmitter =
     wayfarerVisualResult.meshes.find((mesh) => mesh.name === "Mara_GauntletEmitter") ?? null;
   authoredWayfarerHelmetBaseRotationZ = authoredWayfarerHelmet?.rotation.z ?? 0;
+  authoredWayfarerHelmetBaseScale = authoredWayfarerHelmet?.scaling.clone()
+    ?? new Vector3(1, 1, 1);
+  authoredWayfarerVisorBaseScale = authoredWayfarerVisor?.scaling.clone()
+    ?? new Vector3(1, 1, 1);
   authoredWayfarerEmitterBaseScale = authoredWayfarerEmitter?.scaling.clone()
     ?? new Vector3(1, 1, 1);
+  if (authoredWayfarerHelmet) {
+    authoredWayfarerHelmet.scaling.scaleInPlace(WAYFARER_SUBJECT_PROFILE.helmetScale);
+  }
+  if (authoredWayfarerVisor) {
+    authoredWayfarerVisor.scaling.x =
+      authoredWayfarerVisorBaseScale.x * WAYFARER_SUBJECT_PROFILE.visorScaleX;
+  }
   remapImportedMaterials(wayfarerVisualResult.meshes, {
     Mara_Suit: graphicsRoom.authoredPalette.wayfarerSuit,
     Mara_Ceramic: graphicsRoom.authoredPalette.wayfarerCeramic,
@@ -532,6 +571,7 @@ document.body.dataset.resonanceCameraStaging = "follow-focus-v1";
 document.body.dataset.resonanceDepthComposition = "essential-v1";
 document.body.dataset.resonancePresentationHierarchy = "authored-subject-v2";
 document.body.dataset.resonanceLightingComposition = "focal-lighting-v1";
+document.body.dataset.resonanceSubjectReadability = "hero-hostile-v1";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
@@ -1151,14 +1191,21 @@ engine.runRenderLoop(() => {
       );
       authoredWayfarerRoot.rotation.z =
         authoredWayfarerRootBaseRotationZ + wayfarerPose.rootLeanZ * state.facing;
+      authoredWayfarerRoot.rotation.y =
+        authoredWayfarerRootBaseRotationY + WAYFARER_SUBJECT_PROFILE.yawY * state.facing;
       authoredWayfarerRoot.scaling.set(
-        AUTHORED_WAYFARER_SCALE * state.facing,
-        AUTHORED_WAYFARER_SCALE * wayfarerPose.rootScaleY,
-        AUTHORED_WAYFARER_SCALE,
+        WAYFARER_SUBJECT_PROFILE.scaleX * state.facing,
+        WAYFARER_SUBJECT_PROFILE.scaleY * wayfarerPose.rootScaleY,
+        WAYFARER_SUBJECT_PROFILE.scaleZ,
       );
       if (authoredWayfarerHelmet) {
         authoredWayfarerHelmet.rotation.z =
           authoredWayfarerHelmetBaseRotationZ + wayfarerPose.helmetTiltZ * state.facing;
+        authoredWayfarerHelmet.scaling.set(
+          authoredWayfarerHelmetBaseScale.x * WAYFARER_SUBJECT_PROFILE.helmetScale,
+          authoredWayfarerHelmetBaseScale.y * WAYFARER_SUBJECT_PROFILE.helmetScale,
+          authoredWayfarerHelmetBaseScale.z * WAYFARER_SUBJECT_PROFILE.helmetScale,
+        );
       }
       if (authoredWayfarerEmitter) {
         authoredWayfarerEmitter.scaling.set(
@@ -1293,20 +1340,34 @@ engine.runRenderLoop(() => {
     const elapsedSeconds = now / 1000;
     const scrapperPose = scrapperPresentationPose(elapsedSeconds);
     authoredScrapperRoot.position.x = scrapperPose.x;
+    authoredScrapperRoot.position.y = scrapperPose.y;
     authoredScrapperRoot.rotation.z = scrapperPose.rotationZ;
     if (authoredScrapperDamagedArm) {
-      authoredScrapperDamagedArm.rotation.z =
-        -0.48 + Math.sin(elapsedSeconds * 2.1) * 0.08;
+      authoredScrapperDamagedArm.rotation.z = scrapperPose.damagedArmRotationZ;
     }
     if (authoredScrapperLoosePlate) {
-      authoredScrapperLoosePlate.rotation.z =
-        0.22 + Math.sin(elapsedSeconds * 4.2) * 0.08;
+      authoredScrapperLoosePlate.rotation.z = scrapperPose.loosePlateRotationZ;
     }
     if (authoredScrapperEye) {
-      const hostilePulse = 0.82 + 0.18 * Math.sin(elapsedSeconds * 6.2);
-      authoredScrapperEye.scaling.x = 1.35 * hostilePulse;
-      authoredScrapperEye.scaling.y = 0.65 * hostilePulse;
+      authoredScrapperEye.scaling.x = 1.35 * scrapperPose.eyeScale;
+      authoredScrapperEye.scaling.y = 0.65 * scrapperPose.eyeScale;
     }
+
+    const playerScanTarget = state
+      ? new Vector3(state.position.x, state.position.y + 0.22, -0.42)
+      : new Vector3(3.2, 0.82, -0.40);
+    const scanStart = new Vector3(scrapperPose.x - 0.02, scrapperPose.y + 0.15, -0.44);
+    const scanMid = Vector3.Lerp(scanStart, playerScanTarget, 0.52);
+    scanMid.y += 0.08;
+    CreateLines(
+      "scrapper-hostile-scan",
+      { points: [scanStart, scanMid, playerScanTarget], instance: scrapperScan },
+      scene,
+    );
+    scrapperScan.isVisible = scrapperPose.scanStrength > 0.05;
+    scrapperScan.alpha = Math.min(0.7, scrapperPose.scanStrength * 0.7);
+  } else {
+    scrapperScan.isVisible = false;
   }
 
   graphicsRoom.update(now / 1000);
