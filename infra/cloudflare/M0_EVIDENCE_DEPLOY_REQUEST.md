@@ -1,19 +1,31 @@
 # M0 Evidence Deployment Request
 
-**Request:** 39  
-**Requested from baseline:** `661016e361ca11a67c1896b35fc0499161ee50c8`  
-**Purpose:** Publish the final M0.17 camera-priority correction.
+**Request:** 40  
+**Requested from baseline:** `0dd8952c06a47b808bdd8ba50f2ac4c394135441`  
+**Purpose:** Publish the first M0.18 authored Scrapper v3 identity candidate.
 
-Deployment #38 proved the hostile presentation changes but its retained screenshot showed the Scrapper still off-screen. Root cause: idle Resonance target selection always overrode the encounter camera focus.
+M0.17 completed encounter staging and camera priority. The retained frame then isolated the next visual bottleneck: the hostile body itself still read too much like a maintenance crate.
 
-This candidate changes only presentation-camera priority:
+This candidate keeps the existing authored Scrapper GLB as the base body and augments it with a presentation-only v3 machine identity:
 
-- encounter focus owns the opening breach composition;
-- an actively used Attract/Repel target may override encounter focus;
-- idle selected targets no longer suppress hostile staging;
-- runtime contract advances to `encounter-path-v3`.
+- forward sensor hood;
+- separate low locomotion pods;
+- intact maintenance tool arm and head;
+- visibly damaged opposite arm/fork;
+- wider/lower hostile proportions;
+- stronger horizontal hostile sensor;
+- bracket resized around the articulated subject;
+- `data-resonance-hostile-identity="scrapper-v3"`.
 
-No target-selection, physics, collision, gameplay, AI, objective or deterministic simulation behavior changes.
+All added geometry reuses the existing shell/dark/hostile/damage palette. No new material family, gameplay, AI, combat, collision, target, force or deterministic simulation behavior is introduced.
+
+The deployed smoke now also enforces:
+- Scrapper v3 runtime identity;
+- materials <=24;
+- draw calls <=250;
+- textures <=24;
+- zero runtime shader compilation after warmup;
+- all prior presentation contracts and blind-mode hygiene.
 
 Physical/human acceptance remains deferred and no owner-run testing is requested.
 
