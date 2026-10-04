@@ -342,31 +342,6 @@ repelShockwave.color = new Color3(1, 0.46, 0.12);
 repelShockwave.isPickable = false;
 repelShockwave.isVisible = false;
 
-const scrapperBracketSeed = [
-  new Vector3(-0.72, 0.48, -0.46),
-  new Vector3(-0.88, 0.48, -0.46),
-  new Vector3(-0.88, 0.18, -0.46),
-  new Vector3(-0.88, 0.18, -0.46),
-  new Vector3(-0.88, -0.18, -0.46),
-  new Vector3(-0.88, -0.48, -0.46),
-  new Vector3(-0.72, -0.48, -0.46),
-  new Vector3(0.72, -0.48, -0.46),
-  new Vector3(0.88, -0.48, -0.46),
-  new Vector3(0.88, -0.18, -0.46),
-  new Vector3(0.88, 0.18, -0.46),
-  new Vector3(0.88, 0.48, -0.46),
-  new Vector3(0.72, 0.48, -0.46),
-];
-const scrapperEncounterBracket = CreateLines(
-  "scrapper-encounter-bracket",
-  { points: scrapperBracketSeed, updatable: true },
-  scene,
-);
-scrapperEncounterBracket.color = new Color3(1, 0.27, 0.055);
-scrapperEncounterBracket.alpha = 0.3;
-scrapperEncounterBracket.isPickable = false;
-scrapperEncounterBracket.isVisible = false;
-
 const { createRepresentativeGraphicsRoom } = await import(
   "./graphics/representative-room"
 );
@@ -385,6 +360,22 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
   },
   initialGraphicsPreset(backend),
 );
+
+const scrapperEncounterBracket = [
+  { mesh: CreateBox("scrapper-bracket-tl-h", { width: 0.3, height: 0.035, depth: 0.05 }, scene), x: -0.72, y: 0.48 },
+  { mesh: CreateBox("scrapper-bracket-tl-v", { width: 0.035, height: 0.28, depth: 0.05 }, scene), x: -0.88, y: 0.34 },
+  { mesh: CreateBox("scrapper-bracket-bl-h", { width: 0.3, height: 0.035, depth: 0.05 }, scene), x: -0.72, y: -0.48 },
+  { mesh: CreateBox("scrapper-bracket-bl-v", { width: 0.035, height: 0.28, depth: 0.05 }, scene), x: -0.88, y: -0.34 },
+  { mesh: CreateBox("scrapper-bracket-tr-h", { width: 0.3, height: 0.035, depth: 0.05 }, scene), x: 0.72, y: 0.48 },
+  { mesh: CreateBox("scrapper-bracket-tr-v", { width: 0.035, height: 0.28, depth: 0.05 }, scene), x: 0.88, y: 0.34 },
+  { mesh: CreateBox("scrapper-bracket-br-h", { width: 0.3, height: 0.035, depth: 0.05 }, scene), x: 0.72, y: -0.48 },
+  { mesh: CreateBox("scrapper-bracket-br-v", { width: 0.035, height: 0.28, depth: 0.05 }, scene), x: 0.88, y: -0.34 },
+] as const;
+for (const bracket of scrapperEncounterBracket) {
+  bracket.mesh.material = graphicsRoom.authoredPalette.hostile;
+  bracket.mesh.isPickable = false;
+  bracket.mesh.setEnabled(false);
+}
 
 function remapImportedMaterials(
   meshes: readonly AbstractMesh[],
@@ -1374,18 +1365,15 @@ engine.runRenderLoop(() => {
       authoredScrapperEye.scaling.y = 0.65 * scrapperPose.eyeScale;
     }
 
-    const bracketPoints = scrapperBracketSeed.map((point) => new Vector3(
-      point.x + scrapperPose.x,
-      point.y + scrapperPose.y + 0.12,
-      point.z,
-    ));
-    CreateLines(
-      "scrapper-encounter-bracket",
-      { points: bracketPoints, instance: scrapperEncounterBracket },
-      scene,
-    );
-    scrapperEncounterBracket.alpha = encounter.bracketAlpha;
-    scrapperEncounterBracket.isVisible = progressStage !== "complete";
+    for (const bracket of scrapperEncounterBracket) {
+      bracket.mesh.position.set(
+        scrapperPose.x + bracket.x,
+        scrapperPose.y + 0.12 + bracket.y,
+        -0.46,
+      );
+      bracket.mesh.visibility = encounter.bracketAlpha;
+      bracket.mesh.setEnabled(progressStage !== "complete");
+    }
 
     const playerScanTarget = state
       ? new Vector3(state.position.x, state.position.y + 0.22, -0.42)

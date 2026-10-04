@@ -1,22 +1,19 @@
 # M0 Evidence Deployment Request
 
-**Request:** 36  
-**Requested from baseline:** `c76b96ef2206036f7731848f845dc706fde8b6ac`  
-**Purpose:** Publish the first M0.17 encounter-staging and traversal-path readability candidate.
+**Request:** 37  
+**Requested from baseline:** `6fbe6de0f7ac0503379750b5c1b19b32a220e9f1`  
+**Purpose:** Republish M0.17 after restoring the hard 24-material ceiling.
 
-Deployment #35 completed M0.16, but its retained screenshot exposed a composition issue: the damaged Scrapper could sit outside the opening camera frame while its hostile scan entered from off-screen, and long cyan/background elements still competed with the playable route.
+Deployment #36 reached the live runtime and visually proved the new encounter composition, but deployed smoke correctly rejected the build because the additional `CreateLines` hostile bracket allocated one implicit Babylon line material, producing 25 materials instead of the hard limit of 24.
 
-This request publishes:
+This request retains the successful M0.17 composition and changes only the bracket implementation:
 
-- presentation-only hostile staging at x=3.15 on the right gameplay plane;
-- bounded camera bias toward the Scrapper only after player approach, while selected Resonance targets keep priority;
-- one reusable orange line bracket around the hostile, adding no material;
-- persistent-low hostile scan visibility tied to approach;
-- brighter walkable deck/route accents using existing materials;
-- quieter distant service conduits;
-- lower idle-anchor visibility;
-- `data-resonance-encounter-composition="encounter-path-v1"`.
+- remove the extra line mesh/material;
+- render the same orange hostile bracket as eight small corner bars;
+- reuse the existing authored hostile material;
+- preserve `data-resonance-encounter-composition="encounter-path-v1"`;
+- preserve hostile staging, camera bias, route contrast, quieter background conduits and lower idle-anchor visibility.
 
-The 24-material and 250-draw-call ceilings remain hard. Physics, collision, target selection, Attract/Repel semantics, objective progression and deterministic replay are unchanged. Physical/human acceptance remains deferred; no owner-run testing is requested.
+Expected result: materials return to 24; draw calls remain below 250. Gameplay, collision, target selection, Attract/Repel semantics, objective progression and deterministic replay are unchanged. Physical/human acceptance remains deferred; no owner-run testing is requested.
 
 Changing this file on `main` intentionally triggers the `Deploy M0 Evidence Build` workflow.
