@@ -36,23 +36,23 @@ describe("scrapperPresentationPose", () => {
   it("drifts around the authored focal position instead of the old edge staging", () => {
     const start = scrapperPresentationPose(0);
     expect(start.x).toBeCloseTo(4.9);
-    expect(start.rotationZ).toBeCloseTo(-0.11);
+    expect(start.rotationZ).toBeCloseTo(-0.08);
 
     for (const seconds of [0, 1, 2, 5, 10]) {
       const pose = scrapperPresentationPose(seconds);
-      expect(pose.x).toBeGreaterThanOrEqual(4.74);
-      expect(pose.x).toBeLessThanOrEqual(5.06);
-      expect(pose.rotationZ).toBeGreaterThanOrEqual(-0.135);
-      expect(pose.rotationZ).toBeLessThanOrEqual(-0.085);
-      expect(pose.y).toBeGreaterThanOrEqual(1.045);
-      expect(pose.y).toBeLessThanOrEqual(1.115);
-      expect(pose.rotationY).toBeCloseTo(-0.2);
+      expect(pose.x).toBeGreaterThanOrEqual(4.78);
+      expect(pose.x).toBeLessThanOrEqual(5.02);
+      expect(pose.rotationZ).toBeGreaterThanOrEqual(-0.1);
+      expect(pose.rotationZ).toBeLessThanOrEqual(-0.06);
+      expect(pose.y).toBeGreaterThanOrEqual(1.305);
+      expect(pose.y).toBeLessThanOrEqual(1.375);
+      expect(pose.rotationY).toBeCloseTo(-0.32);
       expect(pose.scaleX).toBeGreaterThan(pose.scaleY);
       expect(pose.scaleZ).toBeGreaterThan(pose.scaleY);
-      expect(pose.eyeScale).toBeGreaterThanOrEqual(0.8);
-      expect(pose.eyeScale).toBeLessThanOrEqual(1);
-      expect(pose.scanStrength).toBeGreaterThanOrEqual(0.18);
-      expect(pose.scanStrength).toBeLessThanOrEqual(0.8);
+      expect(pose.eyeScale).toBeGreaterThanOrEqual(0.96);
+      expect(pose.eyeScale).toBeLessThanOrEqual(1.12);
+      expect(pose.scanStrength).toBeGreaterThanOrEqual(0.14);
+      expect(pose.scanStrength).toBeLessThanOrEqual(0.56);
     }
   });
 });
