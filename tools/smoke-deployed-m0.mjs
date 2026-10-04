@@ -182,7 +182,7 @@ try {
   const subjectReadability = await root.locator("body").getAttribute(
     "data-resonance-subject-readability",
   );
-  if (subjectReadability !== "hero-hostile-v1") {
+  if (subjectReadability !== "hero-hostile-v2") {
     throw new Error(
       `Expected hero/hostile subject readability contract, got: ${subjectReadability}`,
     );
