@@ -23,11 +23,12 @@ export function encounterPresentation(
   const encounterActive = stage === "breach"
     || stage === "resonance"
     || stage === "repel";
-  const approach = clamp((playerX + 4.2) / 5.4, 0, 1);
+  const approach = clamp((playerX + 4.6) / 5.8, 0, 1);
+  const hostileBaseX = 2.35;
   return {
-    hostileBaseX: 3.15,
-    cameraFocusX: encounterActive && playerX > -3.65 ? 3.15 : null,
-    bracketAlpha: encounterActive ? 0.26 + approach * 0.28 : 0.12,
-    scanAlphaFloor: encounterActive ? 0.20 + approach * 0.16 : 0.10,
+    hostileBaseX,
+    cameraFocusX: encounterActive && playerX > -4.55 ? hostileBaseX : null,
+    bracketAlpha: encounterActive ? 0.44 + approach * 0.18 : 0.16,
+    scanAlphaFloor: encounterActive ? 0.10 + approach * 0.12 : 0.08,
   };
 }
