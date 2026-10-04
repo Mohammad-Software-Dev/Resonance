@@ -195,6 +195,14 @@ try {
       `Expected encounter/path composition contract, got: ${encounterComposition}`,
     );
   }
+  const authoredAssetFidelity = await root.locator("body").getAttribute(
+    "data-resonance-authored-asset-fidelity",
+  );
+  if (authoredAssetFidelity !== "v3") {
+    throw new Error(
+      `Expected authored asset fidelity v3, got: ${authoredAssetFidelity}`,
+    );
+  }
   await root.waitForFunction(
     () => ["idle", "run", "air", "evade", "attract", "repel"].includes(
       document.body.dataset.resonanceWayfarerMotion ?? "",
@@ -308,6 +316,7 @@ try {
     lightingComposition,
     subjectReadability,
     encounterComposition,
+    authoredAssetFidelity,
     visualIdentity,
     initialWayfarerMotion,
     wayfarerMotion,
