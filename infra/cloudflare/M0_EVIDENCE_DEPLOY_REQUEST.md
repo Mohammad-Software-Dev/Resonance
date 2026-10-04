@@ -1,31 +1,24 @@
 # M0 Evidence Deployment Request
 
-**Request:** 40  
-**Requested from baseline:** `0dd8952c06a47b808bdd8ba50f2ac4c394135441`  
-**Purpose:** Publish the first M0.18 authored Scrapper v3 identity candidate.
+**Request:** 41  
+**Requested from baseline:** `32b4236a2ac336cbfaebce186cfb50ddea202a11`  
+**Purpose:** Publish the M0.18 Scrapper v3 silhouette correction after retained-frame review.
 
-M0.17 completed encounter staging and camera priority. The retained frame then isolated the next visual bottleneck: the hostile body itself still read too much like a maintenance crate.
+Deployment #40 passed all objective gates, but its retained screenshot still read as a dark maintenance crate with an orange slit. The first augmentation was too subtle and occluded at gameplay camera distance.
 
-This candidate keeps the existing authored Scrapper GLB as the base body and augments it with a presentation-only v3 machine identity:
+This correction keeps the same authored asset slot/root and material mapping, but suppresses the crate-like v2 child geometry and presents a stronger v3 machine silhouette:
 
-- forward sensor hood;
-- separate low locomotion pods;
-- intact maintenance tool arm and head;
-- visibly damaged opposite arm/fork;
-- wider/lower hostile proportions;
-- stronger horizontal hostile sensor;
-- bracket resized around the articulated subject;
-- `data-resonance-hostile-identity="scrapper-v3"`.
+- rounded low maintenance chassis;
+- protruding forward sensor head and localized hostile sensor;
+- separate grounded locomotion pods and feet;
+- intact forward maintenance arm/tool head;
+- damaged rear arm/fork;
+- maintenance pack massing;
+- larger bracket sized around the articulated subject.
 
-All added geometry reuses the existing shell/dark/hostile/damage palette. No new material family, gameplay, AI, combat, collision, target, force or deterministic simulation behavior is introduced.
+Existing shell/dark/hostile/damage materials are reused. No new material family, gameplay, AI, combat, collision, target, force or deterministic simulation behavior is introduced.
 
-The deployed smoke now also enforces:
-- Scrapper v3 runtime identity;
-- materials <=24;
-- draw calls <=250;
-- textures <=24;
-- zero runtime shader compilation after warmup;
-- all prior presentation contracts and blind-mode hygiene.
+All M0.18 runtime gates remain active, including `scrapper-v3`, materials <=24, draw calls <=250, textures <=24 and zero runtime shader compilation after warmup.
 
 Physical/human acceptance remains deferred and no owner-run testing is requested.
 
