@@ -556,7 +556,7 @@ document.body.dataset.resonanceCameraStaging = "follow-focus-v1";
 document.body.dataset.resonanceDepthComposition = "essential-v1";
 document.body.dataset.resonancePresentationHierarchy = "authored-subject-v2";
 document.body.dataset.resonanceLightingComposition = "focal-lighting-v1";
-document.body.dataset.resonanceSubjectReadability = "hero-hostile-v1";
+document.body.dataset.resonanceSubjectReadability = "hero-hostile-v2";
 applyCameraMode();
 
 const scarProgress = new WayfarerScarProgress();
@@ -1327,6 +1327,12 @@ engine.runRenderLoop(() => {
     authoredScrapperRoot.position.x = scrapperPose.x;
     authoredScrapperRoot.position.y = scrapperPose.y;
     authoredScrapperRoot.rotation.z = scrapperPose.rotationZ;
+    authoredScrapperRoot.rotation.y = scrapperPose.rotationY;
+    authoredScrapperRoot.scaling.set(
+      scrapperPose.scaleX,
+      scrapperPose.scaleY,
+      scrapperPose.scaleZ,
+    );
     if (authoredScrapperDamagedArm) {
       authoredScrapperDamagedArm.rotation.z = scrapperPose.damagedArmRotationZ;
     }
