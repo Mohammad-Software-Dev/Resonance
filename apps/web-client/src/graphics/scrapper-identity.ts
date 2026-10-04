@@ -15,7 +15,7 @@ export interface ScrapperV3IdentityProfile {
 export function scrapperV3IdentityProfile(): ScrapperV3IdentityProfile {
   return {
     bodyScaleX: 1.12,
-    bodyScaleY: 1.0,
+    bodyScaleY: 0.94,
     bodyScaleZ: 1.04,
     sensorHood: [0.62, 0.20, 0.46],
     locomotionPod: [0.34, 0.56, 0.34],
