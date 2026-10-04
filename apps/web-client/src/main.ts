@@ -83,6 +83,10 @@ import {
   encounterPresentation,
 } from "./graphics/encounter-presentation";
 import {
+  scrapperV3IdentityProfile,
+  scrapperV3RequiredParts,
+} from "./graphics/scrapper-identity";
+import {
   BrowserPerformanceMonitor,
   warmCriticalShaders,
 } from "./performance/browser-performance";
@@ -125,6 +129,7 @@ document.body.dataset.resonanceBackendPreference = backendPreference;
 document.body.dataset.resonanceAuthoredVisualAssets = authoredVisualAssetMode();
 document.body.dataset.resonanceAuthoredWayfarer = "loading";
 document.body.dataset.resonanceAuthoredScrapper = "loading";
+document.body.dataset.resonanceHostileIdentity = "loading";
 document.body.dataset.resonanceWayfarerMotion = "loading";
 document.body.dataset.resonanceVisualIdentity = "loading";
 
@@ -364,15 +369,16 @@ const graphicsRoom = createRepresentativeGraphicsRoom(
   initialGraphicsPreset(backend),
 );
 
+const SCRAPPER_V3_PROFILE = scrapperV3IdentityProfile();
 const scrapperEncounterBracket = [
-  { mesh: CreateBox("scrapper-bracket-tl-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: -0.9, y: 0.66 },
-  { mesh: CreateBox("scrapper-bracket-tl-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: -1.08, y: 0.49 },
-  { mesh: CreateBox("scrapper-bracket-bl-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: -0.9, y: -0.66 },
-  { mesh: CreateBox("scrapper-bracket-bl-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: -1.08, y: -0.49 },
-  { mesh: CreateBox("scrapper-bracket-tr-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: 0.9, y: 0.66 },
-  { mesh: CreateBox("scrapper-bracket-tr-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: 1.08, y: 0.49 },
-  { mesh: CreateBox("scrapper-bracket-br-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: 0.9, y: -0.66 },
-  { mesh: CreateBox("scrapper-bracket-br-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: 1.08, y: -0.49 },
+  { mesh: CreateBox("scrapper-bracket-tl-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: -SCRAPPER_V3_PROFILE.bracketHalfWidth + 0.18, y: SCRAPPER_V3_PROFILE.bracketHalfHeight },
+  { mesh: CreateBox("scrapper-bracket-tl-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: -SCRAPPER_V3_PROFILE.bracketHalfWidth, y: SCRAPPER_V3_PROFILE.bracketHalfHeight - 0.17 },
+  { mesh: CreateBox("scrapper-bracket-bl-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: -SCRAPPER_V3_PROFILE.bracketHalfWidth + 0.18, y: -SCRAPPER_V3_PROFILE.bracketHalfHeight },
+  { mesh: CreateBox("scrapper-bracket-bl-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: -SCRAPPER_V3_PROFILE.bracketHalfWidth, y: -SCRAPPER_V3_PROFILE.bracketHalfHeight + 0.17 },
+  { mesh: CreateBox("scrapper-bracket-tr-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: SCRAPPER_V3_PROFILE.bracketHalfWidth - 0.18, y: SCRAPPER_V3_PROFILE.bracketHalfHeight },
+  { mesh: CreateBox("scrapper-bracket-tr-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: SCRAPPER_V3_PROFILE.bracketHalfWidth, y: SCRAPPER_V3_PROFILE.bracketHalfHeight - 0.17 },
+  { mesh: CreateBox("scrapper-bracket-br-h", { width: 0.34, height: 0.035, depth: 0.05 }, scene), x: SCRAPPER_V3_PROFILE.bracketHalfWidth - 0.18, y: -SCRAPPER_V3_PROFILE.bracketHalfHeight },
+  { mesh: CreateBox("scrapper-bracket-br-v", { width: 0.035, height: 0.34, depth: 0.05 }, scene), x: SCRAPPER_V3_PROFILE.bracketHalfWidth, y: -SCRAPPER_V3_PROFILE.bracketHalfHeight + 0.17 },
 ] as const;
 for (const bracket of scrapperEncounterBracket) {
   bracket.mesh.material = graphicsRoom.authoredPalette.hostile;
@@ -485,6 +491,7 @@ let authoredScrapperRoot: AbstractMesh | null = null;
 let authoredScrapperEye: AbstractMesh | null = null;
 let authoredScrapperDamagedArm: AbstractMesh | null = null;
 let authoredScrapperLoosePlate: AbstractMesh | null = null;
+const authoredScrapperV3Parts: AbstractMesh[] = [];
 if (scrapperVisualResult.status === "authored") {
   authoredScrapperRoot =
     scrapperVisualResult.meshes.find((mesh) => mesh.parent === null)
@@ -495,16 +502,105 @@ if (scrapperVisualResult.status === "authored") {
   }
   authoredScrapperRoot.position.set(4.9, 0.96, 0.08);
   authoredScrapperRoot.rotation.z = -0.11;
-  authoredScrapperRoot.scaling.setAll(0.86);
   remapImportedMaterials(scrapperVisualResult.meshes, {
     Scrapper_Shell: graphicsRoom.authoredPalette.shell,
     Scrapper_Joint: graphicsRoom.authoredPalette.dark,
     Scrapper_Hostile: graphicsRoom.authoredPalette.hostile,
     Scrapper_Damage: graphicsRoom.authoredPalette.damage,
   });
+
+  authoredScrapperRoot.scaling.set(
+    0.86 * SCRAPPER_V3_PROFILE.bodyScaleX,
+    0.86 * SCRAPPER_V3_PROFILE.bodyScaleY,
+    0.86 * SCRAPPER_V3_PROFILE.bodyScaleZ,
+  );
+
+  const addScrapperV3Part = (
+    name: string,
+    size: readonly [number, number, number],
+    position: readonly [number, number, number],
+    material: Material,
+    rotationZ = 0,
+  ): AbstractMesh => {
+    const mesh = CreateBox(
+      name,
+      { width: size[0], height: size[1], depth: size[2] },
+      scene,
+    );
+    mesh.parent = authoredScrapperRoot;
+    mesh.position.set(position[0], position[1], position[2]);
+    mesh.rotation.z = rotationZ;
+    mesh.material = material;
+    mesh.isPickable = false;
+    authoredScrapperV3Parts.push(mesh);
+    graphicsRoom.shadowGenerator.addShadowCaster(mesh);
+    return mesh;
+  };
+
+  addScrapperV3Part(
+    "ScrapperV3_SensorHood",
+    SCRAPPER_V3_PROFILE.sensorHood,
+    [0, 0.38, -0.26],
+    graphicsRoom.authoredPalette.shell,
+  );
+  addScrapperV3Part(
+    "ScrapperV3_LeftLocomotionPod",
+    SCRAPPER_V3_PROFILE.locomotionPod,
+    [-0.56, -0.46, 0.04],
+    graphicsRoom.authoredPalette.dark,
+    -0.18,
+  );
+  addScrapperV3Part(
+    "ScrapperV3_RightLocomotionPod",
+    SCRAPPER_V3_PROFILE.locomotionPod,
+    [0.56, -0.46, 0.04],
+    graphicsRoom.authoredPalette.dark,
+    0.18,
+  );
+  addScrapperV3Part(
+    "ScrapperV3_IntactToolArm",
+    SCRAPPER_V3_PROFILE.intactToolArm,
+    [-0.76, 0.0, -0.02],
+    graphicsRoom.authoredPalette.shell,
+    0.56,
+  );
+  addScrapperV3Part(
+    "ScrapperV3_IntactToolHead",
+    [0.40, 0.24, 0.30],
+    [-1.0, -0.29, -0.05],
+    graphicsRoom.authoredPalette.dark,
+    0.18,
+  );
+  addScrapperV3Part(
+    "ScrapperV3_DamagedToolArm",
+    SCRAPPER_V3_PROFILE.damagedToolArm,
+    [0.78, -0.02, -0.01],
+    graphicsRoom.authoredPalette.damage,
+    -0.52,
+  );
+  addScrapperV3Part(
+    "ScrapperV3_DamageFork",
+    [0.42, 0.17, 0.24],
+    [1.02, -0.3, -0.04],
+    graphicsRoom.authoredPalette.damage,
+    -0.12,
+  );
+
+  const missingScrapperV3Parts = scrapperV3RequiredParts().filter(
+    (name) => !authoredScrapperV3Parts.some((mesh) => mesh.name === name),
+  );
+  if (missingScrapperV3Parts.length > 0) {
+    throw new Error(
+      `Scrapper v3 identity is missing: ${missingScrapperV3Parts.join(", ")}`,
+    );
+  }
   authoredScrapperEye =
     scrapperVisualResult.meshes.find((mesh) => mesh.name === "Scrapper_HostileEye")
     ?? null;
+  if (authoredScrapperEye) {
+    authoredScrapperEye.scaling.x = SCRAPPER_V3_PROFILE.hostileSensorScaleX;
+    authoredScrapperEye.scaling.y = SCRAPPER_V3_PROFILE.hostileSensorScaleY;
+  }
   authoredScrapperDamagedArm =
     scrapperVisualResult.meshes.find((mesh) => mesh.name === "Scrapper_DamagedArm")
     ?? null;
@@ -518,8 +614,10 @@ if (scrapperVisualResult.status === "authored") {
   graphicsRoom.setProceduralScrapperEnabled(false);
   graphicsRoom.releaseProceduralScrapperFallback();
   document.body.dataset.resonanceAuthoredScrapper = "authored";
+  document.body.dataset.resonanceHostileIdentity = "scrapper-v3";
 } else {
   document.body.dataset.resonanceAuthoredScrapper = "fallback";
+  document.body.dataset.resonanceHostileIdentity = "fallback";
   console.warn(
     "Authored Scrapper failed to load; procedural fallback remains active.",
     scrapperVisualResult.reason,
@@ -1359,9 +1457,9 @@ engine.runRenderLoop(() => {
     authoredScrapperRoot.rotation.z = scrapperPose.rotationZ;
     authoredScrapperRoot.rotation.y = scrapperPose.rotationY;
     authoredScrapperRoot.scaling.set(
-      scrapperPose.scaleX,
-      scrapperPose.scaleY,
-      scrapperPose.scaleZ,
+      scrapperPose.scaleX * SCRAPPER_V3_PROFILE.bodyScaleX,
+      scrapperPose.scaleY * SCRAPPER_V3_PROFILE.bodyScaleY,
+      scrapperPose.scaleZ * SCRAPPER_V3_PROFILE.bodyScaleZ,
     );
     if (authoredScrapperDamagedArm) {
       authoredScrapperDamagedArm.rotation.z = scrapperPose.damagedArmRotationZ;
@@ -1370,8 +1468,10 @@ engine.runRenderLoop(() => {
       authoredScrapperLoosePlate.rotation.z = scrapperPose.loosePlateRotationZ;
     }
     if (authoredScrapperEye) {
-      authoredScrapperEye.scaling.x = 1.35 * scrapperPose.eyeScale;
-      authoredScrapperEye.scaling.y = 0.65 * scrapperPose.eyeScale;
+      authoredScrapperEye.scaling.x =
+        SCRAPPER_V3_PROFILE.hostileSensorScaleX * scrapperPose.eyeScale;
+      authoredScrapperEye.scaling.y =
+        SCRAPPER_V3_PROFILE.hostileSensorScaleY * scrapperPose.eyeScale;
     }
 
     for (const bracket of scrapperEncounterBracket) {
