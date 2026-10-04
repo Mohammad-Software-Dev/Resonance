@@ -71,7 +71,7 @@ export function targetPresentationVisibility(
 ): number {
   if (state.repelFlash || state.active) return 1;
   if (state.selected) return 0.82;
-  return 0.38;
+  return 0.3;
 }
 
 export function wayfarerFillLightIntensity(elapsedSeconds: number): number {
