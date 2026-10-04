@@ -307,7 +307,7 @@ function addIndustrialBackdrop(
   for (const y of [1.1, 3.1, 5.1, 7.1]) {
     const conduit = CreateBox(
       `service-conduit-${y}`,
-      { width: 18, height: 0.045, depth: 0.1 },
+      { width: 18, height: 0.025, depth: 0.08 },
       scene,
     );
     conduit.position.set(0, y, 4.05);
@@ -1455,10 +1455,10 @@ export function createRepresentativeGraphicsRoom(
   const emissive = pbr(
     "orbital-emissive",
     scene,
-    new Color3(0.01, 0.035, 0.045),
+    new Color3(0.008, 0.026, 0.034),
     0.18,
-    0.34,
-    new Color3(0.025, 0.24, 0.3),
+    0.36,
+    new Color3(0.016, 0.16, 0.21),
   );
   const hullCeramic = pbr(
     "scar-hull-ceramic",
@@ -1487,8 +1487,8 @@ export function createRepresentativeGraphicsRoom(
   const gameplayDeck = semanticMaterial(
     "gameplay-deck",
     scene,
-    new Color3(0.145, 0.152, 0.16),
-    new Color3(0.004, 0.006, 0.008),
+    new Color3(0.18, 0.19, 0.2),
+    new Color3(0.01, 0.014, 0.018),
   );
   const gameplayWall = semanticMaterial(
     "gameplay-wall",
@@ -1510,8 +1510,8 @@ export function createRepresentativeGraphicsRoom(
   const deckAccent = semanticMaterial(
     "gameplay-route-accent",
     scene,
-    new Color3(0.025, 0.2, 0.21),
-    new Color3(0.015, 0.24, 0.25),
+    new Color3(0.035, 0.23, 0.24),
+    new Color3(0.02, 0.3, 0.31),
   );
   const hazardAccent = semanticMaterial(
     "gameplay-hazard-accent",

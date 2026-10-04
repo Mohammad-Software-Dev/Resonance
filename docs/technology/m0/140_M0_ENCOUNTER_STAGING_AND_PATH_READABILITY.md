@@ -1,0 +1,47 @@
+# M0.17 Encounter Staging and Traversal-Path Readability
+
+**Status:** IN PROGRESS  
+**Purpose:** Convert the latest retained Wayfarer Scar frame from a readable subject study into a deliberate traversal encounter composition, while preserving deterministic gameplay and the hard rendering budgets.
+
+M0.16 made Mara human-readable and improved the damaged Scrapper silhouette. Deployment #35 exposed the next bottleneck: the hostile can sit outside the opening camera composition while its scan line enters from off-screen, and long cyan/background elements still compete with the playable route.
+
+## Scope
+
+Presentation-only:
+
+- move the damaged Scrapper's presentation staging onto the visible right-side gameplay plane;
+- bias the follow camera toward the hostile only after the player approaches, while selected Resonance targets keep priority;
+- add one low-cost orange hostile bracket using line rendering rather than a new material;
+- keep the hostile scan faint but visible enough to originate from a readable subject;
+- brighten the walkable deck and route accents slightly;
+- reduce long distant conduit dominance;
+- reduce idle Resonance-anchor visibility while retaining selected/active/Repel hierarchy;
+- publish `data-resonance-encounter-composition="encounter-path-v1"`;
+- retain `hero-hostile-v2`, `focal-lighting-v1`, `authored-subject-v2` and `authored-v2`.
+
+## Hard constraints
+
+- material count remains <=24;
+- draw calls remain <=250;
+- deterministic simulation/replay fingerprint does not change;
+- physics, collision, TargetID, target selection, Attract/Repel semantics and objective progression remain untouched;
+- no hostile AI/combat authority is introduced in M0.17;
+- blind mode remains free of normal-game HUD/diagnostics;
+- physical/human M0 acceptance remains deferred;
+- no owner-run testing is requested.
+
+## Automated gate
+
+M0.17 is green only when:
+
+- unit tests cover encounter staging/camera-bias bounds;
+- target-presentation tests lock the quieter idle-anchor hierarchy;
+- Chromium presentation screenshot is retained;
+- browser and deployed smoke require `encounter-path-v1`;
+- `hero-hostile-v2`, `focal-lighting-v1`, `authored-subject-v2` and `authored-v2` remain active;
+- materials <=24 and draw calls <=250;
+- runtime shader compilation after warmup is 0;
+- verify + Chromium + Firefox + WebKit replay gates pass;
+- no page/console/request/HTTP failures occur.
+
+The retained deployed screenshot remains the iteration loop. Do not request owner-run testing at this milestone.

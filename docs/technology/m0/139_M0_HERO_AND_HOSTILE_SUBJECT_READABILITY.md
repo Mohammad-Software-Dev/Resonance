@@ -1,6 +1,6 @@
 # M0.16 Hero and Hostile Subject Readability
 
-**Status:** IN PROGRESS  
+**Status:** COMPLETE — deployed build `c76b96ef2206036f7731848f845dc706fde8b6ac`  
 **Purpose:** Move the retained Wayfarer Scar screenshot from “readable prototype subjects” toward a recognizable player-versus-encounter composition without changing deterministic gameplay, adding materials, or requesting owner-run testing.
 
 M0.15 achieved its focal-lighting and atmosphere scope. Its retained screenshot exposed the next bottleneck: Mara and the damaged Scrapper still read too much like authored placeholders.
@@ -59,3 +59,28 @@ Pass 2 keeps the same authored-v2 asset and changes only presentation:
 - the contract advances to `hero-hostile-v2`.
 
 No material, collision, targeting, AI or deterministic-state changes are introduced.
+
+
+## Completion record
+
+- PR #67 landed the first hero/hostile readability pass.
+- PR #68 landed the final Scrapper silhouette refinement.
+- final implementation commit: `c76b96ef2206036f7731848f845dc706fde8b6ac`.
+- post-merge CI #284: PASS.
+- Deploy M0 Evidence Build #35 / run `37212188427`: PASS.
+- retained deployed-smoke artifact: `11307216606`.
+- artifact digest: `sha256:6c75682f905735ffcca3352e31a8eaa8aac748f3b1a570b1ef7d76f6355bc5a1`.
+- subject-readability contract: `hero-hostile-v2`.
+- visual identity: `authored-v2`.
+- presentation hierarchy: `authored-subject-v2`.
+- lighting composition: `focal-lighting-v1`.
+- materials: 24 / 24.
+- deployed draw-call range: 187–200 / 250.
+- textures: 16.
+- runtime shader compilation after warmup: 0.0 ms.
+- page/console/request/HTTP failures: none.
+- deterministic replay/browser equivalence: unchanged and green.
+
+The retained screenshot shows Mara as a clear humanoid game subject and preserves a readable hostile language, satisfying the M0.16 scope. It also exposes the next composition bottleneck: the hostile is still too peripheral during the opening frame, the scan can originate off-screen, and the traversal plane competes with long cyan background lines. That work moves to M0.17.
+
+Physical/human acceptance remains deferred, not passed. No owner-run test is requested.

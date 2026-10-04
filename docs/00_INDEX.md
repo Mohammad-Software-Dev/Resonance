@@ -153,7 +153,7 @@ Detailed Periapsis topology, Anchor Zero, four final configurations, world-state
 - `117_ITERATION_3J_CONSOLIDATION_SUMMARY.md`
 
 
-### 119–139 — M0 implementation and acceptance
+### 119–140 — M0 implementation and acceptance
 
 - `119_M0_REPOSITORY_AND_PACKAGE_ARCHITECTURE.md` — exact monorepo/package boundaries, dependency rules and kickoff pins.
 - `120_M0_SIMULATION_TICK_AND_STATE_CONTRACT.md` — fixed 60 Hz input/state/snapshot contract.
@@ -176,6 +176,7 @@ Detailed Periapsis topology, Anchor Zero, four final configurations, world-state
 - `137_M0_AUTHORED_VISUAL_IDENTITY.md` — M0.14 authored-v2 Wayfarer/Scrapper/setdress integration and subject-hierarchy refinement.
 - `138_M0_FOCAL_LIGHTING_AND_ATMOSPHERE.md` — M0.15 focal player lighting, atmospheric palette separation and target-visibility polish.
 - `139_M0_HERO_AND_HOSTILE_SUBJECT_READABILITY.md` — M0.16 hero silhouette, damaged-Scrapper staging and hostile encounter readability.
+- `140_M0_ENCOUNTER_STAGING_AND_PATH_READABILITY.md` — M0.17 encounter framing, hostile-origin readability and traversal-plane hierarchy.
 
 ### 118 — Browser architecture lock
 
